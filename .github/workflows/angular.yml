@@ -46,7 +46,17 @@ jobs:
       - name: Detect dist path
         id: dist
         run: |
-          OUT=$(node -e "const a=require('./angular.json');const k=Object.keys(a.projects)[0];process.stdout.write(a.projects[k].architect.build.options.outputPath)")
+          OUT=$(node -e "
+            const a = require('./angular.json');
+            const k = Object.keys(a.projects)[0];   // 比如 simple-app
+            const p = a.projects[k];
+            const build = (p.architect && p.architect.build) || (p.targets && p.targets.build);
+            // 先找 options.outputPath，沒有就用預設 dist/<projectName>
+            const out = build && build.options && build.options.outputPath
+              ? build.options.outputPath
+              : `dist/${k}`;
+            process.stdout.write(String(out));
+          ")
           echo "out=$OUT" >> $GITHUB_OUTPUT
           echo "Detected outputPath: $OUT"
           ls -la "$OUT" || true
