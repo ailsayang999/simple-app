@@ -1,0 +1,83 @@
+name: Angular CI/CD
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+  workflow_dispatch: {}
+
+# 保留：給 workflow 必要權限（不需 Pages API 也行，但 contents 必須可寫）
+permissions:
+  contents: write   # 👈 CHANGED：用 gh-pages 分支發佈需要寫入內容
+  id-token: write
+  pages: none       # 👈 CHANGED：不使用 Pages API 了
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint --if-present
+
+      - name: Test
+        run: npm test -- --watch=false --browsers=ChromeHeadless
+
+      - name: Build for production
+        env:
+          NODE_OPTIONS: --max_old_space_size=4096
+        run: npm run build -- --configuration production --base-href=/${{ github.event.repository.name }}/
+
+      # 讀 angular.json 的 outputPath
+      - name: Detect dist path
+        id: dist
+        run: |
+          OUT=$(node -e "const a=require('./angular.json');const k=Object.keys(a.projects)[0];process.stdout.write(a.projects[k].architect.build.options.outputPath)")
+          echo "out=$OUT" >> $GITHUB_OUTPUT
+          echo "Detected outputPath: $OUT"
+          ls -la "$OUT" || true
+          ls -la "$OUT/browser" || true
+
+      # 決定最終輸出目錄（有 /browser 就用 /browser）
+      - name: Resolve final dist directory
+        id: dist_final
+        run: |
+          BASE="${{ steps.dist.outputs.out }}"
+          if [ -d "$BASE/browser" ]; then
+            DIR="$BASE/browser"
+          else
+            DIR="$BASE"
+          fi
+          echo "dir=$DIR" >> $GITHUB_OUTPUT
+          echo "Final dist dir: $DIR"
+          ls -la "$DIR" || true
+
+      # 建立 404.html（SPA 刷新不 404）
+      - name: Create 404.html for SPA
+        run: |
+          DIR="${{ steps.dist_final.outputs.dir }}"
+          cp "$DIR/index.html" "$DIR/404.html"
+
+      # ✅ 用 gh-pages 分支發佈（不需要 Pages API）
+      - name: Deploy to gh-pages  # 👈 NEW
+        if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          branch: gh-pages
+          folder: ${{ steps.dist_final.outputs.dir }}
+          clean: true
+          silent: false
