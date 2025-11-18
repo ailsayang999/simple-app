@@ -50,11 +50,11 @@ jobs:
           ls -la dist/simple-app || true
           ls -la dist/simple-app/browser || true
 
-      # 建立 404.html（SPA 刷新不 404）
+      # 建立 404.html（SPA 刷新不 404） 
       - name: Create 404.html for SPA
         run: |
-          DIR="${{ steps.dist_final.outputs.dir }}"
-          cp "$DIR/index.html" "$DIR/404.html"
+          cp dist/simple-app/browser/index.html dist/simple-app/browser/404.html
+      
 
       # ✅ 用 gh-pages 分支發佈（不需要 Pages API）
       - name: Deploy to gh-pages # 👈 NEW
