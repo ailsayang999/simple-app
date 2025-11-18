@@ -2,16 +2,16 @@ name: Angular CI/CD
 
 on:
   push:
-    branches: ["main"]
+    branches: ['main']
   pull_request:
-    branches: ["main"]
+    branches: ['main']
   workflow_dispatch: {}
 
 # 保留：給 workflow 必要權限（不需 Pages API 也行，但 contents 必須可寫）
 permissions:
-  contents: write   # 👈 CHANGED：用 gh-pages 分支發佈需要寫入內容
+  contents: write # 👈 CHANGED：用 gh-pages 分支發佈需要寫入內容
   id-token: write
-  pages: none       # 👈 CHANGED：不使用 Pages API 了
+  pages: none # 👈 CHANGED：不使用 Pages API 了
 
 jobs:
   build:
@@ -25,8 +25,8 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
-          cache: "npm"
+          node-version: '20'
+          cache: 'npm'
 
       - name: Install dependencies
         run: npm ci
@@ -83,7 +83,7 @@ jobs:
           cp "$DIR/index.html" "$DIR/404.html"
 
       # ✅ 用 gh-pages 分支發佈（不需要 Pages API）
-      - name: Deploy to gh-pages  # 👈 NEW
+      - name: Deploy to gh-pages # 👈 NEW
         if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
         uses: JamesIves/github-pages-deploy-action@v4
         with:
