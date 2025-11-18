@@ -57,11 +57,11 @@ jobs:
       
 
       # ✅ 用 gh-pages 分支發佈（不需要 Pages API）
-      - name: Deploy to gh-pages # 👈 NEW
+      - name: Deploy to gh-pages
         if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           branch: gh-pages
-          folder: ${{ steps.dist_final.outputs.dir }}
+          folder: dist/simple-app/browser
           clean: true
           silent: false
