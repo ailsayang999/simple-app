@@ -1,0 +1,12 @@
+/* 全域字體 */
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+/* 這裡可以放全域按鈕樣式、utility、reset... */
+.cm-btn-ia {
+  color: #ffffff !important;
+  background: #777867 !important;
+  border: 1px solid #777867 !important;
+}
