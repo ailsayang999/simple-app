@@ -27,7 +27,7 @@ export const appConfig: ApplicationConfig = {
     // ✅ PrimeNG 建議搭配動畫 (overlay、dialog 會用到)
     provideAnimationsAsync(),
 
-    // ✅ 在這裡啟用 PrimeNG v20 theme
+    // ✅ 在這裡啟用 PrimeNG v20 theme，自行定義亮暗
     providePrimeNG({
       theme: {
         preset: Aura,
@@ -36,5 +36,14 @@ export const appConfig: ApplicationConfig = {
         },
       },
     }),
+    // 如果只是要偵測系統亮暗模式
+    // providePrimeNG({
+    //   theme: {
+    //     preset: Aura,
+    //     options: {
+    //       darkModeSelector: 'system', // 亮暗模式跟系統
+    //     },
+    //   },
+    // }),
   ],
 };
