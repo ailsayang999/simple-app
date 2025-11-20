@@ -1,0 +1,115 @@
+@use '../../../styles/tokens' as *;
+
+.sidebar-root {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: var(--space-md);
+  box-sizing: border-box;
+}
+
+/* 👉 收合狀態：只留 icon */
+.sidebar-root.collapsed {
+  align-items: center;                  // 內容整體靠中間
+  padding-inline: var(--space-sm);      // 左右 padding 縮小
+}
+
+.sidebar-root.collapsed .sidebar-header {
+  justify-content: center;              // Logo + 漢堡集中在中間
+}
+
+.sidebar-root.collapsed .sidebar-logo-text {
+  display: none;                        // Logo 旁邊文字消失
+}
+
+.sidebar-root.collapsed .sidebar-section-title {
+  display: none;                        // DASHBOARD / OTHER 那些字隱藏
+}
+
+.sidebar-root.collapsed .sidebar-item {
+  justify-content: center;             // icon 居中
+}
+
+.sidebar-root.collapsed .sidebar-item-text {
+  display: none;                       // 只剩 icon
+}
+
+/* 以下保留原本設定 */
+
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-xl);
+}
+
+.sidebar-logo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.sidebar-logo-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-full);
+  background: var(--color-primary-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+}
+
+.sidebar-logo-text {
+  font-weight: 700;
+  font-size: 18px;
+}
+
+.icon-btn {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 20px;
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.sidebar-section-title {
+  margin-top: var(--space-md);
+  margin-bottom: var(--space-xs);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-text-subtle);
+}
+
+.sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: 8px 10px;
+  border-radius: var(--radius-md);
+  color: var(--color-text-primary);
+  text-decoration: none;
+  font-size: 14px;
+
+  &:hover {
+    background: var(--color-bg-hover);
+  }
+
+  &.active {
+    background: var(--color-primary-soft);
+    color: var(--color-primary);
+    font-weight: 600;
+  }
+
+  &.disabled {
+    opacity: 0.5;
+    cursor: default;
+    pointer-events: none;
+  }
+}

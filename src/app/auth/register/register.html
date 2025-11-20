@@ -1,0 +1,37 @@
+<div class="auth-page">
+  <div class="auth-card">
+    <h1>Register</h1>
+    <p class="auth-subtitle">Create your account ✨</p>
+
+    <form (ngSubmit)="submit()" #f="ngForm">
+      
+      <label>Name</label>
+      <input type="text" [(ngModel)]="name" name="name" required />
+
+      <label>Email</label>
+      <input type="email" [(ngModel)]="email" name="email" required />
+
+      <label>Password</label>
+      <input type="password" [(ngModel)]="password" name="password" required />
+
+      <label>Confirm Password</label>
+      <input
+        type="password"
+        [(ngModel)]="confirmPassword"
+        name="confirmPassword"
+        required
+      />
+
+      <button type="submit" [disabled]="loading">
+        {{ loading ? 'Registering...' : 'Register' }}
+      </button>
+
+      <p class="auth-error" *ngIf="error">{{ error }}</p>
+    </form>
+
+    <p class="auth-footer">
+      Already have an account?
+      <a routerLink="/auth/login">Login instead</a>
+    </p>
+  </div>
+</div>

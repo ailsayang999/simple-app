@@ -1,0 +1,15 @@
+<div class="layout-root">
+  <aside class="layout-sidebar" [style.width]="sidebarWidth()">
+    <app-sidebar [collapsed]="collapsed()" (toggle)="toggleSidebar()"> </app-sidebar>
+  </aside>
+
+  <div class="layout-main">
+    <header class="layout-topbar">
+      <app-topbar (toggleSidebar)="toggleSidebar()"></app-topbar>
+    </header>
+
+    <main class="layout-content">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+</div>

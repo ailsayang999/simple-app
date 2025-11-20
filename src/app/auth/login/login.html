@@ -1,0 +1,23 @@
+<div class="auth-page">
+  <div class="auth-card">
+    <h1>Login</h1>
+    <p class="auth-subtitle">Welcome back 👋</p>
+
+    <form (ngSubmit)="submit()" #f="ngForm">
+      <label>Email</label>
+      <input type="email" [(ngModel)]="email" name="email" required />
+
+      <label>Password</label>
+      <input type="password" [(ngModel)]="password" name="password" required />
+
+      <button type="submit" [disabled]="f.invalid">Login</button>
+
+      <p class="auth-error" *ngIf="error">{{ error }}</p>
+    </form>
+
+    <p class="auth-footer">
+      No account?
+      <a routerLink="/auth/register">Create one</a>
+    </p>
+  </div>
+</div>

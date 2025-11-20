@@ -1,0 +1,28 @@
+<div class="sidebar-root" [class.collapsed]="collapsed">
+  <div class="sidebar-header">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-icon">◆</div>
+      <div class="sidebar-logo-text">Mantis</div>
+    </div>
+  </div>
+
+  <nav class="sidebar-nav">
+    <div class="sidebar-section-title">Dashboard</div>
+    <a routerLink="/dashboard" routerLinkActive="active" class="sidebar-item">
+      <span class="sidebar-item-icon">🏠</span>
+      <span class="sidebar-item-text">Default</span>
+    </a>
+
+    <div class="sidebar-section-title">E-Commerce</div>
+    <a routerLink="/products" routerLinkActive="active" class="sidebar-item">
+      <span class="sidebar-item-icon">🛒</span>
+      <span class="sidebar-item-text">Products</span>
+    </a>
+
+    <div class="sidebar-section-title">Other</div>
+    <a class="sidebar-item disabled">
+      <span class="sidebar-item-icon">📄</span>
+      <span class="sidebar-item-text">Sample Page</span>
+    </a>
+  </nav>
+</div>

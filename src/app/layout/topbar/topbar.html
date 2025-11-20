@@ -1,0 +1,26 @@
+<div class="topbar-root">
+  <button class="icon-btn" (click)="onToggleSidebar()">☰</button>
+
+  <div class="topbar-search">
+    <span class="topbar-search-icon">🔍</span>
+    <input type="text" placeholder="Ctrl + K" />
+  </div>
+
+  <div class="topbar-right">
+    <button class="icon-btn">🔔</button>
+    <button class="icon-btn">💬</button>
+
+    @if (user(); as u) {
+      <div class="topbar-user">
+        <img class="user-avatar" [src]="u?.avatarUrl" alt="avatar" />
+        <span class="user-name">{{ u?.name }}</span>
+      </div>
+    } @else {
+      <a class="btn-link" routerLink="/auth/login">Login</a>
+    }
+
+    @if (user()) {
+      <button class="btn-link" (click)="logout()">Logout</button>
+    }
+  </div>
+</div>

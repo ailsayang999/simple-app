@@ -4,8 +4,9 @@ import {
   provideZonelessChangeDetection,
 } from '@angular/core';
 import { provideRouter } from '@angular/router';
+import { provideHttpClient } from '@angular/common/http';
 
-import { routes } from './app.routes';
+import { routes } from './app.routes'
 
 // ✅ PrimeNG 設定相關
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
@@ -22,6 +23,7 @@ export const appConfig: ApplicationConfig = {
     provideBrowserGlobalErrorListeners(),
     provideZonelessChangeDetection(),
     provideRouter(routes),
+    provideHttpClient(), // HttpClient 在這裡加進來就可以全專案注入 HttpClient 了
 
     // ⭐️ 目前版本還是要放這個，接受警告，等 PrimeNG 官方 release 完整支援 animate.enter / animate.leave 的版本，再來一起大整理
     // ✅ PrimeNG 建議搭配動畫 (overlay、dialog 會用到)
