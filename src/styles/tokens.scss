@@ -1,6 +1,30 @@
-/* 🌈 Nova Theme 的 Design Tokens 覆蓋 */
+/* ----------------------------------------
+   設計 Tokens：色彩、圓角等變數
+----------------------------------------- */
+
+/* 亮色模式 */
 :root {
-  --primary-color: #467db0;
+  /* 橘色主題設計 */
+  --primary-color: #f57c00; /* 主色：橘色 */
+  --primary-color-text: #ffffff; /* 文字顏色：白色 */
+  --primary-color-hover: #e65100; /* hover 顏色：深橘色 */
+  --primary-color-active: #bf360c; /* active 顏色：更深的橘色 */
+  --radius-md: 8px; /* 按鈕圓角 */
+  --shadow-1: 0 4px 6px rgba(0, 0, 0, 0.1); /* 輕微陰影 */
+  --shadow-2: 0 6px 10px rgba(0, 0, 0, 0.2); /* 加強的陰影 */
+}
+
+/* 深色模式 */
+.my-app-dark {
+  --primary-color: #6aa3dc;
+  --primary-color-hover: #4c89b5;
   --primary-color-text: #ffffff;
-  --radius-md: 12px;
+  --text-color: #f4f4f4;
+  --text-muted-color: #b1b1b1;
+  --surface-0: #1e1e1e;
+  --surface-50: #23262b;
+  --surface-100: #2a2e34;
+  --border-color: #5a626a;
+  --shadow-1: 0 1px 3px rgba(0, 0, 0, 0.4);
+  --shadow-2: 0 4px 10px rgba(0, 0, 0, 0.5);
 }

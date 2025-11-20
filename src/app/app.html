@@ -1,29 +1,26 @@
+<div class="header">
+  <h1> {{ title() }}</h1>
 
-<main class="main">
-  <div class="content">
-    <div>
-      <h1>Hello, {{ title() }}</h1>
+  <!-- 亮暗模式切換按鈕 -->
+  <button (click)="toggleTheme()" class="toggle-btn">切換模式</button>
+</div>
 
-      <p-button label="Primary Button"></p-button>
-      <p-button label="Secondary" severity="secondary"></p-button>
-      <p-card header="Hello Theme!">
-        <p>PrimeNG v20 theme 已經啟用 🍀</p>
-        <p-button label="按我"></p-button>
-        <p-button label="按我"></p-button>
-      </p-card>
+<!-- 產品展示 -->
+<div class="product-list">
+  <p-card header="產品 1" class="product-card">
+    <p>這是第一個產品。</p>
+    <p-button label="加入購物車" icon="pi pi-shopping-cart"></p-button>
+  </p-card>
 
-      <button
-        type="button"
-        pButton
-        pRipple
-        label="確認送簽"
-        class="cm-btn-ia mx-4 justify-content-center align-items-center"
-      ></button>
-    </div>
+  <p-card header="產品 2" class="product-card">
+    <p>這是第二個產品。</p>
+    <p-button label="加入購物車" icon="pi pi-shopping-cart"></p-button>
+  </p-card>
 
+  <p-card header="產品 3" class="product-card">
+    <p>這是第三個產品。</p>
+    <p-button label="加入購物車" icon="pi pi-shopping-cart"></p-button>
+  </p-card>
+</div>
 
-  </div>
-</main>
-
-
-<router-outlet />
+<router-outlet></router-outlet>

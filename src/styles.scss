@@ -1,5 +1,7 @@
 /* 你自己的全域樣式 */
 @use "./styles/global" as *; // ✅ 取代原本的 @import
+// /* Design Tokens（可選，如果你有用 Nova 自訂 Theme） */
+@use "./styles/tokens";
 
 /* ✅ PrimeIcons：for p-button 的 icon, etc. */
 @import "primeicons/primeicons.css";
@@ -7,5 +9,3 @@
 /* （選用）如果你有安裝 primeflex 想用它排版，才加這行： */
 @import "primeflex/primeflex.css"; 
 
-// /* Design Tokens（可選，如果你有用 Nova 自訂 Theme） */
-// @import "./styles/tokens.scss";

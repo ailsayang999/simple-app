@@ -1,12 +1,125 @@
-/* 全域字體 */
-body {
+/* ----------------------------------------
+   企業級全域樣式 - 美化版
+----------------------------------------- */
+
+/* 基本 Reset */
+* {
   margin: 0;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-/* 這裡可以放全域按鈕樣式、utility、reset... */
-.cm-btn-ia {
-  color: #ffffff !important;
-  background: #777867 !important;
-  border: 1px solid #777867 !important;
+body {
+  font-family: "Segoe UI", Arial, sans-serif;
+  transition: background 0.3s ease, color 0.3s ease;
+  background-color: var(--surface-0);
+  color: var(--text-color);
 }
+
+/* 產品展示區 */
+.product-list {
+  display: flex;
+  justify-content: space-around;
+  flex-wrap: wrap;
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+/* 產品卡片樣式 */
+.product-card {
+  width: 300px;
+  background-color: var(--surface-50);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-1);
+  padding: 1.5rem;
+  text-align: center;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border: 1px solid var(--border-color);
+}
+
+.product-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-2);
+}
+
+.product-card img {
+  width: 100%;
+  height: auto;
+  border-radius: var(--radius-md);
+}
+
+.product-card h3 {
+  font-size: 1.5rem;
+  margin-top: 1rem;
+  color: var(--primary-color);
+}
+
+.product-card p {
+  font-size: 1rem;
+  color: var(--text-muted-color);
+  margin-top: 0.5rem;
+  padding: 0 0.5rem;
+}
+
+/* 按鈕樣式 */
+button.p-button {
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  padding: 1rem 2rem;
+  font-size: 1.1rem;
+  transition: all 0.3s ease;
+}
+
+.toggle-btn {
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  padding: 1rem 2rem;
+  font-size: 1.1rem;
+  transition: all 0.3s ease;
+  margin-top: 10px;
+  background-color: var(--primary-color); /* 使用橘色 */
+  color: var(--primary-color-text); /* 文字顏色白色 */
+  border: none;
+  cursor: pointer;
+  text-transform: uppercase;
+  box-shadow: var(--shadow-1);
+
+  /* 按鈕 hover 效果 */
+  &:hover {
+    background-color: var(--primary-color-hover); /* hover 色調：深橘 */
+    box-shadow: var(--shadow-2);
+    transform: translateY(-3px);
+  }
+
+  /* 按鈕按下效果 */
+  &:active {
+    background-color: var(--primary-color-active); /* 按下色調：更深的橘色 */
+    transform: translateY(1px);
+    box-shadow: var(--shadow-1);
+  }
+
+  /* 禁用狀態 */
+  &:disabled {
+    background-color: #cccccc;
+    color: #666666;
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+}
+
+
+/* 按鈕的顏色變換 */
+button.p-button:hover {
+  background-color: var(--primary-color-hover);
+  box-shadow: var(--shadow-2);
+}
+
+/* 頂部導航條 */
+.header {
+  background-color: var(--surface-0);
+  padding: 2rem;
+  text-align: center;
+  box-shadow: var(--shadow-2);
+}
+
+

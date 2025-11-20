@@ -12,4 +12,8 @@ import { CardModule } from 'primeng/card';
 })
 export class App {
   protected readonly title = signal('simple-app');
+  // 切換亮暗模式
+  toggleTheme() {
+    document.documentElement.classList.toggle('my-app-dark');
+  }
 }
