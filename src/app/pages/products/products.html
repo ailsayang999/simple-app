@@ -1,1 +1,39 @@
-<p>products works!</p>
+<div class="app-form-container">
+  <h2>新增商品（Reactive Form）</h2>
+
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="product-form">
+    <!-- 商品名稱 -->
+    <div class="form-row" [class.has-error]="f.name.invalid && f.name.touched">
+      <label for="name">商品名稱</label>
+      <input id="name" type="text" formControlName="name" />
+
+      <div class="field-error" *ngIf="f.name.invalid && f.name.touched">
+        商品名稱為必填
+      </div>
+    </div>
+
+    <!-- 價格 -->
+    <div class="form-row" [class.has-error]="f.price.invalid && f.price.touched">
+      <label for="price">價格</label>
+      <input id="price" type="number" formControlName="price" />
+
+      <div class="field-error" *ngIf="f.price.errors?.['required'] && f.price.touched">
+        價格為必填
+      </div>
+      <div class="field-error" *ngIf="f.price.errors?.['min'] && f.price.touched">
+        價格不可小於 0
+      </div>
+    </div>
+
+    <!-- 類別 -->
+    <div class="form-row">
+      <label for="category">類別</label>
+      <input id="category" type="text" formControlName="category" />
+    </div>
+
+    <!-- 送出 -->
+    <div class="form-actions">
+      <button type="submit" [disabled]="form.invalid">送出</button>
+    </div>
+  </form>
+</div>
