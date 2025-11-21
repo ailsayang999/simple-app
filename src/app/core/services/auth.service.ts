@@ -30,7 +30,7 @@ export class AuthService {
       id: '1',
       name: 'John Doe',
       email,
-      avatarUrl: 'https://i.pravatar.cc/100?img=1',
+      avatarUrl: 'https://i.pravatar.cc/100?img=8',
     };
 
     localStorage.setItem(this.TOKEN_KEY, fakeToken);
