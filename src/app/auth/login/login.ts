@@ -1,5 +1,5 @@
 import { Component, inject } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { Router, RouterLink, ActivatedRoute } from '@angular/router'; // ⭐ 要加 ActivatedRoute
 import { AuthService } from '../../core/services/auth.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -14,6 +14,7 @@ import { FormsModule } from '@angular/forms';
 export class Login {
   private auth = inject(AuthService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute); // ⭐ 注入 route 來讀 query string
 
   email = '';
   password = '';
@@ -26,6 +27,9 @@ export class Login {
       this.error = 'Login failed.';
       return;
     }
-    this.router.navigate(['/']);
+
+    // ⭐ 正確存取 returnUrl
+    const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl') ?? '/';
+    this.router.navigateByUrl(returnUrl);
   }
 }
