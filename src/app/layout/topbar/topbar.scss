@@ -6,22 +6,29 @@
   gap: var(--space-md);
   width: 100%;
   height: 100%;
-
 }
 
 /* 預設（桌機、平板）：漢堡鈕不顯示 */
-.topbar-root .icon-btn {
+.topbar-root .icon-btn-menu {
   display: none;
 }
 
 /* 手機：顯示漢堡鈕 */
 @media (max-width: 768px) {
-  .topbar-root .icon-btn {
+  .topbar-root .icon-btn-menu {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     padding: 6px 10px;
     border-radius: var(--radius-md);
+    border: none;
+    background: transparent;
+    padding: 4px;
+    cursor: pointer;
+
+    &:hover {
+      background: var(--color-bg-hover);
+    }
   }
 
   .topbar-search {
