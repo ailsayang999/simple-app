@@ -9,11 +9,10 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
   imports: [RouterLink, RouterLinkActive],
 })
 export class Sidebar {
-  @Input() collapsed = false;
+  @Input() collapsed: boolean = true;
   @Output() toggle = new EventEmitter<void>();
 
   onToggle() {
     this.toggle.emit();
   }
 }
-

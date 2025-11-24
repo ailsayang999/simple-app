@@ -10,7 +10,7 @@ import { Topbar } from './topbar/topbar';
   styleUrl: './layout-shell.scss',
 })
 export class LayoutShell {
-  readonly collapsed = signal(false);
+  readonly collapsed = signal(true);
   readonly sidebarWidth = computed(() => (this.collapsed() ? '72px' : '240px'));
 
   toggleSidebar(): void {
