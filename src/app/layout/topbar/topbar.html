@@ -1,5 +1,7 @@
 <div class="topbar-root">
-  <button class="icon-btn icon-btn-menu" (click)="onToggleSidebar()">☰</button>
+  <button class="icon-btn icon-btn-menu" (click)="onToggleSidebar()">
+    <span class="theme-icon pi pi-bars"></span>
+  </button>
 
   <div class="topbar-search">
     <span class="topbar-search-icon">🔍</span>
@@ -25,10 +27,21 @@
       @if (user(); as u) {
       <div class="user-menu">
         <div class="user-menu-header">
-          <img class="user-menu-avatar" [src]="u?.avatarUrl" alt="avatar" />
-          <div class="user-menu-info">
-            <div class="user-menu-name text-overflow">{{ u?.name }}</div>
-            <div class="user-menu-role">Front-end Developer</div>
+          <div class="user-menu-header-left">
+            <img class="user-menu-avatar" [src]="u?.avatarUrl" alt="avatar" />
+            <div class="user-menu-info">
+              <div class="user-menu-name text-overflow">{{ u?.name }}</div>
+              <div class="user-menu-role">Front-end Developer</div>
+            </div>
+          </div>
+
+          <!-- 手機模式的時候顯示 -->
+          <div class="user-menu-header-right">
+            <p-toggleswitch
+              [(ngModel)]="isDark"
+              (onChange)="onThemeToggle($event.checked)"
+              class="theme-switch-for-mobile"
+            ></p-toggleswitch>
           </div>
         </div>
 
