@@ -1,11 +1,13 @@
 <div class="layout-root">
-  <aside class="layout-sidebar" [style.width]="sidebarWidth()">
+  <aside class="layout-sidebar" [class.is-open]="!collapsed()" [style.width]="sidebarWidth()">
+    <!-- ⭐ [class.is-open]="!collapsed()" 手機時用來控制滑出 -->
+     <!-- [style.width]="sidebarWidth()" 桌機仍然用寬度控制 -->
     <app-sidebar [collapsed]="collapsed()" (toggle)="toggleSidebar()"> </app-sidebar>
   </aside>
 
   <div class="layout-main">
     <header class="layout-topbar">
-      <app-topbar  (toggleSidebar1)="toggleSidebar()"></app-topbar>
+      <app-topbar (toggleSidebar1)="toggleSidebar()"></app-topbar>
     </header>
 
     <main class="layout-content">

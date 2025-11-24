@@ -9,6 +9,31 @@
 
 }
 
+/* 預設（桌機、平板）：漢堡鈕不顯示 */
+.topbar-root .icon-btn {
+  display: none;
+}
+
+/* 手機：顯示漢堡鈕 */
+@media (max-width: 768px) {
+  .topbar-root .icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 10px;
+    border-radius: var(--radius-md);
+  }
+
+  .topbar-search {
+    flex: 1 1 auto;
+    max-width: none;
+
+    input {
+      width: 100%;
+    }
+  }
+}
+
 .topbar-search {
   max-width: 500px;
   display: flex;
