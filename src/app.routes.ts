@@ -30,6 +30,10 @@ export const routes: Routes = [
         path: 'products',
         loadComponent: () => import('./app/pages/products/products').then((m) => m.Products),
       },
+      {
+        path: 'samples',
+        loadComponent: () => import('./app/pages/samples/samples').then((m) => m.Samples),
+      },
       { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
     ],
   },
