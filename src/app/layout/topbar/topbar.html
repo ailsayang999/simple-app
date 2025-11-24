@@ -14,14 +14,92 @@
     ></p-toggleswitch>
 
     @if (user(); as u) {
-    <div class="topbar-user">
+    <!-- 點這裡打開 / 關閉 Popover -->
+    <div class="topbar-user" (click)="userPopover.toggle($event)">
       <img class="user-avatar" [src]="u?.avatarUrl" alt="avatar" />
-      <span class="user-name">{{ u?.name }}</span>
+      <span class="user-name text-overflow">{{ u?.name }}</span>
     </div>
-    } @if (user()) {
-    <button class="icon-btn icon-logout" (click)="logout()">
-      <span class="theme-icon pi pi-sign-out"></span>
-    </button>
+
+    <!-- ⭐ Popover 內容 -->
+    <p-popover #userPopover>
+      @if (user(); as u) {
+      <div class="user-menu">
+        <div class="user-menu-header">
+          <img class="user-menu-avatar" [src]="u?.avatarUrl" alt="avatar" />
+          <div class="user-menu-info">
+            <div class="user-menu-name text-overflow">{{ u?.name }}</div>
+            <div class="user-menu-role">Front-end Developer</div>
+          </div>
+        </div>
+
+        <!-- ⭐ 這裡改用 Tabs -->
+        <p-tabs [(value)]="activeUserTab" class="user-menu-tabs">
+          <!-- Tab 標題列 -->
+          <p-tablist>
+            <p-tab value="profile"> Profile </p-tab>
+            <p-tab value="setting"> Setting </p-tab>
+          </p-tablist>
+
+          <!-- 各 tab 對應的內容 -->
+          <p-tabpanels>
+            <p-tabpanel value="profile">
+              <!-- Profile tab 裡的內容（你可以自己排版） -->
+              <div class="user-menu-panel">
+                <div class="user-menu-profile-row">
+                  <span class="pi pi-user"></span>
+                  <div>
+                    <div class="text-overflow">{{ u?.name }}</div>
+                  </div>
+                </div>
+                <div class="user-menu-profile-row">
+                  <span class="pi pi-envelope"></span>
+                  <span class="text-overflow">{{ u?.email }}</span>
+                </div>
+              </div>
+            </p-tabpanel>
+
+            <p-tabpanel value="setting">
+              <!-- Setting tab，放你原本那些項目 -->
+              <div class="user-menu-list">
+                <button class="user-menu-item">
+                  <span class="pi pi-user"></span>
+                  <span>Profile</span>
+                </button>
+                <button class="user-menu-item">
+                  <span class="pi pi-question-circle"></span>
+                  <span>Support</span>
+                </button>
+                <button class="user-menu-item">
+                  <span class="pi pi-cog"></span>
+                  <span>Account Settings</span>
+                </button>
+                <button class="user-menu-item">
+                  <span class="pi pi-shield"></span>
+                  <span>Privacy Center</span>
+                </button>
+                <button class="user-menu-item">
+                  <span class="pi pi-comment"></span>
+                  <span>Feedback</span>
+                </button>
+                <button class="user-menu-item">
+                  <span class="pi pi-list"></span>
+                  <span>History</span>
+                </button>
+              </div>
+            </p-tabpanel>
+          </p-tabpanels>
+        </p-tabs>
+
+        <div class="user-menu-footer">
+          <button class="btn-logout" (click)="logout()">
+            <span class="pi pi-sign-out"></span>
+            <span>Logout</span>
+          </button>
+        </div>
+      </div>
+      }
+    </p-popover>
+
     }
   </div>
 </div>

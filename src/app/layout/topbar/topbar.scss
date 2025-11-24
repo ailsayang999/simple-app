@@ -41,7 +41,9 @@
   }
 
   // 手機：不顯示登出和日夜切換按鈕和user-name
-   .topbar-root .icon-logout, .theme-switch, .user-name {
+  .topbar-root .icon-logout,
+  .theme-switch,
+  .user-name {
     display: none;
   }
 }
@@ -83,6 +85,7 @@
   display: flex;
   align-items: center;
   gap: var(--space-xs);
+  cursor: pointer;
 }
 
 .btn-link {
@@ -91,4 +94,194 @@
   color: var(--color-primary);
   font-size: 14px;
   cursor: pointer;
+}
+
+/* Popover 內的卡片 */
+.user-menu {
+  width: 320px;
+  background: var(--color-bg-surface);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+}
+
+.user-menu-header {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  //margin-bottom: var(--space-md);
+
+  .user-menu-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-full);
+  }
+
+  .user-menu-info {
+    display: flex;
+    flex-direction: column;
+    align-items: start;
+    gap: 5px;
+    //border: 1px solid rgb(0, 149, 255);
+  }
+
+  .user-menu-name {
+    font-weight: 600;
+  }
+
+  .user-menu-role {
+    font-size: 12px;
+    color: var(--color-text-subtle);
+  }
+}
+
+// .user-menu-tabs {
+//   display: flex;
+//   gap: var(--space-md);
+//   margin-bottom: var(--space-md);
+//   border-bottom: 1px solid var(--color-border-subtle);
+//   border: 1px solid rgb(0, 255, 128);
+// }
+
+// .user-menu-tabs .tab {
+//   border: none;
+//   background: none;
+//   padding: 0 0 var(--space-xs);
+//   font-size: 14px;
+//   cursor: pointer;
+//   color: var(--color-text-secondary);
+// }
+
+// .user-menu-tabs .tab.active {
+//   color: var(--color-primary);
+//   font-weight: 600;
+//   border-bottom: 2px solid var(--color-primary);
+// }
+
+// .user-menu-list {
+//   display: flex;
+//   flex-direction: column;
+//   gap: 4px;
+//   margin-bottom: var(--space-md);
+// }
+
+// .user-menu-item {
+//   border: none;
+//   background: none;
+//   display: flex;
+//   align-items: center;
+//   gap: var(--space-sm);
+//   padding: 6px 0;
+//   cursor: pointer;
+//   width: 100%;
+//   text-align: left;
+
+//   span:first-child {
+//     width: 20px;
+//     text-align: center;
+//   }
+
+//   &:hover {
+//     color: var(--color-primary);
+//   }
+// }
+
+/* 整個 Tabs */
+.user-menu-tabs {
+  // 定義 Tab標題列 的樣式
+  .p-tab {
+    //padding: 0 var(--space-md) var(--space-xs);
+    font-size: 15px;
+  }
+
+  .p-tab:not(.p-tab-active) {
+    color: var(--color-text-secondary);
+  }
+
+  .p-tab-active {
+    color: var(--color-primary);
+    font-weight: 600;
+    border-bottom: 3px solid var(--color-primary);
+  }
+
+  .p-tabpanels {
+    padding: 0; // 內容區自己在裡面排版就好
+  }
+}
+
+// Profile panel
+.user-menu-panel {
+  //border: 1px solid red;
+  padding: var(--space-lg);
+
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+
+  .user-menu-profile-row {
+    display: flex;
+    align-items: center;
+    padding: 6px 6px;
+    gap: var(--space-sm);
+
+    .pi {
+      width: 20px;
+      text-align: center;
+    }
+  }
+}
+
+// Setting panel
+.user-menu-list {
+  //border: 1px solid red;
+  padding: var(--space-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+
+  .user-menu-item {
+    border: none;
+    background: none;
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: 6px 6px;
+    cursor: pointer;
+    width: 100%;
+    text-align: left;
+    color: var(--color-text-secondary);
+
+    span:first-child {
+      width: 20px;
+      text-align: center;
+    }
+
+    &:hover {
+      color: var(--color-primary);
+      background-color: var(--color-bg-hover);
+      border-radius: 5px;
+    }
+  }
+}
+
+.user-menu-footer {
+  border-top: 1px solid var(--color-border-subtle);
+  padding-top: var(--space-lg);
+  display: flex;
+  justify-content: flex-end;
+
+  .btn-logout {
+    color: var(--color-text-secondary);
+    border: none;
+    background: none;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-xs);
+    cursor: pointer;
+    padding: 6px 10px;
+
+    &:hover {
+      background: var(--color-bg-hover);
+      border-radius: var(--radius-sm);
+    }
+  }
 }

@@ -62,3 +62,9 @@ button {
   background: #d1d5db;
   border-radius: 4px;
 }
+
+.text-overflow {
+  display: block; // 或 inline-block
+  white-space: normal; // 允許換行
+  word-break: break-all; // 強制長字拆行（email 才能在 @ 前後折行）
+}

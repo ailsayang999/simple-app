@@ -5,13 +5,15 @@ import { CommonModule } from '@angular/common';
 import { AuthService } from '../../core/services/auth.service';
 import { ToggleSwitch } from 'primeng/toggleswitch';
 import { FormsModule } from '@angular/forms';
+import { PopoverModule } from 'primeng/popover';
+import { TabsModule } from 'primeng/tabs';
 
 @Component({
   standalone: true,
   selector: 'app-topbar',
   templateUrl: './topbar.html',
   styleUrls: ['./topbar.scss'],
-  imports: [CommonModule, ToggleSwitch, FormsModule],
+  imports: [CommonModule, ToggleSwitch, FormsModule, PopoverModule, TabsModule],
 })
 export class Topbar {
   private auth = inject(AuthService);
@@ -19,6 +21,9 @@ export class Topbar {
   readonly user = computed(() => this.auth.userSignal());
   // ✅ 綁給 ToggleSwitch 的狀態
   isDark = false;
+
+  // ⭐ 目前選到哪個 tab
+  activeUserTab: string = 'profile';
 
   @Output() toggleSidebar1 = new EventEmitter<void>();
 
@@ -37,7 +42,6 @@ export class Topbar {
       document.documentElement.classList.remove('my-app-dark');
     }
   }
-  
 
   onToggleSidebar() {
     this.toggleSidebar1.emit();
