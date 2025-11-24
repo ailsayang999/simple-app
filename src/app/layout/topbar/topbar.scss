@@ -39,6 +39,11 @@
       width: 100%;
     }
   }
+
+  // 手機：不顯示登出和日夜切換按鈕和user-name
+   .topbar-root .icon-logout, .theme-switch, .user-name {
+    display: none;
+  }
 }
 
 .topbar-search {
