@@ -10,28 +10,28 @@
 
 /* 👉 收合狀態：只留 icon */
 .sidebar-root.collapsed {
-  align-items: center;                  // 內容整體靠中間
-  padding-inline: var(--space-sm);      // 左右 padding 縮小
+  align-items: center; // 內容整體靠中間
+  padding-inline: var(--space-sm); // 左右 padding 縮小
 }
 
 .sidebar-root.collapsed .sidebar-header {
-  justify-content: center;              // Logo + 漢堡集中在中間
+  justify-content: center; // Logo + 漢堡集中在中間
 }
 
 .sidebar-root.collapsed .sidebar-logo-text {
-  display: none;                        // Logo 旁邊文字消失
+  display: none; // Logo 旁邊文字消失
 }
 
 .sidebar-root.collapsed .sidebar-section-title {
-  display: none;                        // DASHBOARD / OTHER 那些字隱藏
+  display: none; // DASHBOARD / OTHER 那些字隱藏
 }
 
 .sidebar-root.collapsed .sidebar-item {
-  justify-content: center;             // icon 居中
+  justify-content: center; // icon 居中
 }
 
 .sidebar-root.collapsed .sidebar-item-text {
-  display: none;                       // 只剩 icon
+  display: none; // 只剩 icon
 }
 
 /* 以下保留原本設定 */
@@ -44,20 +44,51 @@
 }
 
 .sidebar-logo {
+  width: 100%;
   display: flex;
   align-items: center;
-  gap: var(--space-sm);
+  justify-content: space-between;
+  // gap: var(--space-sm);
 }
 
 .sidebar-logo-icon {
-  width: 32px;
-  height: 32px;
-  border-radius: var(--radius-full);
-  background: var(--color-primary-soft);
+  width: 25px;
+  height: 25px;
+  // border-radius: var(--radius-full);
+  // background: var(--color-primary-soft);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 18px;
+  padding: 4px;
+}
+
+.logo {
+  width: 30px;
+  height: 30px;
+}
+
+.svg {
+  width: 15px;
+  height: 15px;
+  cursor: pointer;
+}
+
+.sidebar-logo-icon:hover {
+  background: var(--color-bg-hover);
+  cursor: pointer;
+}
+
+/* 預設：漢堡 icon 隱藏 */
+.sidebar-logo-icon.toggle {
+  display: none;
+}
+/* Hover 到 apple 時 —— apple 消失，toggle 出現 */
+.sidebar-logo-icon.logo:hover {
+  display: none;
+}
+.sidebar-logo-icon.logo:hover + .toggle {
+  display: flex; // ⚡ 顯示漢堡 icon
 }
 
 .sidebar-logo-text {

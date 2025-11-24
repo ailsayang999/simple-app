@@ -1,10 +1,145 @@
 <div class="sidebar-root" [class.collapsed]="collapsed">
   <div class="sidebar-header">
     <div class="sidebar-logo">
-      <div class="sidebar-logo-icon">
+
+      <!-- logo -->
+      <div class="sidebar-logo-icon logo">
         <span class="theme-icon pi pi-apple"></span>
       </div>
+
+      <!-- 展開icon -->
+      <svg
+        class="sidebar-logo-icon toggle"
+        (click)="onToggle()"
+        viewBox="0 0 18 20"
+        version="1.1"
+        xmlns="http://www.w3.org/2000/svg"
+        xmlns:xlink="http://www.w3.org/1999/xlink"
+      >
+        <g
+          id="系統基本設定-功能介面"
+          stroke="none"
+          stroke-width="1"
+          fill="none"
+          fill-rule="evenodd"
+        >
+          <g
+            id="系統畫面-功能列表-關閉"
+            transform="translate(-3.000000, -530.000000)"
+            fill="currentColor"
+          >
+            <g id="icon-indent-1" transform="translate(3.000000, 530.000000)">
+              <g id="Group" transform="translate(0.329665, 0.800000)">
+                <rect
+                  id="Rectangle"
+                  x="0.350110711"
+                  y="0"
+                  width="16.6153846"
+                  height="2.21538462"
+                  rx="1.10769231"
+                ></rect>
+                <rect
+                  id="Rectangle"
+                  x="0.350110711"
+                  y="15.5076923"
+                  width="16.6153846"
+                  height="2.21538462"
+                  rx="1.10769231"
+                ></rect>
+                <rect
+                  id="Rectangle-Copy"
+                  x="1.67033511"
+                  y="5.16923077"
+                  width="7.2"
+                  height="2.21538462"
+                  rx="1.10769231"
+                ></rect>
+                <rect
+                  id="Rectangle-Copy"
+                  x="1.67033511"
+                  y="10.3384615"
+                  width="7.2"
+                  height="2.21538462"
+                  rx="1.10769231"
+                ></rect>
+                <path
+                  d="M13.9646784,6.28179414 L16.9491695,10.5696358 C17.2646769,11.0229277 17.1529805,11.6461627 16.6996886,11.96167 C16.5320385,12.0783605 16.3326746,12.1409124 16.128412,12.1409124 L10.1594297,12.1409124 C9.60714498,12.1409124 9.15942973,11.6931972 9.15942973,11.1409124 C9.15942973,10.9366498 9.22198166,10.7372859 9.33867214,10.5696358 L12.3231633,6.28179414 C12.6386706,5.82850224 13.2619056,5.71680581 13.7151975,6.03231318 C13.8124868,6.10003 13.8969616,6.18450485 13.9646784,6.28179414 Z"
+                  id="Triangle"
+                  transform="translate(13.143965, 8.996948) scale(-1, 1) rotate(-90.000000) translate(-13.143965, -8.996948) "
+                ></path>
+              </g>
+            </g>
+          </g>
+        </g>
+      </svg>
       <div class="sidebar-logo-text">Ailsa</div>
+
+      <!-- 關起icon -->
+      @if (!collapsed) {
+      <svg
+        (click)="onToggle()"
+        class="svg"
+        viewBox="0 0 18 19"
+        version="1.1"
+        xmlns="http://www.w3.org/2000/svg"
+        xmlns:xlink="http://www.w3.org/1999/xlink"
+      >
+        <g
+          id="系統基本設定-功能介面"
+          stroke="none"
+          stroke-width="1"
+          fill="none"
+          fill-rule="evenodd"
+        >
+          <g
+            id="系統畫面-功能列表-展開"
+            transform="translate(-298.000000, -530.000000)"
+            fill="currentColor"
+          >
+            <g id="icon-outdent-1" transform="translate(298.000000, 530.000000)">
+              <g id="Group" transform="translate(0.329665, 0.800000)">
+                <rect
+                  id="Rectangle"
+                  x="0.350110711"
+                  y="2.42028619e-14"
+                  width="16.6153846"
+                  height="2.21538462"
+                  rx="1.10769231"
+                ></rect>
+                <rect
+                  id="Rectangle"
+                  x="0.350110711"
+                  y="15.5076923"
+                  width="16.6153846"
+                  height="2.21538462"
+                  rx="1.10769231"
+                ></rect>
+                <rect
+                  id="Rectangle-Copy"
+                  x="9.04549533"
+                  y="5.16923077"
+                  width="7.2"
+                  height="2.21538462"
+                  rx="1.10769231"
+                ></rect>
+                <rect
+                  id="Rectangle-Copy"
+                  x="9.04549533"
+                  y="10.3384615"
+                  width="7.2"
+                  height="2.21538462"
+                  rx="1.10769231"
+                ></rect>
+                <path
+                  d="M4.5164799,6.28179414 L7.50097101,10.5696358 C7.81647838,11.0229277 7.70478195,11.6461627 7.25149005,11.96167 C7.08383993,12.0783605 6.88447607,12.1409124 6.68021342,12.1409124 L0.711231195,12.1409124 C0.158946445,12.1409124 -0.288768805,11.6931972 -0.288768805,11.1409124 C-0.288768805,10.9366498 -0.22621687,10.7372859 -0.109526393,10.5696358 L2.87496472,6.28179414 C3.19047209,5.82850224 3.81370704,5.71680581 4.26699893,6.03231318 C4.36428822,6.10003 4.44876307,6.18450485 4.5164799,6.28179414 Z"
+                  id="Triangle"
+                  transform="translate(3.695766, 8.996948) rotate(-90.000000) translate(-3.695766, -8.996948) "
+                ></path>
+              </g>
+            </g>
+          </g>
+        </g></svg
+      >}
     </div>
   </div>
 

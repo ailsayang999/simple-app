@@ -1,5 +1,5 @@
 // src/app/layout/topbar/topbar.ts
-import { Component, EventEmitter, Output, computed, inject, signal } from '@angular/core';
+import { Component, EventEmitter, Output, Input, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../core/services/auth.service';
@@ -20,7 +20,7 @@ export class Topbar {
   // ✅ 綁給 ToggleSwitch 的狀態
   isDark = false;
 
-  @Output() toggleSidebar = new EventEmitter<void>();
+  @Output() toggleSidebar1 = new EventEmitter<void>();
 
   constructor() {
     // 初始化時，根據 html 上有沒有 my-app-dark 來決定開關預設值
@@ -40,7 +40,7 @@ export class Topbar {
   
 
   onToggleSidebar() {
-    this.toggleSidebar.emit();
+    this.toggleSidebar1.emit();
   }
 
   logout() {
