@@ -1,0 +1,232 @@
+.dashboard-root {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 1.5rem;
+}
+// 最上排
+.info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  gap: 1.5rem;
+}
+
+/* 上排 */
+.top-grid {
+  display: grid;
+  grid-template-columns: 2fr 2fr;
+  gap: 1.5rem;
+}
+
+/* 下排 */
+.bottom-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+  gap: 1.5rem;
+}
+
+// 最下排
+.low-bottom-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr);
+  gap: 1.5rem;
+}
+
+.card {
+  border-radius: 0.5rem;
+  //outline: 2px solid pink;
+}
+
+.full-height {
+  height: 100%;
+}
+
+.card-title {
+  font-size: 1rem;
+  font-weight: 600;
+  padding: 1.1rem 1.1rem 0 1.1rem;
+  //border: 1px solid green;
+}
+
+.info-grid {
+  .fund-legend {
+    color: rgb(255, 255, 255);
+    padding: 0.5rem;
+
+    .fund-legend-label {
+      //font-size: 24px;
+      margin-bottom: 0.7rem;
+    }
+
+    .fund-legend-amount {
+      font-size: 1.2rem;
+    }
+  }
+}
+
+.top-grid {
+  // 左：幣別圓餅+金額
+  .card-content-split {
+    display: grid;
+    grid-template-columns: 1.5fr 2fr;
+    //gap: 1rem;
+    align-items: center;
+    //border: 1px solid red;
+
+    // 左 圓餅
+    .chart-area {
+      min-height: 220px;
+      //outline: 1px solid purple;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    // 右 金額
+    .legend-area {
+      font-size: 0.875rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 10px;
+      //outline: 1px solid rgb(194, 159, 19);
+
+      .legend-row {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        .legend-label,
+        .legend-value {
+          font-weight: 600;
+        }
+      }
+    }
+  }
+
+  // 右：匯率小卡
+  .rate-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-auto-rows: 1fr;
+    gap: 1rem;
+
+    .rate-card {
+      display: flex;
+      flex-direction: column;
+      .rate-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        font-size: 0.9rem;
+        margin-bottom: 0.5rem;
+        .rate-number {
+          font-size: 1.4rem;
+          font-weight: 600;
+        }
+      }
+      .rate-chart {
+        flex: 1;
+        //border: 1px solid red;
+      }
+    }
+  }
+}
+
+.bottom-grid {
+  .total-group-funds {
+    /* 集團總額 */
+    .total-amount {
+      font-size: 1.6rem;
+      font-weight: 700;
+      margin: 0.2rem 0 0.2rem;
+    }
+  }
+  .group-fund-by-month {
+    .chart-area {
+      //border: 1px solid red;
+    }
+  }
+}
+
+.low-bottom-grid {
+  .group-bank-borrowings {
+  }
+
+  .group-unrealized-assets {
+    .group-unrealized-assets-chart {
+      //width: 16rem;
+      padding: 1rem;
+      //border: 1px solid red;
+    }
+  }
+
+  .last-one-month-fund-transactions {
+    .last-one-month-fund-transactions-doughnut {
+      //width: 16rem;
+      padding: 1.4rem;
+      //border: 1px solid red;
+    }
+    .last-one-month-fund-transactions-detail {
+      display: flex;
+      flex-direction: column;
+      //align-items: center;
+      justify-content: center;
+      gap: 0.6rem;
+      .fund-transactions-detail-label {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        .legend-dot {
+          width: 16px;
+          height: 16px;
+          border-radius: 50%; // 👈 圓形
+          display: inline-block;
+        }
+
+        /* 三種顏色（與你的圖表一致） */
+        .legend-dot-color1 {
+          background-color: rgb(41, 75, 69);
+        }
+        .legend-dot-color2 {
+          background-color: rgb(227, 240, 30);
+        }
+      }
+      .fund-transactions-detail-amount {
+        font-weight: 700;
+        color: rgb(72, 74, 56);
+      }
+    }
+  }
+}
+
+/* RWD：小螢幕改成一欄 */
+@media (max-width: 1024px) {
+  .top-grid,
+  .info-grid,
+  .bottom-grid,
+  .low-bottom-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .info-grid .fund-legend {
+    grid-template-columns: 1fr;
+  }
+
+  .top-grid .card-content-split {
+    grid-template-columns: 1fr;
+  }
+
+  .top-grid .rate-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .last-one-month-fund-transactions-detail {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+  }
+}
