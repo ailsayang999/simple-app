@@ -13,10 +13,18 @@ import { ChartModule } from 'primeng/chart';
 export class Dashboard {
   // info legend
   fundLegend = [
-    { label: '銀行活存餘額', color: 'rgb(100, 94, 70)', amount: 'NT$ 261,971,440,339' },
-    { label: '銀行借款', color: 'rgb(121, 123, 111)', amount: 'NT$ 349,673,868,558' },
-    { label: '集團資金集團資金淨額', color: 'rgb(41, 75, 69)', amount: 'NT$ -58,659,110,001' },
-    { label: '近一個月資金交易總額', color: 'rgb(176, 184, 33)', amount: 'NT$ 267,302,304,426' },
+    { label: '銀行活存餘額', color: 'rgb(80, 69, 229)', amount: 'NT$ 261,971,440,339' },
+    { label: '銀行借款', color: 'rgb(21, 119, 255)', amount: 'NT$ 349,673,868,558' },
+    {
+      label: '集團資金集團資金淨額',
+      color: 'rgba(19, 92, 65, 1)',
+      amount: 'NT$ -58,659,110,001',
+    },
+    {
+      label: '近一個月資金交易總額',
+      color: 'rgb(52, 211, 153)',
+      amount: 'NT$ 267,302,304,426',
+    },
   ];
 
   // ① 銀行活存幣別餘額 - Donut
@@ -234,11 +242,11 @@ export class Dashboard {
       {
         data: [34.56, 36.61, 28.84],
         // 顏色可用預設，也可以自己指定
-        backgroundColor: ['rgb(41, 75, 69)', 'rgb(227, 240, 30)', 'rgb(183, 186, 151)'],
+        backgroundColor: ['rgb(21, 119, 255)', 'rgb(80, 69, 229)', 'rgb(52, 211, 153)'],
         hoverBackgroundColor: [
-          'rgb(41, 75, 69,  0.64)',
-          'rgb(227, 240, 30, 0.64)',
-          'rgb(183, 186, 151, 0.64)',
+          'rgba(21, 118, 255, 0.58)',
+          'rgba(80, 69, 229, 0.48)',
+          'rgba(26, 194, 241, 0.44)',
         ],
       },
     ],
@@ -271,7 +279,7 @@ export class Dashboard {
   //       label: '銀行活存 & 現金',
   //       data: [153256, 136656, 154576],
   //       stack: 'a',
-  //       backgroundColor: 'rgb(41, 75, 69)',
+  //       backgroundColor: 'rgb(21, 119, 255)',
   //       borderRadius: { topLeft: 16, topRight: 16, bottomLeft: 0, bottomRight: 0 },
   //       maxBarThickness: 20,
   //     },
@@ -279,7 +287,7 @@ export class Dashboard {
   //       label: '銀行定存',
   //       data: [80000, 60000, 70000],
   //       stack: 'b',
-  //       backgroundColor: 'rgb(227, 240, 30)',
+  //       backgroundColor: 'rgb(80, 69, 229)',
   //       borderRadius: { topLeft: 16, topRight: 16, bottomLeft: 0, bottomRight: 0 },
   //       maxBarThickness: 20,
   //     },
@@ -287,7 +295,7 @@ export class Dashboard {
   //       label: '金融資產',
   //       data: [20000, 15000, 30000],
   //       stack: 'c',
-  //       backgroundColor: 'rgb(183, 186, 151)',
+  //       backgroundColor: 'rgb(52, 211, 153)',
   //       borderRadius: { topLeft: 16, topRight: 16, bottomLeft: 0, bottomRight: 0 },
   //       maxBarThickness: 20,
   //     },
@@ -299,7 +307,7 @@ export class Dashboard {
       {
         label: '銀行活存 & 現金',
         data: [50341, 69616, 61536],
-        backgroundColor: 'rgb(41, 75, 69)',
+        backgroundColor: 'rgb(21, 119, 255)',
         borderRadius: 16, // 群組柱狀圖不需要指定每個角，16 即可
         maxBarThickness: 22,
         barPercentage: 0.8, // 讓三根更靠近
@@ -308,7 +316,7 @@ export class Dashboard {
       {
         label: '銀行定存',
         data: [89187, 58297, 56717],
-        backgroundColor: 'rgb(227, 240, 30)',
+        backgroundColor: 'rgb(80, 69, 229)',
         borderRadius: 16,
         maxBarThickness: 22,
         barPercentage: 0.8,
@@ -317,7 +325,7 @@ export class Dashboard {
       {
         label: '金融資產',
         data: [98943, 43018, 25547],
-        backgroundColor: 'rgb(183, 186, 151)',
+        backgroundColor: 'rgb(52, 211, 153)',
         borderRadius: 16,
         maxBarThickness: 22,
         barPercentage: 0.8,
@@ -393,7 +401,7 @@ export class Dashboard {
         label: '銀行活存 & 現金',
         data: [153256, 136656, 154576],
         stack: 'a',
-        backgroundColor: 'rgb(41, 75, 69)',
+        backgroundColor: 'rgb(21, 119, 255)',
         borderRadius: { topLeft: 0, topRight: 0, bottomLeft: 0, bottomRight: 0 },
         maxBarThickness: 50,
       },
@@ -401,7 +409,7 @@ export class Dashboard {
         label: '銀行定存',
         data: [80000, 60000, 70000],
         stack: 'a',
-        backgroundColor: 'rgb(227, 240, 30)',
+        backgroundColor: 'rgb(80, 69, 229)',
         borderRadius: { topLeft: 0, topRight: 0, bottomLeft: 0, bottomRight: 0 },
         maxBarThickness: 50,
       },
@@ -409,7 +417,7 @@ export class Dashboard {
         label: '金融資產',
         data: [20000, 15000, 30000],
         stack: 'a',
-        backgroundColor: 'rgb(183, 186, 151)',
+        backgroundColor: 'rgb(52, 211, 153)',
         borderRadius: { topLeft: 16, topRight: 16, bottomLeft: 0, bottomRight: 0 },
         maxBarThickness: 50,
       },
@@ -484,7 +492,7 @@ export class Dashboard {
         label: '',
         data: [25639, 71996, 49190],
         stack: 'a',
-        backgroundColor: 'rgb(142, 140, 110)',
+        backgroundColor: 'rgba(19, 92, 65, 1)',
         borderRadius: { topLeft: 16, topRight: 16, bottomLeft: 0, bottomRight: 0 },
         maxBarThickness: 20,
       },
@@ -544,7 +552,7 @@ export class Dashboard {
       {
         data: [55.14, 44.86],
         // 顏色可用預設，也可以自己指定
-        backgroundColor: ['rgb(41, 75, 69)', 'rgb(227, 240, 30)'],
+        backgroundColor: ['rgb(21, 119, 255)', 'rgb(80, 69, 229)'],
       },
     ],
   };
