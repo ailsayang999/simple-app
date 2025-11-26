@@ -63,7 +63,8 @@ export class AccountSetting implements OnInit {
           name: fromLs.name,
           email: fromLs.email,
           avatarUrl: fromLs.avatarUrl,
-          role: fromLs.role, // TODO: 之後要改
+          roles: fromLs.roles ?? [], // ⭐ 多角色
+          permissions: fromLs.permissions ?? [], // ⭐ 權限列表
         };
         this.auth.userSignal.set(this.currentUser);
       }
@@ -176,7 +177,10 @@ export class AccountSetting implements OnInit {
             name: res?.name ?? submitSnapshot.name,
             email: res?.email ?? submitSnapshot.email,
             avatarUrl: res?.avatarUrl ?? submitSnapshot.avatarUrl,
-            role: this.currentUser?.role ?? 'USER', // TODO: 之後要改
+
+            // ⭐ 角色與權限都不能在這頁修改，維持原樣
+            roles: this.currentUser?.roles ?? [],
+            permissions: this.currentUser?.permissions ?? [],
           };
           // ✅ 成功才更新 AuthService + localStorage
           this.auth.userSignal.set(updatedUser);
@@ -187,6 +191,8 @@ export class AccountSetting implements OnInit {
             JSON.stringify({
               ...updatedUser,
               password: submitSnapshot.password ?? '',
+              roles: updatedUser.roles,
+              permissions: updatedUser.permissions,
             })
           );
 

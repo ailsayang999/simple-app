@@ -3,15 +3,21 @@ import { CommonModule } from '@angular/common';
 import { CardModule } from 'primeng/card';
 import { ChartModule } from 'primeng/chart';
 import { HasRoleDirective } from '../../shared/directives/has-role.directive';
+import { HasPermissionDirective } from '../../shared/directives/has-permission.directive';
+import { Permission } from '../../auth/rbac';
+import { Role } from '../../auth/rbac';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, CardModule, ChartModule, HasRoleDirective],
+  imports: [CommonModule, CardModule, ChartModule, HasRoleDirective, HasPermissionDirective],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.scss',
 })
 export class Dashboard {
+  Role = Role; // ⭐⭐ 這行超重要，讓 HTML 可以用 Role.Admin
+  Permission = Permission; // ✅ 給 template 使用 enum
+
   // info legend
   fundLegend = [
     { label: '銀行活存餘額', color: 'rgb(80, 69, 229)', amount: 'NT$ 261,971,440,339' },

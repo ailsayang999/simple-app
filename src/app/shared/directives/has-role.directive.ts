@@ -1,5 +1,6 @@
 import { Directive, Input, TemplateRef, ViewContainerRef, effect, inject } from '@angular/core';
-import { AuthService, Role } from '../../core/services/auth.service';
+import { AuthService } from '../../core/services/auth.service';
+import { Role } from '../../auth/rbac';
 
 @Directive({
   selector: '[appHasRole]',
@@ -10,16 +11,20 @@ export class HasRoleDirective {
   private viewContainer = inject(ViewContainerRef);
   private templateRef = inject(TemplateRef<any>);
 
-  private roles: Role[] = [];
+  // 這個指令要求的「角色條件」
+  private requiredRoles: Role[] = [];
 
+  // 用法：
+  // *appHasRole="'ADMIN'"
+  // *appHasRole="[Role.Admin, Role.Manager]"
   @Input()
   set appHasRole(value: Role | Role[]) {
-    this.roles = Array.isArray(value) ? value : [value];
+    this.requiredRoles = Array.isArray(value) ? value : [value];
     this.updateView();
   }
 
   constructor() {
-    // ✅ 使用 Angular signals 的 effect：user 變動時自動刷新畫面
+    // 讓 userSignal 變動時會自動重算
     effect(() => {
       this.updateView();
     });
@@ -27,7 +32,13 @@ export class HasRoleDirective {
 
   private updateView() {
     const user = this.auth.userSignal();
-    const canShow = !!user && (this.roles.length === 0 || this.roles.includes(user.role));
+
+    const canShow =
+      !!user &&
+      // 沒設任何 requiredRoles = 全部可看
+      (this.requiredRoles.length === 0 ||
+        // 只要 user.roles 中有其中一個 requiredRoles 就可以
+        this.requiredRoles.some((r) => user.roles?.includes(r)));
 
     this.viewContainer.clear();
 

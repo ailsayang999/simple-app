@@ -163,8 +163,13 @@
       <span class="sidebar-item-text">Products</span>
     </a>
 
-    <div class="sidebar-section-title">Other</div>
-    <a routerLink="/samples" routerLinkActive="active" class="sidebar-item">
+    <div class="sidebar-section-title" *appHasPermission="Permission.ProductView">Other</div>
+    <a
+      routerLink="/samples"
+      routerLinkActive="active"
+      class="sidebar-item"
+      *appHasPermission="Permission.ProductView"
+    >
       <span class="sidebar-item-icon theme-icon pi pi-list"></span>
       <span class="sidebar-item-text">Sample Page</span>
     </a>

@@ -1,13 +1,14 @@
 import { Injectable, signal } from '@angular/core';
+import { Role, Permission, ROLE_PERMISSIONS } from '../../auth/rbac'; // 路徑依你實際調整
 
-export type Role = 'ADMIN' | 'USER'; // 👈 先定義角色型別
 
 export interface AuthUser {
   id: string;
   name: string;
   email: string;
   avatarUrl?: string;
-  role: Role; // 👈 新增角色
+  roles: Role[]; // ✅ 多角色
+  permissions: Permission[]; // ✅ 實際權限清單（通常由後端決定）
 }
 
 @Injectable({ providedIn: 'root' })
@@ -26,31 +27,56 @@ export class AuthService {
     return !!localStorage.getItem(this.TOKEN_KEY);
   }
 
-  // ✅ 判斷角色的小工具
+  // ---------- ✅ 角色 / 權限判斷 helper ----------
+
   hasRole(role: Role): boolean {
     const user = this.userSignal();
-    return !!user && user.role === role;
+    return !!user && user.roles.includes(role);
   }
 
   hasAnyRole(roles: Role[]): boolean {
     const user = this.userSignal();
     if (!user) return false;
-    return roles.includes(user.role);
+    return roles.some((r) => user.roles.includes(r));
   }
 
+  hasPermission(permission: Permission): boolean {
+    const user = this.userSignal();
+    return !!user && user.permissions.includes(permission);
+  }
+
+  hasAnyPermission(perms: Permission[]): boolean {
+    const user = this.userSignal();
+    if (!user) return false;
+    return perms.some((p) => user.permissions.includes(p));
+  }
+
+  // ---------- ✅ Demo 用 login（實務上應該由 API 回傳） ----------
+
   login(email: string, password: string): boolean {
-    // ⚠️ Demo 用：真實情境應該從後端 API 回傳角色
     const fakeToken = 'FAKE_JWT_TOKEN';
 
-    // 範例：如果是 admin 帳號就給 ADMIN，其他都是 USER
-    const role: Role = email === 'admin@test.com' ? 'ADMIN' : 'USER';
+    // demo：根據 email 給角色
+    let roles: Role[] = [Role.User];
+
+    if (email === 'admin@test.com') {
+      roles = [Role.Admin];
+    } else if (email === 'manager@test.com') {
+      roles = [Role.Manager];
+    } else if (email === 'report@test.com') {
+      roles = [Role.ReportViewer];
+    }
+
+    // 依角色組出 permissions（真實環境通常後端直接回傳）
+    const permissions = Array.from(new Set(roles.flatMap((r) => ROLE_PERMISSIONS[r] ?? [])));
 
     const fakeUser: AuthUser = {
       id: '1',
-      name: 'John Doe',
+      name: email,
       email,
       avatarUrl: 'https://i.pravatar.cc/100?img=8',
-      role,
+      roles,
+      permissions,
     };
 
     localStorage.setItem(this.TOKEN_KEY, fakeToken);
