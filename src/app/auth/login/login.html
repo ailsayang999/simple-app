@@ -6,6 +6,7 @@
     <form (ngSubmit)="submit()" #f="ngForm">
       <label>Email</label>
       <input type="email" [(ngModel)]="email" name="email" required />
+      <small>若要擁有全部權限，請用admin@test.com</small>
 
       <label>Password</label>
       <input type="password" [(ngModel)]="password" name="password" required />
