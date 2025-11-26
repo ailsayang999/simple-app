@@ -88,7 +88,7 @@ export class Dashboard {
         fill: true,
         tension: 0.4,
         borderColor: 'rgb(4, 167, 196)',
-        backgroundColor: 'rgb(223, 243, 247)', // 👈 透明填滿
+        backgroundColor: 'rgba(4, 167, 196, 0.18)', // 👈 透明填滿
       },
     ],
   };
@@ -148,7 +148,7 @@ export class Dashboard {
         fill: true,
         tension: 0.4,
         borderColor: 'rgb(132, 204, 23)',
-        backgroundColor: 'rgb(236, 248, 223)', // 👈 透明填滿
+        backgroundColor: 'rgba(132, 204, 23, 0.18)', // 👈 透明填滿
       },
     ],
   };
@@ -184,7 +184,7 @@ export class Dashboard {
         fill: true,
         tension: 0.4,
         borderColor: 'rgb(244, 62, 94)',
-        backgroundColor: 'rgb(254, 229, 233)', // 👈 透明填滿
+        backgroundColor: 'rgba(244, 62, 95, 0.18)', // 👈 透明填滿
       },
     ],
   };
@@ -220,7 +220,7 @@ export class Dashboard {
         fill: true,
         tension: 0.4,
         borderColor: 'rgb(249, 115, 21)',
-        backgroundColor: 'rgb(254, 232, 221)', // 👈 透明填滿
+        backgroundColor: 'rgba(249, 116, 21, 0.18)', // 👈 透明填滿
       },
     ],
   };

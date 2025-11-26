@@ -2,7 +2,7 @@
   <div class="sidebar-header">
     <div class="sidebar-logo">
       <!-- logo -->
-      <div class="sidebar-logo-icon logo"  (click)="onToggle()">
+      <div class="sidebar-logo-icon logo" (click)="onToggle()">
         <span class="theme-icon pi pi-apple"></span>
       </div>
 
@@ -162,6 +162,12 @@
     <a routerLink="/samples" routerLinkActive="active" class="sidebar-item">
       <span class="sidebar-item-icon theme-icon pi pi-list"></span>
       <span class="sidebar-item-text">Sample Page</span>
+    </a>
+
+    <div class="sidebar-section-title">Account</div>
+    <a routerLink="/account/setting" routerLinkActive="active" class="sidebar-item">
+      <span class="sidebar-item-icon theme-icon pi pi-user"></span>
+      <span class="sidebar-item-text">Account Setting</span>
     </a>
   </nav>
 </div>
