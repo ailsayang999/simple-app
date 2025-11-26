@@ -15,8 +15,8 @@ import { finalize } from 'rxjs';
 
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
-import { FileUploadModule, FileUploadHandlerEvent } from 'primeng/fileupload';
-import { FileSelectEvent } from 'primeng/fileupload';
+import { FileUploadModule, FileSelectEvent, FileUpload } from 'primeng/fileupload';
+import { ViewChild } from '@angular/core';
 
 type AccountFormModel = {
   name: string;
@@ -49,6 +49,8 @@ export class AccountSetting implements OnInit {
   isSaving = false;
   saveError: string | null = null;
   saveSuccess = false;
+
+  @ViewChild('avatarUpload') avatarUpload?: FileUpload; // ⭐ 對應 #avatarUpload
 
   ngOnInit(): void {
     this.currentUser = this.auth.userSignal();
@@ -110,28 +112,6 @@ export class AccountSetting implements OnInit {
     const ctrl = this.form.get(controlName);
     return !!ctrl && ctrl.touched && ctrl.hasError(error);
   }
-  // ⭐ 處理上傳事件（轉 Base64）
-  // onAvatarUpload(event: FileUploadHandlerEvent) {
-  //   const file = event.files?.[0];
-  //   if (!file) return;
-
-  //   const reader = new FileReader();
-  //   reader.onload = () => {
-  //     const base64 = reader.result as string;
-
-  //     // 更新 form 裡的 avatarUrl
-  //     this.form.patchValue({ avatarUrl: base64 });
-
-  //     this.messageService.add({
-  //       severity: 'info',
-  //       summary: '上傳成功',
-  //       detail: '頭像已更新（尚未儲存）。',
-  //       life: 2500,
-  //     });
-  //   };
-
-  //   reader.readAsDataURL(file);
-  // }
 
   // ⭐ 處理選檔事件（轉 Base64 + 即時預覽）
   onAvatarSelect(event: FileSelectEvent) {
@@ -162,12 +142,15 @@ export class AccountSetting implements OnInit {
       password: '',
     });
 
+    // ⭐ 清掉 FileUpload 的檔案 + label（No file chosen）
+    this.avatarUpload?.clear();
+
     this.saveError = null;
     this.saveSuccess = false;
   }
+
   // ⭐ 後端成功才更新 localStorage + userSignal
   // ⭐ 後端錯誤：回原本 snapshot，不動 localStorage / userSignal
-
   onSubmit(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
@@ -211,6 +194,9 @@ export class AccountSetting implements OnInit {
             password: '', // 下次 reset 時密碼預設還是空的
           };
 
+          // ✅「儲存成功後也清掉上傳區」
+          this.avatarUpload?.clear();
+
           this.messageService.add({
             severity: 'success',
             summary: '更新成功',
@@ -229,6 +215,9 @@ export class AccountSetting implements OnInit {
             ...this.originalSnapshot,
             password: '',
           });
+
+          // ⭐ 後端失敗時也清空 upload 檔案名稱
+          this.avatarUpload?.clear();
 
           this.messageService.add({
             severity: 'error',

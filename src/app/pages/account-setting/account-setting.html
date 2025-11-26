@@ -102,15 +102,8 @@
             <div class="field-help">你可以貼上圖片網址，或使用下方上傳。</div>
 
             <!-- ⭐ PrimeNG FileUpload 上傳大頭照 -->
-            <!-- <p-fileUpload
-              mode="basic"
-              accept="image/*"
-              auto="true"
-              chooseLabel="上傳新頭像"
-              (uploadHandler)="onAvatarUpload($event)"
-              styleClass="p-button-outlined mt-2"
-            ></p-fileUpload> -->
             <p-fileUpload
+              #avatarUpload
               mode="basic"
               accept="image/*"
               chooseLabel="上傳新頭像"
@@ -148,7 +141,7 @@
           <span class="pill">Signed in</span>
         </div>
 
-        <p class="profile-tip">當你修改「Name / Email / Avatar」後，這裡會即時更新。</p>
+        <p class="profile-tip">當你修改「Name / Email / Avatar」後，這裡會即時預覽。</p>
       </div>
     </aside>
   </div>
