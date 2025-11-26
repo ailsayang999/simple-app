@@ -1,9 +1,8 @@
-<!-- src/app/pages/account-setting/account-setting.html -->
-
-<!-- ⭐ Toast 放在頁面最外層一次就好 -->
+<!-- ⭐ Toast，要放在整頁最外層 -->
 <p-toast position="top-right"></p-toast>
 
 <div class="account-page">
+  <!-- Header -->
   <header class="account-header">
     <div class="account-header-text">
       <h1>Account Settings</h1>
@@ -11,9 +10,8 @@
     </div>
 
     <div class="account-header-actions">
-      <button type="button" class="btn ghost" (click)="onReset()">
-        Reset
-      </button>
+      <button type="button" class="btn ghost" (click)="onReset()">Reset</button>
+
       <button
         type="button"
         class="btn primary"
@@ -25,60 +23,49 @@
     </div>
   </header>
 
+  <!-- Main Layout -->
   <div class="account-layout">
-    <!-- 左側：表單 -->
+    <!-- 左側：Form -->
     <section class="account-main" [formGroup]="form">
-      <!-- Profile card -->
+      <!-- PROFILE -->
       <div class="card">
         <div class="card-header">
-          <div>
-            <h2>Profile</h2>
-            <p>更新顯示在系統中的名稱與聯絡方式。</p>
-          </div>
+          <h2>Profile</h2>
+          <p>更新顯示在系統中的名稱與聯絡方式。</p>
         </div>
 
         <div class="card-body">
+          <!-- Name -->
           <div class="form-field">
             <label for="name">Name</label>
-            <input
-              id="name"
-              type="text"
-              formControlName="name"
-              placeholder="Your name"
-            />
+            <input id="name" type="text" formControlName="name" placeholder="Your name" />
             @if (hasError('name', 'required')) {
-              <div class="field-error">Name 為必填</div>
+            <div class="field-error">Name 為必填</div>
             }
           </div>
 
+          <!-- Email -->
           <div class="form-field">
             <label for="email">Email</label>
-            <input
-              id="email"
-              type="email"
-              formControlName="email"
-              placeholder="you@example.com"
-            />
+            <input id="email" type="email" formControlName="email" placeholder="you@example.com" />
             @if (hasError('email', 'required')) {
-              <div class="field-error">Email 為必填</div>
-            }
-            @if (hasError('email', 'email')) {
-              <div class="field-error">Email 格式不正確</div>
+            <div class="field-error">Email 為必填</div>
+            } @if (hasError('email', 'email')) {
+            <div class="field-error">Email 格式不正確</div>
             }
           </div>
         </div>
       </div>
 
-      <!-- Security card -->
+      <!-- SECURITY -->
       <div class="card">
         <div class="card-header">
-          <div>
-            <h2>Security</h2>
-            <p>變更登入密碼，保障你的帳號安全。</p>
-          </div>
+          <h2>Security</h2>
+          <p>變更登入密碼，保障你的帳號安全。</p>
         </div>
 
         <div class="card-body">
+          <!-- Password -->
           <div class="form-field">
             <label for="password">New Password</label>
             <input
@@ -88,66 +75,80 @@
               placeholder="至少 6 碼，留空則不修改"
             />
             @if (hasError('password', 'minlength')) {
-              <div class="field-error">密碼至少 6 碼</div>
+            <div class="field-error">密碼至少 6 碼</div>
             }
-            <div class="field-help">
-              若不想修改密碼，可以留空，後端可忽略空值。
-            </div>
+            <div class="field-help">不修改密碼請留空。</div>
           </div>
         </div>
       </div>
 
-      <!-- Avatar card -->
+      <!-- AVATAR -->
       <div class="card">
         <div class="card-header">
-          <div>
-            <h2>Avatar</h2>
-            <p>設定你的個人頭像網址，右側會即時預覽。</p>
-          </div>
+          <h2>Avatar</h2>
+          <p>上傳個人頭像，右側會即時預覽。</p>
         </div>
 
         <div class="card-body">
+          <!-- Avatar URL Field -->
           <div class="form-field">
             <label for="avatarUrl">Avatar URL</label>
             <input
               id="avatarUrl"
               type="text"
               formControlName="avatarUrl"
-              placeholder="https://example.com/avatar.png"
+              placeholder="https://example.com/avatar.jpg"
             />
-            <div class="field-help">
-              建議使用正方形圖片，至少 160 × 160px。
-            </div>
+            <div class="field-help">你可以貼上圖片網址，或使用下方上傳。</div>
+
+            <!-- ⭐ PrimeNG FileUpload 上傳大頭照 -->
+            <!-- <p-fileUpload
+              mode="basic"
+              accept="image/*"
+              auto="true"
+              chooseLabel="上傳新頭像"
+              (uploadHandler)="onAvatarUpload($event)"
+              styleClass="p-button-outlined mt-2"
+            ></p-fileUpload> -->
+            <p-fileUpload
+              mode="basic"
+              accept="image/*"
+              chooseLabel="上傳新頭像"
+              [auto]="false"
+              (onSelect)="onAvatarSelect($event)"
+              styleClass="p-button-outlined mt-2"
+            ></p-fileUpload>
           </div>
         </div>
       </div>
 
+      <!-- Save Status -->
       <div class="save-status">
         @if (saveSuccess && !saveError) {
-          <span class="success">✅ 已成功儲存你的帳號設定</span>
-        }
-        @if (saveError) {
-          <span class="error">{{ saveError }}</span>
+        <span class="success">✅ 已成功儲存設定</span>
+        } @if (saveError) {
+        <span class="error">{{ saveError }}</span>
         }
       </div>
     </section>
 
-    <!-- 右側：即時預覽卡片 -->
+    <!-- 右側 Preview Card -->
     <aside class="account-side">
       <div class="profile-card">
         <div class="profile-avatar">
           <img [src]="avatarPreviewUrl" alt="Avatar preview" />
         </div>
+
         <div class="profile-info">
           <div class="profile-name">{{ displayName }}</div>
           <div class="profile-email">{{ displayEmail }}</div>
         </div>
+
         <div class="profile-meta">
           <span class="pill">Signed in</span>
         </div>
-        <p class="profile-tip">
-          修改 Name / Email / Avatar URL 時，這裡會即時更新。
-        </p>
+
+        <p class="profile-tip">當你修改「Name / Email / Avatar」後，這裡會即時更新。</p>
       </div>
     </aside>
   </div>

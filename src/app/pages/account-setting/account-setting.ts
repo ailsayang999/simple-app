@@ -15,12 +15,14 @@ import { finalize } from 'rxjs';
 
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
+import { FileUploadModule, FileUploadHandlerEvent } from 'primeng/fileupload';
+import { FileSelectEvent } from 'primeng/fileupload';
 
 type AccountFormModel = {
   name: string;
   email: string;
   password: string;
-  avatarUrl: string;
+  avatarUrl: string; // ⭐ 會被填入 Base64
 };
 
 @Component({
@@ -28,7 +30,7 @@ type AccountFormModel = {
   selector: 'app-account-setting',
   templateUrl: './account-setting.html',
   styleUrls: ['./account-setting.scss'],
-  imports: [CommonModule, ReactiveFormsModule, ToastModule],
+  imports: [CommonModule, ReactiveFormsModule, ToastModule, FileUploadModule],
   providers: [MessageService],
 })
 export class AccountSetting implements OnInit {
@@ -42,8 +44,7 @@ export class AccountSetting implements OnInit {
   form!: FormGroup;
   currentUser: AuthUser | null = null;
 
-  // ⭐ 送出前的原始快照（後端錯誤時回復用）
-  originalSnapshot!: AccountFormModel;
+  originalSnapshot!: AccountFormModel; // ⭐ 送出前的原始快照（後端錯誤時回復用）
 
   isSaving = false;
   saveError: string | null = null;
@@ -66,9 +67,7 @@ export class AccountSetting implements OnInit {
     }
 
     this.buildForm();
-
-    // ⭐ 初始化 snapshot：一開始畫面載入的狀態
-    this.originalSnapshot = this.form.getRawValue() as AccountFormModel;
+    this.originalSnapshot = this.form.getRawValue() as AccountFormModel; // ⭐ 初始化 snapshot：一開始畫面載入的狀態
 
     // ⭐ 使用者只要一改值，就把 success / error 清掉
     this.form.valueChanges.subscribe(() => {
@@ -90,22 +89,12 @@ export class AccountSetting implements OnInit {
     // ⭐ 自訂「可選填 + 最少 6 碼」的 validator
     this.form.get('password')!.addValidators([this.optionalMinLength(6)]);
   }
-
   // 密碼可選填：空字串通過，有值時才檢查 minlength
   private optionalMinLength(min: number) {
     return (control: AbstractControl): ValidationErrors | null => {
       const value = (control.value ?? '') as string;
-      if (!value) {
-        return null; // 空值視為合法
-      }
-      return value.length >= min
-        ? null
-        : {
-            minlength: {
-              requiredLength: min,
-              actualLength: value.length,
-            },
-          };
+      if (!value) return null;
+      return value.length >= min ? null : { minlength: true };
     };
   }
 
@@ -117,10 +106,54 @@ export class AccountSetting implements OnInit {
       return null;
     }
   }
-
   hasError(controlName: keyof AccountFormModel, error: string): boolean {
     const ctrl = this.form.get(controlName);
     return !!ctrl && ctrl.touched && ctrl.hasError(error);
+  }
+  // ⭐ 處理上傳事件（轉 Base64）
+  // onAvatarUpload(event: FileUploadHandlerEvent) {
+  //   const file = event.files?.[0];
+  //   if (!file) return;
+
+  //   const reader = new FileReader();
+  //   reader.onload = () => {
+  //     const base64 = reader.result as string;
+
+  //     // 更新 form 裡的 avatarUrl
+  //     this.form.patchValue({ avatarUrl: base64 });
+
+  //     this.messageService.add({
+  //       severity: 'info',
+  //       summary: '上傳成功',
+  //       detail: '頭像已更新（尚未儲存）。',
+  //       life: 2500,
+  //     });
+  //   };
+
+  //   reader.readAsDataURL(file);
+  // }
+
+  // ⭐ 處理選檔事件（轉 Base64 + 即時預覽）
+  onAvatarSelect(event: FileSelectEvent) {
+    const file = event.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const base64 = reader.result as string;
+
+      // 更新 form 裡的 avatarUrl（右側預覽會跟著變）
+      this.form.patchValue({ avatarUrl: base64 });
+
+      this.messageService.add({
+        severity: 'info',
+        summary: '上傳成功',
+        detail: '頭像已更新（尚未儲存）。',
+        life: 2500,
+      });
+    };
+
+    reader.readAsDataURL(file);
   }
 
   onReset(): void {
@@ -132,9 +165,9 @@ export class AccountSetting implements OnInit {
     this.saveError = null;
     this.saveSuccess = false;
   }
-
   // ⭐ 後端成功才更新 localStorage + userSignal
   // ⭐ 後端錯誤：回原本 snapshot，不動 localStorage / userSignal
+
   onSubmit(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
@@ -148,7 +181,7 @@ export class AccountSetting implements OnInit {
     this.saveSuccess = false;
 
     this.http
-      .put('/api/account/profile', submitSnapshot) // ⚠️ 換成你的 API
+      .put('/api/account/profile', submitSnapshot) // ⚠ 換成你的 API
       .pipe(finalize(() => (this.isSaving = false)))
       .subscribe({
         next: (res: any) => {
@@ -160,7 +193,6 @@ export class AccountSetting implements OnInit {
             email: res?.email ?? submitSnapshot.email,
             avatarUrl: res?.avatarUrl ?? submitSnapshot.avatarUrl,
           };
-
           // ✅ 成功才更新 AuthService + localStorage
           this.auth.userSignal.set(updatedUser);
           this.currentUser = updatedUser;
@@ -176,20 +208,20 @@ export class AccountSetting implements OnInit {
           // ✅ 更新成功後，把 snapshot 換成這次成功的值（之後錯誤就回復這個）
           this.originalSnapshot = {
             ...submitSnapshot,
-            // 下次 reset 時密碼預設還是空的
-            password: '',
+            password: '', // 下次 reset 時密碼預設還是空的
           };
 
           this.messageService.add({
             severity: 'success',
             summary: '更新成功',
-            detail: '你的帳戶資訊已成功儲存。',
+            detail: '帳號資料已儲存。',
             life: 3000,
           });
         },
 
         error: (err) => {
           console.error(err);
+
           this.saveError = '後端儲存失敗，已還原設定。';
 
           // ❗ 回復成送出前的狀態
@@ -198,12 +230,10 @@ export class AccountSetting implements OnInit {
             password: '',
           });
 
-          // ❗ 不動 localStorage / userSignal
-
           this.messageService.add({
             severity: 'error',
             summary: '儲存失敗',
-            detail: '後端回傳錯誤，設定已還原。',
+            detail: '後端錯誤，設定已還原。',
             life: 4000,
           });
         },
@@ -212,21 +242,15 @@ export class AccountSetting implements OnInit {
 
   // 預覽顯示
   get avatarPreviewUrl(): string {
-    const value = this.form.getRawValue() as AccountFormModel;
-    return (
-      value.avatarUrl ||
-      this.currentUser?.avatarUrl ||
-      'https://via.placeholder.com/160x160?text=Avatar'
-    );
+    const v = this.form.getRawValue() as AccountFormModel;
+    return v.avatarUrl || this.currentUser?.avatarUrl || 'https://via.placeholder.com/160';
   }
 
   get displayName(): string {
-    const value = this.form.getRawValue() as AccountFormModel;
-    return value.name || this.currentUser?.name || 'Your name';
+    return this.form.get('name')?.value || this.currentUser?.name || '';
   }
 
   get displayEmail(): string {
-    const value = this.form.getRawValue() as AccountFormModel;
-    return value.email || this.currentUser?.email || 'you@example.com';
+    return this.form.get('email')?.value || this.currentUser?.email || '';
   }
 }
