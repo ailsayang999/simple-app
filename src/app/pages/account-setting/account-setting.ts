@@ -1,136 +1,232 @@
+// src/app/pages/account-setting/account-setting.ts
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  FormBuilder,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators,
+  AbstractControl,
+  ValidationErrors,
+} from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { AuthService, AuthUser } from '../../core/services/auth.service';
+import { finalize } from 'rxjs';
+
+import { ToastModule } from 'primeng/toast';
+import { MessageService } from 'primeng/api';
+
+type AccountFormModel = {
+  name: string;
+  email: string;
+  password: string;
+  avatarUrl: string;
+};
 
 @Component({
   standalone: true,
   selector: 'app-account-setting',
   templateUrl: './account-setting.html',
   styleUrls: ['./account-setting.scss'],
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, ToastModule],
+  providers: [MessageService],
 })
 export class AccountSetting implements OnInit {
   private fb = inject(FormBuilder);
   private http = inject(HttpClient);
   private auth = inject(AuthService);
+  private messageService = inject(MessageService);
+
+  private readonly USER_KEY = 'demo_user';
 
   form!: FormGroup;
+  currentUser: AuthUser | null = null;
 
-  // 畫面狀態
+  // ⭐ 送出前的原始快照（後端錯誤時回復用）
+  originalSnapshot!: AccountFormModel;
+
   isSaving = false;
   saveError: string | null = null;
   saveSuccess = false;
 
-  // 目前登入使用者（從 AuthService 的 signal 抓）
-  currentUser: AuthUser | null = null;
-
-  // localStorage 用的 key（要跟 AuthService 的 USER_KEY 一致）
-  private readonly USER_KEY = 'demo_user';
-
   ngOnInit(): void {
-    this.currentUser = this.auth.userSignal(); // signal() 取目前值
+    this.currentUser = this.auth.userSignal();
 
-    this.form = this.fb.group({
-      name: [this.currentUser?.name ?? '', [Validators.required]],
-      email: [this.currentUser?.email ?? '', [Validators.required, Validators.email]],
-      password: ['', [Validators.minLength(6)]], // 密碼通常不預填
-      avatarUrl: [this.currentUser?.avatarUrl ?? ''],
-    });
-
-    // ⭐ 即時同步 localStorage + AuthService.userSignal
-    this.form.valueChanges.subscribe((value) => {
-      // 沒登入理論上不會進到這頁，但保險防呆
-      if (!this.currentUser) {
-        return;
+    if (!this.currentUser) {
+      const fromLs = this.loadUserFromLocalStorage();
+      if (fromLs) {
+        this.currentUser = {
+          id: fromLs.id ?? '1',
+          name: fromLs.name,
+          email: fromLs.email,
+          avatarUrl: fromLs.avatarUrl,
+        };
+        this.auth.userSignal.set(this.currentUser);
       }
+    }
 
-      // localStorage 裡存的物件，可以比 AuthUser 多一個 password 欄位
-      const updatedForStorage = {
-        ...this.currentUser,
-        name: value.name ?? this.currentUser.name,
-        email: value.email ?? this.currentUser.email,
-        avatarUrl: value.avatarUrl ?? this.currentUser.avatarUrl,
-        // Demo 需求：密碼也放進 localStorage（正式環境不建議！）
-        password: value.password ?? '',
-      };
+    this.buildForm();
 
-      // 寫回 localStorage
-      localStorage.setItem(this.USER_KEY, JSON.stringify(updatedForStorage));
+    // ⭐ 初始化 snapshot：一開始畫面載入的狀態
+    this.originalSnapshot = this.form.getRawValue() as AccountFormModel;
 
-      // 更新 AuthService.userSignal（不含 password，因為型別沒有）
-      const updatedUser: AuthUser = {
-        id: this.currentUser.id,
-        name: updatedForStorage.name,
-        email: updatedForStorage.email,
-        avatarUrl: updatedForStorage.avatarUrl,
-      };
-      this.auth.userSignal.set(updatedUser);
-
-      // 同步 this.currentUser，避免後續使用舊資料
-      this.currentUser = updatedUser;
+    // ⭐ 使用者只要一改值，就把 success / error 清掉
+    this.form.valueChanges.subscribe(() => {
+      this.saveError = null;
+      this.saveSuccess = false;
     });
   }
 
-  // 小工具：讓 template 好寫
-  hasError(controlName: string, error: string): boolean {
+  private buildForm(): void {
+    this.form = this.fb.nonNullable.group<AccountFormModel>({
+      name: this.currentUser?.name ?? '',
+      email: this.currentUser?.email ?? '',
+      password: '',
+      avatarUrl: this.currentUser?.avatarUrl ?? '',
+    });
+
+    this.form.get('name')!.addValidators([Validators.required]);
+    this.form.get('email')!.addValidators([Validators.required, Validators.email]);
+    // ⭐ 自訂「可選填 + 最少 6 碼」的 validator
+    this.form.get('password')!.addValidators([this.optionalMinLength(6)]);
+  }
+
+  // 密碼可選填：空字串通過，有值時才檢查 minlength
+  private optionalMinLength(min: number) {
+    return (control: AbstractControl): ValidationErrors | null => {
+      const value = (control.value ?? '') as string;
+      if (!value) {
+        return null; // 空值視為合法
+      }
+      return value.length >= min
+        ? null
+        : {
+            minlength: {
+              requiredLength: min,
+              actualLength: value.length,
+            },
+          };
+    };
+  }
+
+  private loadUserFromLocalStorage(): any | null {
+    try {
+      const raw = localStorage.getItem(this.USER_KEY);
+      return raw ? JSON.parse(raw) : null;
+    } catch {
+      return null;
+    }
+  }
+
+  hasError(controlName: keyof AccountFormModel, error: string): boolean {
     const ctrl = this.form.get(controlName);
     return !!ctrl && ctrl.touched && ctrl.hasError(error);
   }
 
-  // ✅ 送出給後端
+  onReset(): void {
+    this.form.reset({
+      ...this.originalSnapshot,
+      password: '',
+    });
+
+    this.saveError = null;
+    this.saveSuccess = false;
+  }
+
+  // ⭐ 後端成功才更新 localStorage + userSignal
+  // ⭐ 後端錯誤：回原本 snapshot，不動 localStorage / userSignal
   onSubmit(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;
     }
 
+    const submitSnapshot = this.form.getRawValue() as AccountFormModel;
+
     this.isSaving = true;
     this.saveError = null;
     this.saveSuccess = false;
 
-    const formValue = this.form.value;
+    this.http
+      .put('/api/account/profile', submitSnapshot) // ⚠️ 換成你的 API
+      .pipe(finalize(() => (this.isSaving = false)))
+      .subscribe({
+        next: (res: any) => {
+          this.saveSuccess = true;
 
-    const payload = {
-      name: formValue.name,
-      email: formValue.email,
-      password: formValue.password, // 可以由後端決定為空時是否忽略
-      avatarUrl: formValue.avatarUrl,
-    };
+          const updatedUser: AuthUser = {
+            id: this.currentUser?.id ?? '1',
+            name: res?.name ?? submitSnapshot.name,
+            email: res?.email ?? submitSnapshot.email,
+            avatarUrl: res?.avatarUrl ?? submitSnapshot.avatarUrl,
+          };
 
-    // ⚠️ 這裡請改成你實際的 API URL
-    this.http.put('/api/account/profile', payload).subscribe({
-      next: (res: any) => {
-        this.isSaving = false;
-        this.saveSuccess = true;
+          // ✅ 成功才更新 AuthService + localStorage
+          this.auth.userSignal.set(updatedUser);
+          this.currentUser = updatedUser;
 
-        // 以後端回傳為主（如果沒有就用 payload）
-        const baseUser = this.auth.userSignal() ?? this.currentUser;
+          localStorage.setItem(
+            this.USER_KEY,
+            JSON.stringify({
+              ...updatedUser,
+              password: submitSnapshot.password ?? '',
+            })
+          );
 
-        const updatedUser: AuthUser = {
-          id: baseUser?.id ?? res?.id ?? '1',
-          name: res?.name ?? payload.name,
-          email: res?.email ?? payload.email,
-          avatarUrl: res?.avatarUrl ?? payload.avatarUrl,
-        };
+          // ✅ 更新成功後，把 snapshot 換成這次成功的值（之後錯誤就回復這個）
+          this.originalSnapshot = {
+            ...submitSnapshot,
+            // 下次 reset 時密碼預設還是空的
+            password: '',
+          };
 
-        // 更新 AuthService signal
-        this.auth.userSignal.set(updatedUser);
-        this.currentUser = updatedUser;
+          this.messageService.add({
+            severity: 'success',
+            summary: '更新成功',
+            detail: '你的帳戶資訊已成功儲存。',
+            life: 3000,
+          });
+        },
 
-        // 再正式寫回 localStorage（包含 password）
-        const finalForStorage = {
-          ...updatedUser,
-          password: payload.password ?? '',
-        };
-        localStorage.setItem(this.USER_KEY, JSON.stringify(finalForStorage));
-      },
-      error: (err) => {
-        console.error(err);
-        this.isSaving = false;
-        this.saveError = '儲存失敗，請稍後再試一次';
-      },
-    });
+        error: (err) => {
+          console.error(err);
+          this.saveError = '後端儲存失敗，已還原設定。';
+
+          // ❗ 回復成送出前的狀態
+          this.form.reset({
+            ...this.originalSnapshot,
+            password: '',
+          });
+
+          // ❗ 不動 localStorage / userSignal
+
+          this.messageService.add({
+            severity: 'error',
+            summary: '儲存失敗',
+            detail: '後端回傳錯誤，設定已還原。',
+            life: 4000,
+          });
+        },
+      });
+  }
+
+  // 預覽顯示
+  get avatarPreviewUrl(): string {
+    const value = this.form.getRawValue() as AccountFormModel;
+    return (
+      value.avatarUrl ||
+      this.currentUser?.avatarUrl ||
+      'https://via.placeholder.com/160x160?text=Avatar'
+    );
+  }
+
+  get displayName(): string {
+    const value = this.form.getRawValue() as AccountFormModel;
+    return value.name || this.currentUser?.name || 'Your name';
+  }
+
+  get displayEmail(): string {
+    const value = this.form.getRawValue() as AccountFormModel;
+    return value.email || this.currentUser?.email || 'you@example.com';
   }
 }

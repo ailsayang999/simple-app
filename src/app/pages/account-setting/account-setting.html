@@ -1,105 +1,154 @@
-<div class="account-setting-page">
-  <h1 class="page-title">Account Settings</h1>
+<!-- src/app/pages/account-setting/account-setting.html -->
 
-  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="account-form">
-    <!-- 左側：表單欄位 -->
-    <div class="form-main">
-      <!-- Name -->
-      <div class="form-field">
-        <label for="name">Name</label>
-        <input
-          id="name"
-          type="text"
-          formControlName="name"
-          placeholder="Your name"
-        />
-        <div class="field-error" *ngIf="hasError('name', 'required')">
-          Name 為必填
+<!-- ⭐ Toast 放在頁面最外層一次就好 -->
+<p-toast position="top-right"></p-toast>
+
+<div class="account-page">
+  <header class="account-header">
+    <div class="account-header-text">
+      <h1>Account Settings</h1>
+      <p>管理你的個人檔案、登入資訊與頭像。</p>
+    </div>
+
+    <div class="account-header-actions">
+      <button type="button" class="btn ghost" (click)="onReset()">
+        Reset
+      </button>
+      <button
+        type="button"
+        class="btn primary"
+        [disabled]="isSaving || form.invalid"
+        (click)="onSubmit()"
+      >
+        {{ isSaving ? 'Saving…' : 'Save Changes' }}
+      </button>
+    </div>
+  </header>
+
+  <div class="account-layout">
+    <!-- 左側：表單 -->
+    <section class="account-main" [formGroup]="form">
+      <!-- Profile card -->
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h2>Profile</h2>
+            <p>更新顯示在系統中的名稱與聯絡方式。</p>
+          </div>
+        </div>
+
+        <div class="card-body">
+          <div class="form-field">
+            <label for="name">Name</label>
+            <input
+              id="name"
+              type="text"
+              formControlName="name"
+              placeholder="Your name"
+            />
+            @if (hasError('name', 'required')) {
+              <div class="field-error">Name 為必填</div>
+            }
+          </div>
+
+          <div class="form-field">
+            <label for="email">Email</label>
+            <input
+              id="email"
+              type="email"
+              formControlName="email"
+              placeholder="you@example.com"
+            />
+            @if (hasError('email', 'required')) {
+              <div class="field-error">Email 為必填</div>
+            }
+            @if (hasError('email', 'email')) {
+              <div class="field-error">Email 格式不正確</div>
+            }
+          </div>
         </div>
       </div>
 
-      <!-- Email -->
-      <div class="form-field">
-        <label for="email">Email</label>
-        <input
-          id="email"
-          type="email"
-          formControlName="email"
-          placeholder="you@example.com"
-        />
-        <div class="field-error" *ngIf="hasError('email', 'required')">
-          Email 為必填
+      <!-- Security card -->
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h2>Security</h2>
+            <p>變更登入密碼，保障你的帳號安全。</p>
+          </div>
         </div>
-        <div class="field-error" *ngIf="hasError('email', 'email')">
-          Email 格式不正確
+
+        <div class="card-body">
+          <div class="form-field">
+            <label for="password">New Password</label>
+            <input
+              id="password"
+              type="password"
+              formControlName="password"
+              placeholder="至少 6 碼，留空則不修改"
+            />
+            @if (hasError('password', 'minlength')) {
+              <div class="field-error">密碼至少 6 碼</div>
+            }
+            <div class="field-help">
+              若不想修改密碼，可以留空，後端可忽略空值。
+            </div>
+          </div>
         </div>
       </div>
 
-      <!-- Password -->
-      <div class="form-field">
-        <label for="password">Password</label>
-        <input
-          id="password"
-          type="password"
-          formControlName="password"
-          placeholder="New password (optional)"
-        />
-        <div class="field-error" *ngIf="hasError('password', 'minlength')">
-          密碼至少 6 碼
+      <!-- Avatar card -->
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h2>Avatar</h2>
+            <p>設定你的個人頭像網址，右側會即時預覽。</p>
+          </div>
         </div>
-        <div class="field-help">
-          不修改密碼可以留空，後端可自行忽略空值。
-        </div>
-      </div>
 
-      <!-- Avatar URL -->
-      <div class="form-field">
-        <label for="avatarUrl">Avatar URL</label>
-        <input
-          id="avatarUrl"
-          type="text"
-          formControlName="avatarUrl"
-          placeholder="https://example.com/avatar.png"
-        />
-        <div class="field-help">
-          貼上頭像圖片網址，右側會即時預覽。
+        <div class="card-body">
+          <div class="form-field">
+            <label for="avatarUrl">Avatar URL</label>
+            <input
+              id="avatarUrl"
+              type="text"
+              formControlName="avatarUrl"
+              placeholder="https://example.com/avatar.png"
+            />
+            <div class="field-help">
+              建議使用正方形圖片，至少 160 × 160px。
+            </div>
+          </div>
         </div>
       </div>
 
-      <!-- 按鈕 -->
-      <div class="form-actions">
-        <button type="submit" [disabled]="isSaving || form.invalid">
-          {{ isSaving ? 'Saving...' : 'Save Changes' }}
-        </button>
-      </div>
-
-      <!-- 儲存結果訊息 -->
       <div class="save-status">
-        <span class="success" *ngIf="saveSuccess && !saveError">
-          ✅ 已成功儲存
-        </span>
-        <span class="error" *ngIf="saveError">
-          {{ saveError }}
-        </span>
+        @if (saveSuccess && !saveError) {
+          <span class="success">✅ 已成功儲存你的帳號設定</span>
+        }
+        @if (saveError) {
+          <span class="error">{{ saveError }}</span>
+        }
       </div>
-    </div>
+    </section>
 
-    <!-- 右側：即時頭像預覽 -->
-    <div class="avatar-preview">
-      <div class="avatar-wrapper">
-        <img
-          [src]="form.value.avatarUrl || currentUser?.avatarUrl || 'https://via.placeholder.com/120x120?text=Avatar'"
-          alt="Avatar preview"
-        />
-      </div>
-      <div class="avatar-text">
-        <div class="avatar-name">
-          {{ form.value.name || currentUser?.name || 'Your name' }}
+    <!-- 右側：即時預覽卡片 -->
+    <aside class="account-side">
+      <div class="profile-card">
+        <div class="profile-avatar">
+          <img [src]="avatarPreviewUrl" alt="Avatar preview" />
         </div>
-        <div class="avatar-email">
-          {{ form.value.email || currentUser?.email || 'you@example.com' }}
+        <div class="profile-info">
+          <div class="profile-name">{{ displayName }}</div>
+          <div class="profile-email">{{ displayEmail }}</div>
         </div>
+        <div class="profile-meta">
+          <span class="pill">Signed in</span>
+        </div>
+        <p class="profile-tip">
+          修改 Name / Email / Avatar URL 時，這裡會即時更新。
+        </p>
       </div>
-    </div>
-  </form>
+    </aside>
+  </div>
 </div>
