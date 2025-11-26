@@ -54,4 +54,9 @@ export class Topbar {
     // 2. 導回登入頁（可帶 returnUrl 或不帶）
     this.router.navigate(['/auth/login']);
   }
+
+  // popover/tabs 裡面 routerLink 無效（PrimeNG v20），所以我們寫一個method去做routing
+  goToSetting() {
+    this.router.navigate(['/account/setting']);
+  }
 }

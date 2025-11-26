@@ -34,6 +34,21 @@ export const routes: Routes = [
         path: 'samples',
         loadComponent: () => import('./app/pages/samples/samples').then((m) => m.Samples),
       },
+      {
+        path: 'account',
+        children: [
+          {
+            path: 'setting',
+            loadComponent: () =>
+              import('./app/pages/account-setting/account-setting').then((m) => m.AccountSetting),
+          },
+          {
+            path: '',
+            redirectTo: 'setting',
+            pathMatch: 'full',
+          },
+        ],
+      },
       { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
     ],
   },
