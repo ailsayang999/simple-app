@@ -178,7 +178,7 @@
       </div>
     </p-card>
     <!-- 近一個月資金交易 -->
-    <p-card class="card last-one-month-fund-transactions">
+    <p-card class="card last-one-month-fund-transactions" *appHasRole="'ADMIN'">
       <ng-template pTemplate="header">
         <div class="card-title">近一個月資金交易</div>
       </ng-template>

@@ -2,11 +2,12 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CardModule } from 'primeng/card';
 import { ChartModule } from 'primeng/chart';
+import { HasRoleDirective } from '../../shared/directives/has-role.directive';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, CardModule, ChartModule],
+  imports: [CommonModule, CardModule, ChartModule, HasRoleDirective],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.scss',
 })

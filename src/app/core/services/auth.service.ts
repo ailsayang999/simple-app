@@ -1,10 +1,13 @@
 import { Injectable, signal } from '@angular/core';
 
+export type Role = 'ADMIN' | 'USER'; // 👈 先定義角色型別
+
 export interface AuthUser {
   id: string;
   name: string;
   email: string;
   avatarUrl?: string;
+  role: Role; // 👈 新增角色
 }
 
 @Injectable({ providedIn: 'root' })
@@ -16,21 +19,38 @@ export class AuthService {
 
   private loadUser(): AuthUser | null {
     const json = localStorage.getItem(this.USER_KEY);
-    return json ? JSON.parse(json) : null;
+    return json ? (JSON.parse(json) as AuthUser) : null;
   }
 
   isLoggedIn(): boolean {
     return !!localStorage.getItem(this.TOKEN_KEY);
   }
 
+  // ✅ 判斷角色的小工具
+  hasRole(role: Role): boolean {
+    const user = this.userSignal();
+    return !!user && user.role === role;
+  }
+
+  hasAnyRole(roles: Role[]): boolean {
+    const user = this.userSignal();
+    if (!user) return false;
+    return roles.includes(user.role);
+  }
+
   login(email: string, password: string): boolean {
-    // Demo：直接通過，真實環境要 call API
+    // ⚠️ Demo 用：真實情境應該從後端 API 回傳角色
     const fakeToken = 'FAKE_JWT_TOKEN';
+
+    // 範例：如果是 admin 帳號就給 ADMIN，其他都是 USER
+    const role: Role = email === 'admin@test.com' ? 'ADMIN' : 'USER';
+
     const fakeUser: AuthUser = {
       id: '1',
       name: 'John Doe',
       email,
       avatarUrl: 'https://i.pravatar.cc/100?img=8',
+      role,
     };
 
     localStorage.setItem(this.TOKEN_KEY, fakeToken);

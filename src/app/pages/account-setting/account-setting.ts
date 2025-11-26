@@ -63,6 +63,7 @@ export class AccountSetting implements OnInit {
           name: fromLs.name,
           email: fromLs.email,
           avatarUrl: fromLs.avatarUrl,
+          role: fromLs.role, // TODO: 之後要改
         };
         this.auth.userSignal.set(this.currentUser);
       }
@@ -175,6 +176,7 @@ export class AccountSetting implements OnInit {
             name: res?.name ?? submitSnapshot.name,
             email: res?.email ?? submitSnapshot.email,
             avatarUrl: res?.avatarUrl ?? submitSnapshot.avatarUrl,
+            role: this.currentUser?.role ?? 'USER', // TODO: 之後要改
           };
           // ✅ 成功才更新 AuthService + localStorage
           this.auth.userSignal.set(updatedUser);

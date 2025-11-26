@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './app/auth/guards/auth.guard';
+import { roleGuard } from './app/auth/guards/role.guard';
 
 export const routes: Routes = [
   {
@@ -34,11 +35,13 @@ export const routes: Routes = [
       },
       {
         path: 'products',
+        canActivate: [roleGuard], // 👈 新增角色守門人
         data: {
           breadcrumb: {
             label: 'Products',
             icon: 'pi pi-cart-minus', // ⭐  加 icon
           },
+          roles: ['ADMIN'], // 👈 只有 ADMIN 可以進
         },
         loadComponent: () => import('./app/pages/products/products').then((m) => m.Products),
       },
