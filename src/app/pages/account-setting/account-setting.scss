@@ -1,11 +1,12 @@
 /* src/app/pages/account-setting/account-setting.scss */
 
 .account-page {
-  padding: 24px 32px 32px;
+  padding: var(--space-xl) calc(var(--space-xl) + 8px) var(--space-xl);
   display: flex;
   flex-direction: column;
-  gap: 24px;
-  background: #f5f5f8;
+  gap: var(--space-xl);
+  background: var(--color-bg-page);
+  color: var(--color-text-primary);
   min-height: 100%;
 }
 
@@ -13,28 +14,29 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  gap: var(--space-md);
 
   h1 {
     margin: 0;
     font-size: 22px;
     font-weight: 600;
+    color: var(--color-text-primary);
   }
 
-  p {
+  .account-header-subtitle {
     margin: 4px 0 0;
     font-size: 13px;
-    color: #667085;
+    color: var(--color-text-secondary);
   }
 }
 
 .account-header-actions {
   display: flex;
-  gap: 8px;
+  gap: var(--space-sm);
 }
 
 .btn {
-  border-radius: 999px;
+  border-radius: var(--radius-full);
   padding: 8px 16px;
   font-size: 14px;
   font-weight: 500;
@@ -44,14 +46,13 @@
     box-shadow 0.15s ease;
 
   &.primary {
-    background: rgb(80, 69, 229);
-    color: #fff;
-    border-color: rgb(80, 69, 229);
-    box-shadow: 0 10px 20px rgba(80, 69, 229, 0.12);
+    background: var(--color-primary);
+    color: var(--color-on-primary);
+    border-color: var(--color-primary);
+    box-shadow: var(--shadow-md);
 
     &:hover:not(:disabled) {
-      background: rgb(66, 57, 205);
-      border-color: rgb(66, 57, 205);
+      filter: brightness(0.95);
     }
 
     &:disabled {
@@ -62,12 +63,12 @@
   }
 
   &.ghost {
-    background: #fff;
-    color: #344054;
-    border-color: #d0d5dd;
+    background: var(--color-bg-surface);
+    color: var(--color-text-primary);
+    border-color: var(--color-border-subtle);
 
     &:hover {
-      background: #f3f4f6;
+      background: var(--color-bg-hover);
     }
   }
 }
@@ -75,21 +76,21 @@
 .account-layout {
   display: grid;
   grid-template-columns: minmax(0, 2.2fr) minmax(260px, 1fr);
-  gap: 24px;
+  gap: var(--space-xl);
   align-items: flex-start;
 }
 
 .account-main {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--space-md);
 }
 
 .card {
-  background: #fff;
-  border-radius: 16px;
-  border: 1px solid #e4e7ec;
-  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.04);
+  background: var(--color-bg-surface);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border-subtle);
+  box-shadow: var(--shadow-sm);
   padding: 16px 18px 18px;
 }
 
@@ -103,12 +104,13 @@
     margin: 0;
     font-size: 15px;
     font-weight: 600;
+    color: var(--color-text-primary);
   }
 
   p {
     margin: 4px 0 0;
     font-size: 12px;
-    color: #667085;
+    color: var(--color-text-secondary);
   }
 }
 
@@ -126,33 +128,34 @@
   label {
     font-size: 13px;
     font-weight: 500;
-    color: #344054;
+    color: var(--color-text-secondary);
   }
 
   input {
     border-radius: 10px;
-    border: 1px solid #d0d5dd;
+    border: 1px solid var(--color-border-subtle);
     padding: 8px 10px;
     font-size: 14px;
     outline: none;
-    background: #fff;
-    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    background: var(--color-bg-input);
+    color: var(--color-text-primary);
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
 
     &:focus {
-      border-color: rgb(80, 69, 229);
-      box-shadow: 0 0 0 1px rgba(80, 69, 229, 0.08);
+      border-color: var(--color-primary);
+      box-shadow: 0 0 0 1px rgba(79, 70, 229, 0.25);
     }
   }
 }
 
 .field-error {
   font-size: 12px;
-  color: #d92d20;
+  color: var(--color-danger);
 }
 
 .field-help {
   font-size: 12px;
-  color: #667085;
+  color: var(--color-text-subtle);
 }
 
 .save-status {
@@ -160,11 +163,11 @@
   margin-top: 4px;
 
   .success {
-    color: #039855;
+    color: var(--color-success);
   }
 
   .error {
-    color: #d92d20;
+    color: var(--color-danger);
   }
 }
 
@@ -174,16 +177,17 @@
 }
 
 .profile-card {
+  /* 用主色當光暈，在深色模式也不會太突兀 */
   background: radial-gradient(
       circle at top left,
-      rgba(80, 69, 229, 0.12),
+      color-mix(in srgb, var(--color-primary) 18%, transparent),
       transparent 55%
     ),
-    #ffffff;
-  border-radius: 18px;
+    var(--color-bg-surface);
+  border-radius: var(--radius-xl);
   padding: 18px 18px 16px;
-  border: 1px solid #e4e7ec;
-  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.08);
+  border: 1px solid var(--color-border-subtle);
+  box-shadow: var(--shadow-md);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -193,10 +197,10 @@
 .profile-avatar {
   width: 96px;
   height: 96px;
-  border-radius: 999px;
+  border-radius: var(--radius-full);
   overflow: hidden;
-  border: 3px solid rgba(80, 69, 229, 0.35);
-  background: #f9fafb;
+  border: 3px solid color-mix(in srgb, var(--color-primary) 60%, transparent);
+  background: var(--color-bg-input);
 
   img {
     width: 100%;
@@ -212,11 +216,12 @@
     font-size: 16px;
     font-weight: 600;
     margin-bottom: 2px;
+    color: var(--color-text-primary);
   }
 
   .profile-email {
     font-size: 13px;
-    color: #667085;
+    color: var(--color-text-subtle);
     word-break: break-all;
   }
 }
@@ -230,18 +235,24 @@
   align-items: center;
   justify-content: center;
   padding: 3px 10px;
-  border-radius: 999px;
+  border-radius: var(--radius-full);
   font-size: 11px;
   font-weight: 500;
-  background: rgba(16, 185, 129, 0.08);
-  color: #047857;
+  background: color-mix(in srgb, var(--color-success) 15%, transparent);
+  color: var(--color-success);
 }
 
 .profile-tip {
   margin: 6px 0 0;
   font-size: 12px;
   text-align: center;
-  color: #667085;
+  color: var(--color-text-subtle);
+}
+
+/* PrimeNG basic file upload 的按鈕可以稍微和主題靠攏 */
+.p-button-outlined {
+  border-radius: var(--radius-md);
+  font-size: 13px;
 }
 
 /* RWD */
