@@ -1,0 +1,138 @@
+.account-setting-page {
+  padding: 24px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.page-title {
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0 0 8px;
+}
+
+.account-form {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(260px, 1fr);
+  gap: 32px;
+  align-items: flex-start;
+}
+
+.form-main {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  label {
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  input {
+    border-radius: 8px;
+    border: 1px solid #d0d5dd;
+    padding: 8px 10px;
+    font-size: 14px;
+    outline: none;
+
+    &:focus {
+      border-color: #5045e5; // 你系統的主色 rgb(80, 69, 229)
+      box-shadow: 0 0 0 1px rgba(80, 69, 229, 0.1);
+    }
+  }
+}
+
+.field-error {
+  font-size: 12px;
+  color: #d92d20;
+}
+
+.field-help {
+  font-size: 12px;
+  color: #667085;
+}
+
+.form-actions {
+  margin-top: 8px;
+
+  button[type='submit'] {
+    min-width: 140px;
+    padding: 8px 14px;
+    border-radius: 8px;
+    border: none;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    background: #5045e5;
+    color: #fff;
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: default;
+    }
+  }
+}
+
+.save-status {
+  margin-top: 4px;
+  font-size: 13px;
+
+  .success {
+    color: #039855;
+  }
+
+  .error {
+    color: #d92d20;
+  }
+}
+
+.avatar-preview {
+  border-radius: 12px;
+  border: 1px solid #e4e7ec;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+  background: #f9fafb;
+}
+
+.avatar-wrapper {
+  width: 120px;
+  height: 120px;
+  border-radius: 999px;
+  overflow: hidden;
+  border: 2px solid #e4e7ec;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+.avatar-text {
+  text-align: center;
+
+  .avatar-name {
+    font-weight: 600;
+  }
+
+  .avatar-email {
+    font-size: 13px;
+    color: #667085;
+  }
+}
+
+/* 簡單 RWD */
+@media (max-width: 768px) {
+  .account-form {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

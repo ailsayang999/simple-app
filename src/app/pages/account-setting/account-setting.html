@@ -1,1 +1,105 @@
-<p>account-setting works!</p>
+<div class="account-setting-page">
+  <h1 class="page-title">Account Settings</h1>
+
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="account-form">
+    <!-- 左側：表單欄位 -->
+    <div class="form-main">
+      <!-- Name -->
+      <div class="form-field">
+        <label for="name">Name</label>
+        <input
+          id="name"
+          type="text"
+          formControlName="name"
+          placeholder="Your name"
+        />
+        <div class="field-error" *ngIf="hasError('name', 'required')">
+          Name 為必填
+        </div>
+      </div>
+
+      <!-- Email -->
+      <div class="form-field">
+        <label for="email">Email</label>
+        <input
+          id="email"
+          type="email"
+          formControlName="email"
+          placeholder="you@example.com"
+        />
+        <div class="field-error" *ngIf="hasError('email', 'required')">
+          Email 為必填
+        </div>
+        <div class="field-error" *ngIf="hasError('email', 'email')">
+          Email 格式不正確
+        </div>
+      </div>
+
+      <!-- Password -->
+      <div class="form-field">
+        <label for="password">Password</label>
+        <input
+          id="password"
+          type="password"
+          formControlName="password"
+          placeholder="New password (optional)"
+        />
+        <div class="field-error" *ngIf="hasError('password', 'minlength')">
+          密碼至少 6 碼
+        </div>
+        <div class="field-help">
+          不修改密碼可以留空，後端可自行忽略空值。
+        </div>
+      </div>
+
+      <!-- Avatar URL -->
+      <div class="form-field">
+        <label for="avatarUrl">Avatar URL</label>
+        <input
+          id="avatarUrl"
+          type="text"
+          formControlName="avatarUrl"
+          placeholder="https://example.com/avatar.png"
+        />
+        <div class="field-help">
+          貼上頭像圖片網址，右側會即時預覽。
+        </div>
+      </div>
+
+      <!-- 按鈕 -->
+      <div class="form-actions">
+        <button type="submit" [disabled]="isSaving || form.invalid">
+          {{ isSaving ? 'Saving...' : 'Save Changes' }}
+        </button>
+      </div>
+
+      <!-- 儲存結果訊息 -->
+      <div class="save-status">
+        <span class="success" *ngIf="saveSuccess && !saveError">
+          ✅ 已成功儲存
+        </span>
+        <span class="error" *ngIf="saveError">
+          {{ saveError }}
+        </span>
+      </div>
+    </div>
+
+    <!-- 右側：即時頭像預覽 -->
+    <div class="avatar-preview">
+      <div class="avatar-wrapper">
+        <img
+          [src]="form.value.avatarUrl || currentUser?.avatarUrl || 'https://via.placeholder.com/120x120?text=Avatar'"
+          alt="Avatar preview"
+        />
+      </div>
+      <div class="avatar-text">
+        <div class="avatar-name">
+          {{ form.value.name || currentUser?.name || 'Your name' }}
+        </div>
+        <div class="avatar-email">
+          {{ form.value.email || currentUser?.email || 'you@example.com' }}
+        </div>
+      </div>
+    </div>
+  </form>
+</div>
