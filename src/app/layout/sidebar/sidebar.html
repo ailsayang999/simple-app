@@ -157,8 +157,8 @@
       <span class="sidebar-item-text">Account Setting</span>
     </a>
 
-    <div class="sidebar-section-title" *appHasRole="'ADMIN'">E-Commerce</div>
-    <a routerLink="/products" routerLinkActive="active" class="sidebar-item" *appHasRole="'ADMIN'">
+    <div class="sidebar-section-title" *appHasRole="Role.Admin">E-Commerce</div>
+    <a routerLink="/products" routerLinkActive="active" class="sidebar-item" *appHasRole="Role.Admin">
       <span class="sidebar-item-icon theme-icon pi pi-cart-minus"></span>
       <span class="sidebar-item-text">Products</span>
     </a>
