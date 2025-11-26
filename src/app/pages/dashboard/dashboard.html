@@ -4,7 +4,7 @@
     @for (item of fundLegend; track item) {
     <p-card class="card fund-legend" [ngStyle]="{ 'background-color': item.color }">
       <div class="fund-legend-label">{{ item.label }}</div>
-      <div class="fund-legend-amount">{{ item.amount }}</div>
+      <div class="fund-legend-amount text-overflow">{{ item.amount }}</div>
     </p-card>
     }
   </div>
@@ -29,28 +29,28 @@
           <!-- 這邊你可以自己排 USD / EUR ... -->
           <div class="legend-row">
             <span class="legend-label">USD</span>
-            <span class="legend-value">NT$53,989,172,286</span>
+            <span class="legend-value text-overflow">NT$53,989,172,286</span>
           </div>
           <!-- 其他幣別... -->
           <div class="legend-row">
             <span class="legend-label">EUR</span>
-            <span class="legend-value">NT$28,989,172,286</span>
+            <span class="legend-value text-overflow">NT$28,989,172,286</span>
           </div>
           <div class="legend-row">
             <span class="legend-label">TWD</span>
-            <span class="legend-value">NT$2,989,172,286</span>
+            <span class="legend-value text-overflow">NT$2,989,172,286</span>
           </div>
           <div class="legend-row">
             <span class="legend-label">JPY</span>
-            <span class="legend-value">NT$4,989,172,286</span>
+            <span class="legend-value text-overflow">NT$4,989,172,286</span>
           </div>
           <div class="legend-row">
             <span class="legend-label">CNY</span>
-            <span class="legend-value">NT$5,989,172,286</span>
+            <span class="legend-value text-overflow">NT$5,989,172,286</span>
           </div>
           <div class="legend-row">
             <span class="legend-label">Other</span>
-            <span class="legend-value">NT$22,989,172,286</span>
+            <span class="legend-value text-overflow">NT$22,989,172,286</span>
           </div>
         </div>
       </div>
