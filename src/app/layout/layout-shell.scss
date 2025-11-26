@@ -43,7 +43,7 @@
   flex: 1 1 auto;
   overflow: auto;
   padding: var(--space-lg);
-  background: var(--color-bg-page);
+  //background: var(--color-bg-page);
   box-sizing: border-box;
 }
 
@@ -90,6 +90,9 @@
     padding: var(--space-md);
   }
 }
+
+
+
 
 /* 平板 / 桌機：≥ 769px */
 @media (min-width: 769px) {

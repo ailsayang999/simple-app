@@ -2,10 +2,12 @@ import { Component, signal, computed } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { Sidebar } from './sidebar/sidebar';
 import { Topbar } from './topbar/topbar';
+import { AppBreadcrumb } from '../shared/breadcrumb/app-breadcrumb';
+
 @Component({
   standalone: true,
   selector: 'app-layout-shell',
-  imports: [RouterOutlet, Sidebar, Topbar],
+  imports: [RouterOutlet, Sidebar, Topbar, AppBreadcrumb],
   templateUrl: './layout-shell.html',
   styleUrl: './layout-shell.scss',
 })

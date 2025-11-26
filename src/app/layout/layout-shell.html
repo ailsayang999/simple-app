@@ -1,7 +1,7 @@
 <div class="layout-root">
   <aside class="layout-sidebar" [class.is-open]="!collapsed()" [style.width]="sidebarWidth()">
     <!-- ⭐ [class.is-open]="!collapsed()" 手機時用來控制滑出 -->
-     <!-- [style.width]="sidebarWidth()" 桌機仍然用寬度控制 -->
+    <!-- [style.width]="sidebarWidth()" 桌機仍然用寬度控制 -->
     <app-sidebar [collapsed]="collapsed()" (toggle)="toggleSidebar()"> </app-sidebar>
   </aside>
 
@@ -11,6 +11,9 @@
     </header>
 
     <main class="layout-content">
+      <!-- ⭐ 這裡顯示 Breadcrumb -->
+      <app-breadcrumb></app-breadcrumb>
+
       <router-outlet></router-outlet>
     </main>
   </div>

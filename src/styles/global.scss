@@ -68,3 +68,19 @@ button {
   white-space: normal; // 允許換行
   word-break: break-all; // 強制長字拆行（email 才能在 @ 前後折行）
 }
+
+/* 整個容器透明 */
+.p-breadcrumb {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 10px !important;
+}
+
+/* 每個項目 */
+.p-breadcrumb-item a,
+.p-breadcrumb-item span {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  font-weight: 600;
+}
