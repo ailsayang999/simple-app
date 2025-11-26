@@ -14,10 +14,10 @@ export class Dashboard {
   // info legend
   fundLegend = [
     { label: '銀行活存餘額', color: 'rgb(80, 69, 229)', amount: 'NT$ 261,971,440,339' },
-    { label: '銀行借款', color: 'rgb(21, 119, 255)', amount: 'NT$ 349,673,868,558' },
+    { label: '銀行借款', color: 'rgb(185, 94, 255)', amount: 'NT$ 349,673,868,558' },
     {
       label: '集團資金集團資金淨額',
-      color: 'rgba(19, 92, 65, 1)',
+      color: 'rgb(54, 47, 170)',
       amount: 'NT$ -58,659,110,001',
     },
     {
@@ -242,7 +242,7 @@ export class Dashboard {
       {
         data: [34.56, 36.61, 28.84],
         // 顏色可用預設，也可以自己指定
-        backgroundColor: ['rgb(21, 119, 255)', 'rgb(80, 69, 229)', 'rgb(52, 211, 153)'],
+        backgroundColor: ['rgb(185, 94, 255)', 'rgb(80, 69, 229)', 'rgb(52, 211, 153)'],
         hoverBackgroundColor: [
           'rgba(21, 118, 255, 0.58)',
           'rgba(80, 69, 229, 0.48)',
@@ -279,7 +279,7 @@ export class Dashboard {
   //       label: '銀行活存 & 現金',
   //       data: [153256, 136656, 154576],
   //       stack: 'a',
-  //       backgroundColor: 'rgb(21, 119, 255)',
+  //       backgroundColor: 'rgb(185, 94, 255)',
   //       borderRadius: { topLeft: 16, topRight: 16, bottomLeft: 0, bottomRight: 0 },
   //       maxBarThickness: 20,
   //     },
@@ -307,7 +307,7 @@ export class Dashboard {
       {
         label: '銀行活存 & 現金',
         data: [50341, 69616, 61536],
-        backgroundColor: 'rgb(21, 119, 255)',
+        backgroundColor: 'rgb(185, 94, 255)',
         borderRadius: 16, // 群組柱狀圖不需要指定每個角，16 即可
         maxBarThickness: 22,
         barPercentage: 0.8, // 讓三根更靠近
@@ -401,7 +401,7 @@ export class Dashboard {
         label: '銀行活存 & 現金',
         data: [153256, 136656, 154576],
         stack: 'a',
-        backgroundColor: 'rgb(21, 119, 255)',
+        backgroundColor: 'rgb(185, 94, 255)',
         borderRadius: { topLeft: 0, topRight: 0, bottomLeft: 0, bottomRight: 0 },
         maxBarThickness: 50,
       },
@@ -492,7 +492,7 @@ export class Dashboard {
         label: '',
         data: [25639, 71996, 49190],
         stack: 'a',
-        backgroundColor: 'rgba(19, 92, 65, 1)',
+        backgroundColor: 'rgb(54, 47, 170)',
         borderRadius: { topLeft: 16, topRight: 16, bottomLeft: 0, bottomRight: 0 },
         maxBarThickness: 20,
       },
@@ -552,7 +552,7 @@ export class Dashboard {
       {
         data: [55.14, 44.86],
         // 顏色可用預設，也可以自己指定
-        backgroundColor: ['rgb(21, 119, 255)', 'rgb(80, 69, 229)'],
+        backgroundColor: ['rgb(185, 94, 255)', 'rgb(80, 69, 229)'],
       },
     ],
   };
