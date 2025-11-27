@@ -1,0 +1,40 @@
+/* p-card 🌙 只在 .my-app-dark（暗色模式）下生效 */
+:host-context(.my-app-dark) {
+  /* p-card 的背景、文字顏色、陰影都可以用 design tokens 控制 */
+  --p-card-background: var(--color-bg-page); /* 整張卡片背景 */
+  --p-card-color: var(--color-text-primary);
+  --p-card-shadow: 0 18px 45px  var(--color-primary);
+
+  border-radius: 16px;
+}
+
+/* p-treetable 用自己的 design tokens（v20 一樣有）:contentReference[oaicite:1]{index=1} */
+:host-context(.my-app-dark){
+  /* 表頭 */
+  --p-treetable-header-background: transparent;
+  --p-treetable-header-cell-background: transparent;
+  --p-treetable-header-color: var(--color-text-primary);
+  --p-treetable-header-cell-border-color: var(--color-text-primary);
+
+  /* 列背景 & hover */
+  --p-treetable-row-background: transparent;
+  --p-treetable-row-hover-background: rgba(0, 0, 0, 0.35);
+  --p-treetable-row-color: var(--color-text-primary);
+
+  /* 邊框 */
+  --p-treetable-border-color: var(--color-text-primary);
+  --p-treetable-body-cell-border-color: var(--color-text-primary);
+
+  /* 🔥 改成 paginator 的 token */
+  --p-paginator-background: transparent; /* 分頁整條底色 */
+  --p-paginator-color: var(--color-text-primary); /* 分頁文字顏色 */
+
+  /* 分頁按鈕（箭頭、頁碼） */
+  --p-paginator-nav-button-background: transparent;
+  --p-paginator-nav-button-hover-background: rgba(13, 157, 95, 0.45);
+  --p-paginator-nav-button-selected-background: rgba(22, 76, 37, 0.75);
+
+  --p-paginator-nav-button-color: var(--color-text-primary);
+  --p-paginator-nav-button-hover-color: var(--color-text-primary);
+  --p-paginator-nav-button-selected-color: var(--color-text-primary);
+}

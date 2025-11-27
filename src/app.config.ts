@@ -6,7 +6,7 @@ import {
 import { provideRouter } from '@angular/router';
 import { provideHttpClient } from '@angular/common/http';
 
-import { routes } from './app.routes'
+import { routes } from './app.routes';
 
 // ✅ PrimeNG 設定相關
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
@@ -14,9 +14,7 @@ import { providePrimeNG } from 'primeng/config';
 
 // ✅ 選一個主題
 import Aura from '@primeuix/themes/aura';
-import Lara from '@primeuix/themes/lara'
-
-
+import Lara from '@primeuix/themes/lara';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -38,12 +36,19 @@ export const appConfig: ApplicationConfig = {
         },
       },
     }),
-    // 如果只是要偵測系統亮暗模式
     // providePrimeNG({
     //   theme: {
     //     preset: Aura,
     //     options: {
-    //       darkModeSelector: 'system', // 亮暗模式跟系統
+    //       darkModeSelector: 'system', // 亮暗模式跟系統 偵測系統亮暗模式
+    //     },
+    //   },
+    // }),
+    // providePrimeNG({
+    //   theme: {
+    //     preset: Aura,
+    //     options: {
+    //       darkModeSelector: 'html.light', // 不管系統模式 指定亮模式
     //     },
     //   },
     // }),
