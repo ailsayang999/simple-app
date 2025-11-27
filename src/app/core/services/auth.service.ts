@@ -72,7 +72,7 @@ export class AuthService {
 
     const fakeUser: AuthUser = {
       id: '1',
-      name: email,
+      name: 'John Doe',
       email,
       avatarUrl: 'https://i.pravatar.cc/100?img=8',
       roles,

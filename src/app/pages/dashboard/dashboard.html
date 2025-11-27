@@ -10,7 +10,7 @@
 
 <div class="dashboard-root">
   <!-- 最上排-->
-  <div class="info-grid">
+  <div class="info-grid" *appHasPermission="Permission.FundRead">
     @for (item of fundLegend; track item) {
     <p-card class="card fund-legend" [ngStyle]="{ 'background-color': item.color }">
       <div class="fund-legend-label">{{ item.label }}</div>
@@ -147,7 +147,7 @@
   </div>
 
   <!-- 最下排：左邊近三個月集團銀行借款 + 近三個月集團未實現資產 ＋ 近一個月資金交易 -->
-  <div class="low-bottom-grid">
+  <div class="low-bottom-grid" *appHasRole="Role.Admin">
     <!-- 近三個月集團銀行借款 -->
     <p-card class="card group-bank-borrowings">
       <ng-template pTemplate="header">
@@ -163,7 +163,7 @@
     </p-card>
 
     <!-- 近三個月集團未實現資產 -->
-    <p-card class="card group-unrealized-assets"  *appHasPermission="Permission.FundRead">
+    <p-card class="card group-unrealized-assets">
       <ng-template pTemplate="header">
         <div class="card-title">近三個月集團未實現資產</div>
       </ng-template>
@@ -178,7 +178,7 @@
       </div>
     </p-card>
     <!-- 近一個月資金交易 -->
-    <p-card class="card last-one-month-fund-transactions" *appHasRole="Role.Admin">
+    <p-card class="card last-one-month-fund-transactions" >
       <ng-template pTemplate="header">
         <div class="card-title">近一個月資金交易</div>
       </ng-template>
