@@ -2,7 +2,7 @@ import { Routes } from '@angular/router';
 import { authGuard } from './app/auth/guards/auth.guard';
 import { roleGuard } from './app/auth/guards/role.guard';
 import { permissionGuard } from './app/auth/guards/permission.guard';
-import { Permission } from './app/auth/rbac';
+import { Permission, Role } from './app/auth/rbac';
 
 export const routes: Routes = [
   {
@@ -43,7 +43,7 @@ export const routes: Routes = [
             label: 'Products',
             icon: 'pi pi-cart-minus', // ⭐  加 icon
           },
-          roles: ['ADMIN'], // 👈 只有 ADMIN 可以進
+          roles: [Role.Admin], // 👈 只有 ADMIN 可以進
         },
         loadComponent: () => import('./app/pages/products/products').then((m) => m.Products),
       },
@@ -54,7 +54,6 @@ export const routes: Routes = [
           breadcrumb: 'Samples', // ⭐ 只寫字串
           permissions: [Permission.ProductView], // ✅ 有 product.view 卡才能進
         },
-
         loadComponent: () => import('./app/pages/samples/samples').then((m) => m.Samples),
       },
       {
