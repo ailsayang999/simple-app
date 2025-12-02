@@ -14,7 +14,9 @@
       <!-- ⭐ 這裡顯示 Breadcrumb -->
       <app-breadcrumb></app-breadcrumb>
 
-      <router-outlet></router-outlet>
+      <!-- ⭐ 改成：把 shellContext 丟給所有 routed components -->
+      <!-- 所有現在顯示在 <router-outlet> 內的頁面，都可以透過 ROUTER_OUTLET_DATA 拿到這個 context -->
+      <router-outlet [routerOutletData]="shellContext()"></router-outlet>
     </main>
   </div>
 </div>

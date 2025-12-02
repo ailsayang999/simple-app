@@ -56,7 +56,7 @@ export const routes: Routes = [
             label: 'Product Detail~~',
             icon: 'pi pi-shopping-bag',
           },
-          title: 'Product Detail!!!',
+          title: 'Product Detail!!!!',
           roles: [Role.Admin],
         },
         loadComponent: () =>

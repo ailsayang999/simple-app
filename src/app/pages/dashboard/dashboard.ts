@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject, Signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CardModule } from 'primeng/card';
 import { ChartModule } from 'primeng/chart';
@@ -6,6 +6,10 @@ import { HasRoleDirective } from '../../shared/directives/has-role.directive';
 import { HasPermissionDirective } from '../../shared/directives/has-permission.directive';
 import { Permission } from '../../auth/rbac';
 import { Role } from '../../auth/rbac';
+// ⭐ 新增：拿 routerOutletData 用
+import { ROUTER_OUTLET_DATA } from '@angular/router';
+// ⭐ 新增：把 ShellContext 型別拿進來用
+import type { ShellContext } from '../../layout/layout-shell';
 
 @Component({
   selector: 'app-dashboard',
@@ -17,6 +21,13 @@ import { Role } from '../../auth/rbac';
 export class Dashboard {
   Role = Role; // ⭐⭐ 這行超重要，讓 HTML 可以用 Role.Admin
   Permission = Permission; // ✅ 給 template 使用 enum
+
+  // ⭐ 新增：從 router-outlet 拿到 context（user + collapsed）
+  private readonly _ctx = inject(ROUTER_OUTLET_DATA) as Signal<ShellContext | null>;
+
+  // ⭐ 避免 template 一直 ?. ?. ?.：包成 computed 方便使用
+  readonly user = computed(() => this._ctx()?.user ?? null);
+  readonly collapsed = computed(() => this._ctx()?.collapsed ?? true);
 
   // info legend
   fundLegend = [
