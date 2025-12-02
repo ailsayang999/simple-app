@@ -1,0 +1,63 @@
+.notfound-root {
+  width: 100%;
+  height: calc(100vh - 120px); // 扣掉 topbar 高度
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+}
+
+.notfound-content {
+  text-align: center;
+  max-width: 480px;
+  animation: fadeIn 0.4s ease;
+}
+
+.code {
+  font-size: 120px;
+  font-weight: 700;
+  color: var(--color-primary, #5045e5);
+  margin: 0;
+  line-height: 1;
+}
+
+.message {
+  font-size: 20px;
+  color: var(--color-text-secondary, #667085);
+  margin: 16px 0 32px;
+}
+
+.btn-home {
+  display: inline-flex;
+  align-items: center;
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 500;
+  background: var(--color-primary, #5045e5);
+  color: #fff;
+  text-decoration: none;
+  transition: 0.2s ease;
+
+  span {
+    margin-right: 8px;
+  }
+
+  &:hover {
+    background: #3e35c7;
+    transform: translateY(-2px);
+  }
+}
+
+/* 簡單入場動畫 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
