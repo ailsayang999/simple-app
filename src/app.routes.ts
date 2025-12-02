@@ -47,6 +47,21 @@ export const routes: Routes = [
         },
         loadComponent: () => import('./app/pages/products/products').then((m) => m.Products),
       },
+      // ⭐⭐ ← 在這裡加上 products/:id，放在 path: 'products' 的旁邊（與它並列）（而不是放在 products 的 children 裡，因為你的 products 是一個 page，不是 feature parent）
+      {
+        path: 'products/:id',
+        canActivate: [roleGuard],
+        data: {
+          breadcrumb: {
+            label: 'Product Detail~~',
+            icon: 'pi pi-shopping-bag',
+          },
+          title: 'Product Detail!!!',
+          roles: [Role.Admin],
+        },
+        loadComponent: () =>
+          import('./app/pages/product-detail/product-detail').then((m) => m.ProductDetail),
+      },
       {
         path: 'samples',
         canActivate: [permissionGuard], // ✅ 多加這一層
