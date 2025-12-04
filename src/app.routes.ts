@@ -57,7 +57,6 @@ export const routes: Routes = [
             icon: 'pi pi-shopping-bag',
           },
           title: 'Product Detail!!!!',
-          roles: [Role.Admin],
         },
         loadComponent: () =>
           import('./app/pages/product-detail/product-detail').then((m) => m.ProductDetail),
