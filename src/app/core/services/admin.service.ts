@@ -1,6 +1,7 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
 export interface UserWithRolesDto {
   id: string;
@@ -11,17 +12,18 @@ export interface UserWithRolesDto {
 
 @Injectable({ providedIn: 'root' })
 export class AdminService {
-  constructor(private http: HttpClient) {}
+  private http = inject(HttpClient);
+  private baseUrl = environment.apiUrl;
 
   getAllRoles(): Observable<string[]> {
-    return this.http.get<string[]>('http://localhost:5225/api/admin/roles');
+    return this.http.get<string[]>(`${this.baseUrl}/admin/roles`);
   }
 
   getUsersWithRoles(): Observable<UserWithRolesDto[]> {
-    return this.http.get<UserWithRolesDto[]>('http://localhost:5225/api/admin/users');
+    return this.http.get<UserWithRolesDto[]>(`${this.baseUrl}/admin/users`);
   }
 
   updateUserRoles(userId: string, roles: string[]) {
-    return this.http.put<void>(`http://localhost:5225/api/admin/users/${userId}/roles`, { roles });
+    return this.http.put<void>(`${this.baseUrl}/admin/users/${userId}/roles`, { roles });
   }
 }

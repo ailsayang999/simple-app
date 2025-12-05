@@ -114,6 +114,7 @@ import { Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { map, tap } from 'rxjs';
 import { Role, Permission, ROLE_PERMISSIONS } from '../../auth/rbac';
+import { environment } from '../../../environments/environment';
 
 export interface AuthUser {
   id: string;
@@ -155,6 +156,8 @@ type RegisterResponse = LoginResponse; // ⭐ 後端回同樣格式就直接共�
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
+  private baseUrl = environment.apiUrl;
+
   private readonly TOKEN_KEY = 'demo_token';
   private readonly REFRESH_TOKEN_KEY = 'demo_refresh_token';
   private readonly USER_KEY = 'demo_user';
@@ -220,7 +223,7 @@ export class AuthService {
   // ========================
   login(email: string, password: string) {
     return this.http
-      .post<LoginResponse>('http://localhost:5225/api/auth/login', { email, password })
+      .post<LoginResponse>(`${this.baseUrl}/auth/login`, { email, password })
       .pipe(
         tap((res) => this.saveAuth(res)),
         map(() => true)
@@ -232,7 +235,7 @@ export class AuthService {
   // ========================
   register(name: string, email: string, password: string) {
     return this.http
-      .post<RegisterResponse>('http://localhost:5225/api/auth/register', {
+      .post<RegisterResponse>(`${this.baseUrl}/auth/register`, {
         name,
         email,
         password,
@@ -247,7 +250,7 @@ export class AuthService {
   // ===== Refresh Token =====
   refreshToken(refreshToken: string) {
     return this.http
-      .post<RefreshResponse>('http://localhost:5225/api/auth/refresh', { refreshToken })
+      .post<RefreshResponse>(`${this.baseUrl}/auth/refresh`, { refreshToken })
       .pipe(
         tap((res) => this.saveAuth(res)) // 更新 token + user
       );
@@ -259,7 +262,6 @@ export class AuthService {
     localStorage.removeItem(this.USER_KEY);
     this.userSignal.set(null);
   }
-
 
   // 你原本的 hasRole / hasAnyPermission 也可以保留：
   hasRole(role: Role): boolean {
