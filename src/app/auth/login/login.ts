@@ -22,14 +22,32 @@ export class Login {
 
   submit() {
     this.error = '';
-    const ok = this.auth.login(this.email, this.password);
-    if (!ok) {
-      this.error = 'Login failed.';
-      return;
-    }
+    // const ok = this.auth.login(this.email, this.password);
+    // if (!ok) {
+    //   this.error = 'Login failed.';
+    //   return;
+    // }
 
-    // ⭐ 正確存取 returnUrl
-    const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl') ?? '/';
-    this.router.navigateByUrl(returnUrl);
+    // // ⭐ 正確存取 returnUrl
+    // const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl') ?? '/';
+    // this.router.navigateByUrl(returnUrl);
+
+    // ========================
+    // ⭐ 真正接後端的 login() ⭐
+    // ========================
+    this.auth.login(this.email, this.password).subscribe({
+      next: (ok) => {
+        if (!ok) {
+          this.error = 'Login failed.';
+          return;
+        }
+        const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl') ?? '/';
+        this.router.navigateByUrl(returnUrl);
+      },
+      error: (err) => {
+        this.error = '登入失敗，請檢查帳號或密碼';
+        console.error(err);
+      },
+    });
   }
 }

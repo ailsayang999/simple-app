@@ -48,16 +48,35 @@ export class Register {
 
     this.loading = true;
 
-    // Demo：直接註冊成功（你的 AuthService.register() 會自動 login）
-    const ok = this.auth.register(this.name, this.email, this.password);
-    this.loading = false;
+    // // Demo：直接註冊成功（你的 AuthService.register() 會自動 login）
+    // const ok = this.auth.register(this.name, this.email, this.password);
+    // this.loading = false;
 
-    if (!ok) {
-      this.error = '註冊失敗，請稍後再試。';
-      return;
-    }
+    // if (!ok) {
+    //   this.error = '註冊失敗，請稍後再試。';
+    //   return;
+    // }
 
-    // 註冊成功 → 導回首頁
-    this.router.navigate(['/']);
+    // // 註冊成功 → 導回首頁
+    // this.router.navigate(['/']);
+
+    // ========================
+    // ⭐ 真正接後端的 login() ⭐
+    // ========================
+    this.auth.register(this.name, this.email, this.password).subscribe({
+      next: (ok) => {
+        this.loading = false;
+        if (!ok) {
+          this.error = '註冊失敗，請稍後再試。';
+          return;
+        }
+        this.router.navigate(['/']);
+      },
+      error: (err) => {
+        this.loading = false;
+        this.error = '註冊失敗，請檢查欄位或稍後再試。';
+        console.error(err);
+      },
+    });
   }
 }

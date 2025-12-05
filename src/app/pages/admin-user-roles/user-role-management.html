@@ -1,0 +1,65 @@
+<div class="role-page">
+  <header class="role-header">
+    <div>
+      <h1>使用者角色管理</h1>
+      <p class="subtitle">只有 Admin / Manager 可以使用的後台頁面。</p>
+    </div>
+  </header>
+
+  @if(error()){
+  <div class="alert alert-error">
+    {{ error() }}
+  </div>
+  } @if(success()){
+  <div class="alert alert-success">
+    {{ success() }}
+  </div>
+  } 
+  
+  @if(loading()){
+  <div class="loading">載入中...</div>
+  } @else {
+  <table class="user-table">
+    <thead>
+      <tr>
+        <th>名稱</th>
+        <th>Email</th>
+        <th>角色</th>
+        <th style="width: 120px">操作</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (u of users(); track u.id) {
+      <tr>
+        <td>{{ u.name }}</td>
+        <td>{{ u.email }}</td>
+        <td>
+          <div class="role-list">
+            @for (role of allRoles(); track role) { 
+            <button
+              type="button"
+              class="role-chip"
+              [class.active]="u.roles.includes(role)"
+              (click)="toggleRole(u, role)"
+            >
+              {{ role }}
+            </button>
+            }
+          </div>
+        </td>
+        <td>
+          <button
+            type="button"
+            class="btn-primary"
+            [disabled]="savingUserId() === u.id" 
+            (click)="saveUserRoles(u)"
+          >
+            {{ savingUserId() === u.id ? '儲存中...' : '儲存' }}
+          </button>
+        </td>
+      </tr>
+      }
+    </tbody>
+  </table>
+  }
+</div>

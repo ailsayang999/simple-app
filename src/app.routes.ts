@@ -98,6 +98,15 @@ export const routes: Routes = [
           },
         ],
       },
+      {
+        path: 'admin/user-roles',
+        canActivate: [authGuard, roleGuard],
+        data: { roles: [Role.Admin, Role.Manager] },
+        loadComponent: () =>
+          import('./app/pages/admin-user-roles/user-role-management').then(
+            (m) => m.UserRoleManagementComponent
+          ),
+      },
       { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
     ],
   },
