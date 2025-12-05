@@ -157,12 +157,23 @@
       <span class="sidebar-item-text">Account Setting</span>
     </a>
 
+    <div class="sidebar-section-title" *appHasRole="Role.Admin">Authorization</div>
+    <a
+      routerLink="/admin/user-roles"
+      routerLinkActive="active"
+      class="sidebar-item"
+      *appHasRole="Role.Admin"
+    >
+      <span class="sidebar-item-icon theme-icon pi pi-id-card"></span>
+      <span class="sidebar-item-text">Admin Page</span>
+    </a>
+
     <div class="sidebar-section-title" *appHasRole="Role.Admin">E-Commerce</div>
     <a
       routerLink="/products"
       routerLinkActive="active"
       class="sidebar-item"
-      *appHasRole="Role.Admin"
+      *appHasPermission="Permission.ProductView"
     >
       <span class="sidebar-item-icon theme-icon pi pi-cart-minus"></span>
       <span class="sidebar-item-text">Products</span>
@@ -177,17 +188,6 @@
     >
       <span class="sidebar-item-icon theme-icon pi pi-list"></span>
       <span class="sidebar-item-text">Sample Page</span>
-    </a>
-
-    <div class="sidebar-section-title" *appHasPermission="Permission.ProductView">Other</div>
-    <a
-      routerLink="/admin/user-roles"
-      routerLinkActive="active"
-      class="sidebar-item"
-      *appHasPermission="Permission.ProductView"
-    >
-      <span class="sidebar-item-icon theme-icon pi pi-id-card"></span>
-      <span class="sidebar-item-text">Admin Page</span>
     </a>
   </nav>
 </div>
