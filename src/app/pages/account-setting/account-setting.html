@@ -58,6 +58,7 @@
       </div>
 
       <!-- SECURITY -->
+      <!-- SECURITY -->
       <div class="card">
         <div class="card-header">
           <h2>Security</h2>
@@ -65,19 +66,51 @@
         </div>
 
         <div class="card-body">
-          <!-- Password -->
+          <!-- Current Password -->
           <div class="form-field">
-            <label for="password">New Password</label>
+            <label for="currentPassword">Current Password</label>
             <input
-              id="password"
+              id="currentPassword"
               type="password"
-              formControlName="password"
+              formControlName="currentPassword"
+              placeholder="輸入目前使用中的密碼"
+            />
+            @if (hasError('currentPassword', 'requiredPasswordChange')) {
+            <div class="field-error">若要變更密碼，必須先輸入目前密碼。</div>
+            }
+          </div>
+
+          <!-- New Password -->
+          <div class="form-field">
+            <label for="newPassword">New Password</label>
+            <input
+              id="newPassword"
+              type="password"
+              formControlName="newPassword"
               placeholder="至少 6 碼，留空則不修改"
             />
-            @if (hasError('password', 'minlength')) {
-            <div class="field-error">密碼至少 6 碼</div>
+            @if (hasError('newPassword', 'requiredPasswordChange')) {
+            <div class="field-error">請輸入新密碼。</div>
+            } @if (hasError('newPassword', 'minlength')) {
+            <div class="field-error">新密碼至少 6 碼。</div>
             }
-            <div class="field-help">不修改密碼請留空。</div>
+            <div class="field-help">不修改密碼時，三個密碼欄位都可以留空。</div>
+          </div>
+
+          <!-- Confirm New Password -->
+          <div class="form-field">
+            <label for="confirmPassword">Confirm New Password</label>
+            <input
+              id="confirmPassword"
+              type="password"
+              formControlName="confirmPassword"
+              placeholder="再次輸入新密碼"
+            />
+            @if (hasError('confirmPassword', 'requiredPasswordChange')) {
+            <div class="field-error">請再次輸入新密碼。</div>
+            } @if (hasError('confirmPassword', 'passwordMismatch')) {
+            <div class="field-error">新密碼與確認新密碼不一致。</div>
+            }
           </div>
         </div>
       </div>

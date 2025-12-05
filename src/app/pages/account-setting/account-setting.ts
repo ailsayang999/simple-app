@@ -1,5 +1,5 @@
 // src/app/pages/account-setting/account-setting.ts
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   FormBuilder,
@@ -8,6 +8,7 @@ import {
   Validators,
   AbstractControl,
   ValidationErrors,
+  ValidatorFn,
 } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { AuthService, AuthUser } from '../../core/services/auth.service';
@@ -16,13 +17,16 @@ import { finalize } from 'rxjs';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { FileUploadModule, FileSelectEvent, FileUpload } from 'primeng/fileupload';
-import { ViewChild } from '@angular/core';
+import { environment } from '../../../environments/environment';
 
 type AccountFormModel = {
   name: string;
   email: string;
-  password: string;
-  avatarUrl: string; // ⭐ 會被填入 Base64
+  avatarUrl: string;
+
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword: string;
 };
 
 @Component({
@@ -40,17 +44,18 @@ export class AccountSetting implements OnInit {
   private messageService = inject(MessageService);
 
   private readonly USER_KEY = 'demo_user';
+  private baseUrl = environment.apiUrl;
 
   form!: FormGroup;
   currentUser: AuthUser | null = null;
 
-  originalSnapshot!: AccountFormModel; // ⭐ 送出前的原始快照（後端錯誤時回復用）
+  originalSnapshot!: AccountFormModel;
 
   isSaving = false;
   saveError: string | null = null;
   saveSuccess = false;
 
-  @ViewChild('avatarUpload') avatarUpload?: FileUpload; // ⭐ 對應 #avatarUpload
+  @ViewChild('avatarUpload') avatarUpload?: FileUpload;
 
   ngOnInit(): void {
     this.currentUser = this.auth.userSignal();
@@ -63,17 +68,16 @@ export class AccountSetting implements OnInit {
           name: fromLs.name,
           email: fromLs.email,
           avatarUrl: fromLs.avatarUrl,
-          roles: fromLs.roles ?? [], // ⭐ 多角色
-          permissions: fromLs.permissions ?? [], // ⭐ 權限列表
+          roles: fromLs.roles ?? [],
+          permissions: fromLs.permissions ?? [],
         };
         this.auth.userSignal.set(this.currentUser);
       }
     }
 
     this.buildForm();
-    this.originalSnapshot = this.form.getRawValue() as AccountFormModel; // ⭐ 初始化 snapshot：一開始畫面載入的狀態
+    this.originalSnapshot = this.form.getRawValue() as AccountFormModel;
 
-    // ⭐ 使用者只要一改值，就把 success / error 清掉
     this.form.valueChanges.subscribe(() => {
       this.saveError = null;
       this.saveSuccess = false;
@@ -81,18 +85,28 @@ export class AccountSetting implements OnInit {
   }
 
   private buildForm(): void {
-    this.form = this.fb.nonNullable.group<AccountFormModel>({
-      name: this.currentUser?.name ?? '',
-      email: this.currentUser?.email ?? '',
-      password: '',
-      avatarUrl: this.currentUser?.avatarUrl ?? '',
-    });
+    this.form = this.fb.nonNullable.group<AccountFormModel>(
+      {
+        name: this.currentUser?.name ?? '',
+        email: this.currentUser?.email ?? '',
+        avatarUrl: this.currentUser?.avatarUrl ?? '',
+
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: '',
+      },
+      {
+        validators: this.passwordChangeValidator(),
+      }
+    );
 
     this.form.get('name')!.addValidators([Validators.required]);
     this.form.get('email')!.addValidators([Validators.required, Validators.email]);
-    // ⭐ 自訂「可選填 + 最少 6 碼」的 validator
-    this.form.get('password')!.addValidators([this.optionalMinLength(6)]);
+
+    // 新密碼：可選填，但有填要 >= 6 碼
+    this.form.get('newPassword')!.addValidators([this.optionalMinLength(6)]);
   }
+
   // 密碼可選填：空字串通過，有值時才檢查 minlength
   private optionalMinLength(min: number) {
     return (control: AbstractControl): ValidationErrors | null => {
@@ -100,6 +114,71 @@ export class AccountSetting implements OnInit {
       if (!value) return null;
       return value.length >= min ? null : { minlength: true };
     };
+  }
+
+  // ⭐ 群組層級驗證：三個欄位只要有填任何一個 → 三個都要填，而且 new / confirm 要一樣
+  private passwordChangeValidator(): ValidatorFn {
+    return (group: AbstractControl): ValidationErrors | null => {
+      const current = group.get('currentPassword');
+      const newer = group.get('newPassword');
+      const confirm = group.get('confirmPassword');
+
+      if (!current || !newer || !confirm) return null;
+
+      const currentVal = (current.value ?? '') as string;
+      const newVal = (newer.value ?? '') as string;
+      const confirmVal = (confirm.value ?? '') as string;
+
+      const anyFilled = currentVal || newVal || confirmVal;
+
+      // 先清掉我們自己加的錯誤
+      this.setControlError(current, 'requiredPasswordChange', false);
+      this.setControlError(newer, 'requiredPasswordChange', false);
+      this.setControlError(confirm, 'requiredPasswordChange', false);
+      this.setControlError(confirm, 'passwordMismatch', false);
+
+      if (!anyFilled) {
+        // 完全沒填 → 密碼變更整塊跳過
+        return null;
+      }
+
+      const errors: any = {};
+
+      if (!currentVal) {
+        this.setControlError(current, 'requiredPasswordChange', true);
+        errors.currentRequired = true;
+      }
+
+      if (!newVal) {
+        this.setControlError(newer, 'requiredPasswordChange', true);
+        errors.newRequired = true;
+      }
+
+      if (!confirmVal) {
+        this.setControlError(confirm, 'requiredPasswordChange', true);
+        errors.confirmRequired = true;
+      }
+
+      if (newVal && confirmVal && newVal !== confirmVal) {
+        this.setControlError(confirm, 'passwordMismatch', true);
+        errors.mismatch = true;
+      }
+
+      return Object.keys(errors).length ? { passwordChangeInvalid: errors } : null;
+    };
+  }
+
+  private setControlError(control: AbstractControl, key: string, shouldSet: boolean) {
+    const errors = { ...(control.errors || {}) };
+
+    if (shouldSet) {
+      errors[key] = true;
+    } else {
+      delete errors[key];
+    }
+
+    const hasKeys = Object.keys(errors).length > 0;
+    control.setErrors(hasKeys ? errors : null);
   }
 
   private loadUserFromLocalStorage(): any | null {
@@ -110,12 +189,13 @@ export class AccountSetting implements OnInit {
       return null;
     }
   }
+
   hasError(controlName: keyof AccountFormModel, error: string): boolean {
     const ctrl = this.form.get(controlName);
     return !!ctrl && ctrl.touched && ctrl.hasError(error);
   }
 
-  // ⭐ 處理選檔事件（轉 Base64 + 即時預覽）
+  // 處理上傳頭像
   onAvatarSelect(event: FileSelectEvent) {
     const file = event.files?.[0];
     if (!file) return;
@@ -124,7 +204,6 @@ export class AccountSetting implements OnInit {
     reader.onload = () => {
       const base64 = reader.result as string;
 
-      // 更新 form 裡的 avatarUrl（右側預覽會跟著變）
       this.form.patchValue({ avatarUrl: base64 });
 
       this.messageService.add({
@@ -141,18 +220,17 @@ export class AccountSetting implements OnInit {
   onReset(): void {
     this.form.reset({
       ...this.originalSnapshot,
-      password: '',
+      currentPassword: '',
+      newPassword: '',
+      confirmPassword: '',
     });
 
-    // ⭐ 清掉 FileUpload 的檔案 + label（No file chosen）
     this.avatarUpload?.clear();
 
     this.saveError = null;
     this.saveSuccess = false;
   }
 
-  // ⭐ 後端成功才更新 localStorage + userSignal
-  // ⭐ 後端錯誤：回原本 snapshot，不動 localStorage / userSignal
   onSubmit(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
@@ -165,8 +243,17 @@ export class AccountSetting implements OnInit {
     this.saveError = null;
     this.saveSuccess = false;
 
+    const payload = {
+      name: submitSnapshot.name,
+      email: submitSnapshot.email,
+      avatarUrl: submitSnapshot.avatarUrl,
+      currentPassword: submitSnapshot.currentPassword || null,
+      newPassword: submitSnapshot.newPassword || null,
+      confirmPassword: submitSnapshot.confirmPassword || null,
+    };
+
     this.http
-      .put('/api/account/profile', submitSnapshot) // ⚠ 換成你的 API
+      .put(`${this.baseUrl}/account/profile`, payload)
       .pipe(finalize(() => (this.isSaving = false)))
       .subscribe({
         next: (res: any) => {
@@ -177,32 +264,32 @@ export class AccountSetting implements OnInit {
             name: res?.name ?? submitSnapshot.name,
             email: res?.email ?? submitSnapshot.email,
             avatarUrl: res?.avatarUrl ?? submitSnapshot.avatarUrl,
-
-            // ⭐ 角色與權限都不能在這頁修改，維持原樣
             roles: this.currentUser?.roles ?? [],
             permissions: this.currentUser?.permissions ?? [],
           };
-          // ✅ 成功才更新 AuthService + localStorage
+
+          // ✅ 成功才更新 AuthService + localStorage（不再存任何密碼）
           this.auth.userSignal.set(updatedUser);
           this.currentUser = updatedUser;
 
-          localStorage.setItem(
-            this.USER_KEY,
-            JSON.stringify({
-              ...updatedUser,
-              password: submitSnapshot.password ?? '',
-              roles: updatedUser.roles,
-              permissions: updatedUser.permissions,
-            })
-          );
+          localStorage.setItem(this.USER_KEY, JSON.stringify(updatedUser));
 
-          // ✅ 更新成功後，把 snapshot 換成這次成功的值（之後錯誤就回復這個）
+          // ✅ 更新成功後，snapshot 換成最新值（密碼欄位還是空）
           this.originalSnapshot = {
-            ...submitSnapshot,
-            password: '', // 下次 reset 時密碼預設還是空的
+            name: updatedUser.name,
+            email: updatedUser.email,
+            avatarUrl: updatedUser.avatarUrl ?? '',
+            currentPassword: '',
+            newPassword: '',
+            confirmPassword: '',
           };
 
-          // ✅「儲存成功後也清掉上傳區」
+          // 清除密碼欄位 + 上傳區
+          this.form.patchValue({
+            currentPassword: '',
+            newPassword: '',
+            confirmPassword: '',
+          });
           this.avatarUpload?.clear();
 
           this.messageService.add({
@@ -216,21 +303,21 @@ export class AccountSetting implements OnInit {
         error: (err) => {
           console.error(err);
 
-          this.saveError = '後端儲存失敗，已還原設定。';
+          this.saveError = err?.error?.message ?? '後端儲存失敗，已還原設定。';
 
-          // ❗ 回復成送出前的狀態
           this.form.reset({
             ...this.originalSnapshot,
-            password: '',
+            currentPassword: '',
+            newPassword: '',
+            confirmPassword: '',
           });
 
-          // ⭐ 後端失敗時也清空 upload 檔案名稱
           this.avatarUpload?.clear();
 
           this.messageService.add({
             severity: 'error',
             summary: '儲存失敗',
-            detail: '後端錯誤，設定已還原。',
+            detail: this.saveError ?? undefined,
             life: 4000,
           });
         },
