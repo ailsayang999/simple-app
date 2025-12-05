@@ -1,16 +1,22 @@
-import { Component, Input, computed, signal, inject, Signal } from '@angular/core';
+import { Component, Input, computed, signal, inject, Signal, ViewChild } from '@angular/core';
 import { numberAttribute } from '@angular/core'; // 轉成 number 用的 helper
 // ⭐ 新增：拿 routerOutletData 用
 import { ROUTER_OUTLET_DATA } from '@angular/router';
 // ⭐ 新增：把 ShellContext 型別拿進來用
 import type { ShellContext } from '../../layout/layout-shell';
 
+// Directive
+import { HighlightDirective } from '../../shared/directives/high-light.directive';
+
 @Component({
   standalone: true,
   selector: 'app-product-detail',
   templateUrl: './product-detail.html',
+  // ⬇⬇⬇ 這裡很關鍵
+  imports: [
+    HighlightDirective, // 給 appHighlight 用
+  ],
 })
-
 export class ProductDetail {
   // 不用 ActivatedRoute、不需要手動訂閱 / 退訂
   // input 名稱和路由 key 對應就好
@@ -30,16 +36,18 @@ export class ProductDetail {
     this._ctx()?.toggleSidebar();
   }
 
-  // 這裡示範你可能會用 signal 抓後端資料
-  private _loading = signal(true);
-  loading = this._loading.asReadonly();
+  //Directive
+  @ViewChild(HighlightDirective) hl!: HighlightDirective;
 
-  // 這裡假裝 call service，實作就略過
-  ngOnInit() {
-    // 這裡就可以直接用 this.id, this.tab
-    // 不用再 inject ActivatedRoute + subscribe
-    // ...發 request，最後 set product & loading
-    this._loading.set(false);
-    //this._product.set('My Product');
+  doHighlight() {
+    this.hl.highlight();
+  }
+
+  clearHighlight() {
+    this.hl.clear();
+  }
+
+  showInput() {
+    this.hl.input();
   }
 }

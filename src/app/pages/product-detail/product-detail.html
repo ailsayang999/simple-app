@@ -1,50 +1,52 @@
-    <section class="page">
-      <header class="page-header">
-        <!-- ⭐ 使用從 routerOutletData 傳來的 user -->
-        @if (user(); as u) {
-        <h1>RouterOutlet Input</h1>
-        <p>
-          User Name from RouterOutlet Input:
-          <strong [style.color]="'blue'">{{ u?.name ?? 'Guest' }}</strong>
-        </p>
-        <p class="subtitle">
-          User Email from RouterOutlet Input:<strong [style.color]="'blue'"> {{ u?.email }}</strong>
-        </p>
-        } @else {
-        <h1>Hi, Guest 👋</h1>
-        <p class="subtitle">Please login to see more details.</p>
-        }
+<section class="page">
+  <header class="page-header">
+    <!-- ⭐ 使用從 routerOutletData 傳來的 user -->
+    @if (user(); as u) {
+    <h1>RouterOutlet Input</h1>
+    <p>
+      User Name from RouterOutlet Input:
+      <strong [style.color]="'blue'">{{ u?.name ?? 'Guest' }}</strong>
+    </p>
+    <p class="subtitle">
+      User Email from RouterOutlet Input:<strong [style.color]="'blue'"> {{ u?.email }}</strong>
+    </p>
+    } @else {
+    <h1>Hi, Guest 👋</h1>
+    <p class="subtitle">Please login to see more details.</p>
+    }
 
-        <!-- ⭐ 使用 collapsed 狀態，做一點 UI 變化（只是示範） -->
-        <p class="hint">
-          Sidebar is @if(collapsed()) {
-          <strong [style.color]="'red'">collapsed</strong>
-          } @else {
-          <strong [style.color]="'green'">expanded</strong>
-          } now.
-        </p>
-
-        <button (click)="toggleSidebarFromPage()">toggle sidebar</button>
-      </header>
-
-      <h1>Router Inputs</h1>
-      <p>
-        product id from route： <strong [style.color]="'blue'">{{ id }}</strong>
-      </p>
-      <p>
-        tab from route：<strong [style.color]="'blue'">{{ tab ?? 'overview' }}</strong>
-      </p>
-      <p>
-        title from route.data : <strong [style.color]="'blue'">{{ title ?? 'No title' }}</strong>
-      </p>
-      <p>
-        breadcrumb label from route.data:
-        <strong [style.color]="'blue'">{{ breadcrumb.label ?? 'No label' }}</strong>
-      </p>
-
-      @if (loading()) {
-      <p>Loading...</p>
+    <!-- ⭐ 使用 collapsed 狀態，做一點 UI 變化（只是示範） -->
+    <p class="hint">
+      Sidebar is @if(collapsed()) {
+      <strong [style.color]="'red'">collapsed</strong>
       } @else {
-        <p></p>
-      }
-    </section>
+      <strong [style.color]="'green'">expanded</strong>
+      } now.
+    </p>
+
+    <button (click)="toggleSidebarFromPage()">toggle sidebar</button>
+  </header>
+
+  <h1>Router Inputs</h1>
+  <p>
+    product id from route： <strong [style.color]="'blue'">{{ id }}</strong>
+  </p>
+  <p>
+    tab from route：<strong [style.color]="'blue'">{{ tab ?? 'overview' }}</strong>
+  </p>
+  <p>
+    title from route.data : <strong [style.color]="'blue'">{{ title ?? 'No title' }}</strong>
+  </p>
+  <p>
+    breadcrumb label from route.data:
+    <strong [style.color]="'blue'">{{ breadcrumb.label ?? 'No label' }}</strong>
+  </p>
+
+
+
+  <p appHighlight="red">我會被 directive 控制</p>
+
+  <button (click)="doHighlight()">高亮</button>
+  <button (click)="clearHighlight()">清除</button>
+  <button (click)="showInput()">切換顏色</button>
+</section>
