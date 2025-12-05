@@ -1,3 +1,5 @@
+<p-confirmDialog [style]="{ width: '420px' }" [baseZIndex]="10000"></p-confirmDialog>
+
 <div class="role-page">
   <header class="role-header">
     <div>
@@ -6,17 +8,15 @@
     </div>
   </header>
 
-  @if(error()){
+  @if (error()) {
   <div class="alert alert-error">
     {{ error() }}
   </div>
-  } @if(success()){
+  } @if (success()) {
   <div class="alert alert-success">
     {{ success() }}
   </div>
-  } 
-  
-  @if(loading()){
+  } @if (loading()) {
   <div class="loading">載入中...</div>
   } @else {
   <table class="user-table">
@@ -25,7 +25,7 @@
         <th>名稱</th>
         <th>Email</th>
         <th>角色</th>
-        <th style="width: 120px">操作</th>
+        <th style="width: 180px">操作</th>
       </tr>
     </thead>
     <tbody>
@@ -35,7 +35,7 @@
         <td>{{ u.email }}</td>
         <td>
           <div class="role-list">
-            @for (role of allRoles(); track role) { 
+            @for (role of allRoles(); track role) {
             <button
               type="button"
               class="role-chip"
@@ -48,14 +48,25 @@
           </div>
         </td>
         <td>
-          <button
-            type="button"
-            class="btn-primary"
-            [disabled]="savingUserId() === u.id" 
-            (click)="saveUserRoles(u)"
-          >
-            {{ savingUserId() === u.id ? '儲存中...' : '儲存' }}
-          </button>
+          <div class="action-buttons">
+            <button
+              type="button"
+              class="btn-primary"
+              [disabled]="savingUserId() === u.id || deletingUserId() === u.id"
+              (click)="saveUserRoles(u)"
+            >
+              {{ savingUserId() === u.id ? '儲存中...' : '儲存' }}
+            </button>
+
+            <button
+              type="button"
+              class="btn-danger"
+              [disabled]="deletingUserId() === u.id || savingUserId() === u.id"
+              (click)="confirmDeleteUser(u)"
+            >
+              {{ deletingUserId() === u.id ? '刪除中...' : '刪除' }}
+            </button>
+          </div>
         </td>
       </tr>
       }

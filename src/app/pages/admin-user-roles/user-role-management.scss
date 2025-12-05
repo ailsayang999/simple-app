@@ -85,21 +85,26 @@
     box-shadow: var(--shadow-sm);
   }
 }
+.action-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
 
 .btn-primary {
-  border: none;
-  border-radius: var(--radius-full);
   padding: 6px 14px;
-  font-size: 13px;
-  background: var(--color-primary);
-  color: var(--color-on-primary);
+  border-radius: 999px;
+  border: none;
   cursor: pointer;
-  transition: background 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
+  font-size: 13px;
+  font-weight: 500;
+  background: var(--color-primary, #5045e5);
+  color: #fff;
+  transition: background 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
 
-  &:hover {
-    /* 用同一個 primary，加一點陰影和微亮度變化就好 */
-    filter: brightness(0.95);
-    box-shadow: var(--shadow-md);
+  &:hover:enabled {
+    background: #3f36c2;
+    box-shadow: 0 8px 18px rgba(80, 69, 229, 0.25);
     transform: translateY(-1px);
   }
 
@@ -110,6 +115,32 @@
     transform: none;
   }
 }
+
+.btn-danger {
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: none;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  background: #f04438;
+  color: #fff;
+  transition: background 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
+
+  &:hover:enabled {
+    background: #d92d20;
+    box-shadow: 0 8px 18px rgba(240, 68, 56, 0.3);
+    transform: translateY(-1px);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: default;
+    box-shadow: none;
+    transform: none;
+  }
+}
+
 
 .alert {
   padding: var(--space-sm) var(--space-md);

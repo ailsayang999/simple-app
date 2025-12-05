@@ -10,18 +10,23 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { finalize, forkJoin } from 'rxjs';
 import { AdminService, UserWithRolesDto } from '../../core/services/admin.service';
+// 🔹 PrimeNG ConfirmDialog
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { ConfirmationService } from 'primeng/api';
 
 @Component({
   standalone: true,
   selector: 'app-user-role-management',
   templateUrl: './user-role-management.html',
   styleUrls: ['./user-role-management.scss'],
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, ConfirmDialogModule],
+  providers: [ConfirmationService], // ✅ 提供 ConfirmationService
   // 💡 建議：切換到 OnPush 策略，因為所有狀態都由 Signals 管理，效能更佳！
   // changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class UserRoleManagementComponent implements OnInit {
   private admin = inject(AdminService);
+  private confirmationService = inject(ConfirmationService);
   // private cdr = inject(ChangeDetectorRef); // 轉換為 Signals 後，不再需要 ChangeDetectorRef
 
   // ⭐️ 狀態轉換為 WritableSignal
@@ -30,6 +35,7 @@ export class UserRoleManagementComponent implements OnInit {
 
   loading: WritableSignal<boolean> = signal(false);
   savingUserId: WritableSignal<string | null> = signal(null);
+  deletingUserId: WritableSignal<string | null> = signal(null);
   error: WritableSignal<string> = signal('');
   success: WritableSignal<string> = signal('');
 
@@ -97,5 +103,45 @@ export class UserRoleManagementComponent implements OnInit {
         this.error.set('儲存失敗，請稍後再試');
       },
     });
+  }
+
+  // ⭐ 新增：先跳 PrimeNG ConfirmDialog
+  confirmDeleteUser(user: UserWithRolesDto) {
+    this.confirmationService.confirm({
+      header: '刪除使用者',
+      message: `你確定要刪除使用者「${user.name || user.email}」嗎？此操作無法復原。`,
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: '確定刪除',
+      rejectLabel: '取消',
+      acceptButtonStyleClass: 'p-button-danger',
+      rejectButtonStyleClass: 'p-button-text',
+      // 點擊「確定刪除」才真的呼叫 API
+      accept: () => {
+        this.deleteUser(user);
+      },
+    });
+  }
+
+  // ⭐ 新增：實際打 API 刪除使用者
+  private deleteUser(user: UserWithRolesDto) {
+    this.deletingUserId.set(user.id);
+    this.error.set('');
+    this.success.set('');
+
+    this.admin
+      .deleteUser(user.id)
+      .pipe(finalize(() => this.deletingUserId.set(null)))
+      .subscribe({
+        next: () => {
+          // 從畫面列表中移除
+          this.users.update((list) => list.filter((u) => u.id !== user.id));
+
+          this.success.set('使用者已刪除 ✅');
+          setTimeout(() => this.success.set(''), 2000);
+        },
+        error: () => {
+          this.error.set('刪除失敗，請稍後再試');
+        },
+      });
   }
 }
