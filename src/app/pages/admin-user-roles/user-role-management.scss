@@ -85,10 +85,36 @@
     box-shadow: var(--shadow-sm);
   }
 }
+
+
 .action-buttons {
   display: flex;
-  justify-content: flex-end;
   gap: 8px;
+  justify-content: flex-end;
+
+  .btn-primary {
+    min-width: 72px;
+  }
+
+  .btn-danger {
+    min-width: 72px;
+    background: #f04438;
+    color: #fff;
+    border-radius: 999px;
+    border: none;
+    padding: 6px 12px;
+    font-size: 13px;
+    cursor: pointer;
+
+    &:hover:not(:disabled) {
+      background: #d92d20;
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
 }
 
 .btn-primary {
@@ -140,7 +166,6 @@
     transform: none;
   }
 }
-
 
 .alert {
   padding: var(--space-sm) var(--space-md);

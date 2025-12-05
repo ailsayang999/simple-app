@@ -16,7 +16,9 @@
   <div class="alert alert-success">
     {{ success() }}
   </div>
-  } @if (loading()) {
+  }
+
+  @if (loading()) {
   <div class="loading">載入中...</div>
   } @else {
   <table class="user-table">
@@ -52,7 +54,7 @@
             <button
               type="button"
               class="btn-primary"
-              [disabled]="savingUserId() === u.id || deletingUserId() === u.id"
+              [disabled]="savingUserId() === u.id"
               (click)="saveUserRoles(u)"
             >
               {{ savingUserId() === u.id ? '儲存中...' : '儲存' }}
@@ -61,10 +63,10 @@
             <button
               type="button"
               class="btn-danger"
-              [disabled]="deletingUserId() === u.id || savingUserId() === u.id"
+              [disabled]="savingUserId() === u.id || currentUserId() === u.id"
               (click)="confirmDeleteUser(u)"
             >
-              {{ deletingUserId() === u.id ? '刪除中...' : '刪除' }}
+              刪除
             </button>
           </div>
         </td>
@@ -74,3 +76,4 @@
   </table>
   }
 </div>
+
