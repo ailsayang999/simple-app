@@ -20,7 +20,7 @@
   </div>
 
   <!-- 上排：左邊 donut，右邊匯率小卡 -->
-  <div class="top-grid">
+  <div class="top-grid" *appHasRole="Role.Admin">
     <!-- 左：幣別圓餅 -->
     <p-card class="card full-height bank-balance-by-currency-card">
       <ng-template pTemplate="header">
@@ -115,7 +115,7 @@
   </div>
 
   <!-- 下排：左邊總額 + 圓餅；右邊近三個月柱狀圖 -->
-  <div class="bottom-grid">
+  <div class="bottom-grid" *appHasRole="Role.Admin">
     <p-card class="card total-group-funds">
       <ng-template pTemplate="header">
         <div class="card-title">集團資金總額</div>

@@ -30,6 +30,7 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
   [Role.Manager]: [Permission.FundRead, Permission.ProductView, Permission.ProductEdit],
   [Role.ReportViewer]: [Permission.FundRead, Permission.ProductView],
   [Role.User]: [
+    Permission.FundRead,
     // 一般使用者可能沒有這些敏感權限
   ],
 };

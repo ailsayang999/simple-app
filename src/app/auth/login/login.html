@@ -13,7 +13,9 @@
 
       <button type="submit" [disabled]="f.invalid">Login</button>
 
-      <p class="auth-error" *ngIf="error">{{ error }}</p>
+      @if(error){
+      <p class="auth-error">{{ error }}</p>
+      }
     </form>
 
     <p class="auth-footer">
