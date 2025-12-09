@@ -157,37 +157,42 @@
       <span class="sidebar-item-text">Account Setting</span>
     </a>
 
-    <div class="sidebar-section-title" *appHasRole="Role.Admin">Authorization</div>
-    <a
-      routerLink="/admin/user-roles"
-      routerLinkActive="active"
-      class="sidebar-item"
-      *appHasRole="Role.Admin"
-    >
-      <span class="sidebar-item-icon theme-icon pi pi-id-card"></span>
-      <span class="sidebar-item-text">Admin Page</span>
-    </a>
 
-    <div class="sidebar-section-title" *appHasRole="Role.Admin">E-Commerce</div>
+
+    <!-- 只有Manager可以看 -->
+    <div class="sidebar-section-title" *appHasRole="Role.Manager">E-Commerce</div>
     <a
       routerLink="/products"
       routerLinkActive="active"
       class="sidebar-item"
-      *appHasPermission="Permission.ProductView"
+      *appHasRole="Role.Manager"
     >
       <span class="sidebar-item-icon theme-icon pi pi-cart-minus"></span>
       <span class="sidebar-item-text">Products</span>
     </a>
 
-    <div class="sidebar-section-title" *appHasPermission="Permission.ProductView">Other</div>
+    <!-- Permission.ReportView 可以看 -->
+    <div class="sidebar-section-title" *appHasPermission="Permission.ReportView">Other</div>
     <a
       routerLink="/samples"
       routerLinkActive="active"
       class="sidebar-item"
-      *appHasPermission="Permission.ProductView"
+      *appHasPermission="Permission.ReportView"
     >
       <span class="sidebar-item-icon theme-icon pi pi-list"></span>
       <span class="sidebar-item-text">Sample Page</span>
+    </a>
+
+    <!-- Admin和Manager可以看 -->
+    <div class="sidebar-section-title" *appHasRole="[Role.Admin, Role.Manager]">Authorization</div>
+    <a
+      routerLink="/admin/user-roles"
+      routerLinkActive="active"
+      class="sidebar-item"
+      *appHasRole="[Role.Admin, Role.Manager]"
+    >
+      <span class="sidebar-item-icon theme-icon pi pi-id-card"></span>
+      <span class="sidebar-item-text">Admin Page</span>
     </a>
   </nav>
 </div>

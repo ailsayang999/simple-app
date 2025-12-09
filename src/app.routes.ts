@@ -36,6 +36,16 @@ export const routes: Routes = [
         loadComponent: () => import('./app/pages/dashboard/dashboard').then((m) => m.Dashboard),
       },
       {
+        path: 'admin/user-roles',
+        //canActivate: [authGuard, roleGuard], // 如果要獨立出來自己一頁的話就可以加authGuard
+        canActivate: [roleGuard],
+        data: { roles: [Role.Admin, Role.Manager] },
+        loadComponent: () =>
+          import('./app/pages/admin-user-roles/user-role-management').then(
+            (m) => m.UserRoleManagementComponent
+          ),
+      },
+      {
         path: 'products',
         canActivate: [roleGuard], // 👈 新增角色守門人
         data: {
@@ -43,20 +53,21 @@ export const routes: Routes = [
             label: 'Products',
             icon: 'pi pi-cart-minus', // ⭐  加 icon
           },
-          roles: [Role.Admin], // 👈 只有 ADMIN 可以進
+          roles: [Role.Manager], // 👈 只有 MANAGER 可以進
         },
         loadComponent: () => import('./app/pages/products/products').then((m) => m.Products),
       },
       // ⭐⭐ ← 在這裡加上 products/:id，放在 path: 'products' 的旁邊（與它並列）（而不是放在 products 的 children 裡，因為你的 products 是一個 page，不是 feature parent）
       {
         path: 'products/:id',
-        canActivate: [roleGuard],
+        canActivate: [roleGuard], // 👈 新增角色守門人
         data: {
           breadcrumb: {
             label: 'Product Detail~~',
             icon: 'pi pi-shopping-bag',
           },
           title: 'Product Detail!!!!',
+          roles: [Role.Manager], // 👈 只有 MANAGER 可以進
         },
         loadComponent: () =>
           import('./app/pages/product-detail/product-detail').then((m) => m.ProductDetail),
@@ -66,7 +77,7 @@ export const routes: Routes = [
         canActivate: [permissionGuard], // ✅ 多加這一層
         data: {
           breadcrumb: 'Samples', // ⭐ 只寫字串
-          permissions: [Permission.ProductView], // ✅ 有 product.view 卡才能進
+          permissions: [Permission.ReportView], // ✅ 有 report.view.view 卡才能進
         },
         loadComponent: () => import('./app/pages/samples/samples').then((m) => m.Samples),
       },
@@ -97,15 +108,6 @@ export const routes: Routes = [
             pathMatch: 'full',
           },
         ],
-      },
-      {
-        path: 'admin/user-roles',
-        canActivate: [authGuard, roleGuard],
-        data: { roles: [Role.Admin, Role.Manager] },
-        loadComponent: () =>
-          import('./app/pages/admin-user-roles/user-role-management').then(
-            (m) => m.UserRoleManagementComponent
-          ),
       },
       { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
     ],

@@ -15,6 +15,7 @@ export enum Permission {
   FundWrite = 'fund.write',
   ProductView = 'product.view',
   ProductEdit = 'product.edit',
+  ReportView = 'report.view',
   // ...未來要加在這裡
 }
 
@@ -22,13 +23,14 @@ export enum Permission {
 export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
   [Role.Admin]: [
     Permission.FundRead,
-    Permission.FundWrite,
-    Permission.ProductView,
-    Permission.ProductEdit,
+    // Permission.FundWrite,
+    // Permission.ProductView,
+    // Permission.ProductEdit,
+    // Permission.ReportView,
     // ... Admin 通常最多
   ],
   [Role.Manager]: [Permission.FundRead, Permission.ProductView, Permission.ProductEdit],
-  [Role.ReportViewer]: [Permission.FundRead, Permission.ProductView],
+  [Role.ReportViewer]: [Permission.FundRead,Permission.ReportView],
   [Role.User]: [
     Permission.FundRead,
     // 一般使用者可能沒有這些敏感權限
