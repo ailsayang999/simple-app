@@ -12,6 +12,7 @@ import { routes } from './app.routes';
 // ✅ PrimeNG 設定相關
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { providePrimeNG } from 'primeng/config';
+import { MessageService } from 'primeng/api'; // primeng 的Service得要在這裡提供
 
 
 // ✅ 選一個主題
@@ -23,7 +24,7 @@ export const appConfig: ApplicationConfig = {
     provideBrowserGlobalErrorListeners(),
     provideZonelessChangeDetection(),
     // HttpClient 在這裡加進來就可以全專案注入 HttpClient 了
-    provideHttpClient(withInterceptors([authInterceptor])), // ✨ 加入 authInterceptor
+    provideHttpClient(withInterceptors([authInterceptor])), // ✨ 加入 authInterceptor，就可以所有 HTTP 呼叫都會自動走過這個 interceptor，Bearer token 會自動帶上
     provideRouter(
       routes,
       withComponentInputBinding(), // ✨ 開啟 Router Inputs
@@ -42,6 +43,7 @@ export const appConfig: ApplicationConfig = {
         },
       },
     }),
+    MessageService, // 🔔 給 ToastService 用
     // providePrimeNG({
     //   theme: {
     //     preset: Aura,
