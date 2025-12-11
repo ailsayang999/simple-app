@@ -109,6 +109,19 @@ export const routes: Routes = [
           },
         ],
       },
+      {
+        path: 'accounts',
+        data: {
+          breadcrumb: 'Accounts List', // ⭐ 只寫字串
+        },
+        loadComponent: () =>
+          import('./app/pages/account-list/account-list').then((m) => m.AccountListPage),
+      },
+      // {
+      //   path: 'accounts/:id',
+      //   loadComponent: () =>
+      //     import('./app/pages/accounts/account-detail.page').then((m) => m.AccountDetailPage),
+      // },
       { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
     ],
   },

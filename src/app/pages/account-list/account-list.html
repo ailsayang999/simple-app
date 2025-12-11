@@ -1,0 +1,141 @@
+<!-- ⭐ Toast -->
+<p-toast position="top-right"></p-toast>
+
+<!-- ⭐ 新增帳戶 Dialog -->
+<p-dialog
+  header="新增帳戶"
+  [(visible)]="displayCreateDialog"
+  [modal]="true"
+  [style]="{ width: '440px' }"
+  [draggable]="false"
+  [resizable]="false"
+  class="account-dialog"
+>
+  <form [formGroup]="createForm" class="form-grid">
+    <!-- 名稱 -->
+    <div class="form-field">
+      <label for="name">帳戶名稱</label>
+      <input
+        id="name"
+        type="text"
+        pInputText
+        formControlName="name"
+        placeholder="例如：台新 Richart TWD、富邦證券"
+      />
+      <div class="error" *ngIf="hasError('name', 'required')">帳戶名稱為必填</div>
+    </div>
+
+    <!-- 類型 -->
+    <div class="form-field">
+      <label for="accountType">帳戶類型</label>
+      <p-select
+        id="accountType"
+        formControlName="accountType"
+        [options]="accountTypeOptions"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="選擇帳戶類型"
+        class="w-full"
+      ></p-select>
+    </div>
+
+    <!-- 幣別 -->
+    <div class="form-field">
+      <label for="baseCurrency">基礎幣別</label>
+      <p-select
+        id="baseCurrency"
+        formControlName="baseCurrency"
+        [options]="currencyOptions"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="請選擇幣別"
+        class="w-full"
+      ></p-select>
+    </div>
+  </form>
+
+  <!-- Dialog Footer -->
+  <ng-template pTemplate="footer">
+    <button
+      pButton
+      type="button"
+      label="取消"
+      class="p-button-text dialog-btn-cancel"
+      (click)="cancelCreate()"
+    ></button>
+
+    <button
+      pButton
+      type="button"
+      label="建立帳戶"
+      icon="pi pi-check"
+      class="dialog-btn-primary"
+      (click)="submitCreate()"
+      [disabled]="createForm.invalid"
+    ></button>
+  </ng-template>
+</p-dialog>
+
+<div class="account-list-page">
+  <!-- Header -->
+  <header class="account-list-header">
+    <div class="account-list-header-text">
+      <h1>Finance Accounts List</h1>
+      <p class="account-list-header-subtitle">管理你的資金帳戶（台幣、外幣、券商…）。</p>
+
+      <button
+        pButton
+        type="button"
+        label="新增帳戶"
+        icon="pi pi-plus"
+        class="add-account-btn"
+        (click)="openCreateDialog()"
+      ></button>
+    </div>
+
+    <!-- <div class="account-header-actions">
+      <button type="button" class="btn ghost" (click)="onReset()">Reset</button>
+
+      <button
+        type="button"
+        class="btn primary"
+        [disabled]="isSaving || form.invalid"
+        (click)="onSubmit()"
+      >
+        {{ isSaving ? 'Saving…' : 'Save Changes' }}
+      </button>
+    </div> -->
+  </header>
+
+  <p-card class="accounts-card">
+    <p-table [value]="accounts()" class="accounts-table">
+      <ng-template pTemplate="header">
+        <tr>
+          <th>名稱</th>
+          <th>類型</th>
+          <th>幣別</th>
+          <th class="text-right">總資產</th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-a>
+        <tr [routerLink]="['/accounts', a.id]" class="click-row">
+          <td>{{ a.name }}</td>
+          <td>{{ a.accountType }}</td>
+          <td>{{ a.baseCurrency }}</td>
+          <td class="text-right">
+            {{ a.totalValue | number : '1.0-0' }}
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="4" class="empty-message">
+            目前還沒有任何帳戶，點右上角「新增帳戶」開始吧！
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </p-card>
+</div>

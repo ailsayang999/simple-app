@@ -1,0 +1,122 @@
+<!-- ⭐ Toast 要放在頁面頂層 -->
+<p-toast position="top-right"></p-toast>
+
+<p-card class="accounts-card">
+  <ng-template pTemplate="header">
+    <div class="accounts-header">
+      <div class="title">
+        <h2>Accounts</h2>
+        <p>管理你的資金帳戶（台幣、外幣、券商…）</p>
+      </div>
+
+      <button
+        pButton
+        type="button"
+        label="新增帳戶"
+        icon="pi pi-plus"
+        (click)="openCreateDialog()"
+      ></button>
+    </div>
+  </ng-template>
+
+  <p-table [value]="accounts()">
+    <ng-template pTemplate="header">
+      <tr>
+        <th>名稱</th>
+        <th>類型</th>
+        <th>幣別</th>
+        <th class="text-right">總資產</th>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="body" let-a>
+      <tr [routerLink]="['/accounts', a.id]" class="click-row">
+        <td>{{ a.name }}</td>
+        <td>{{ a.accountType }}</td>
+        <td>{{ a.baseCurrency }}</td>
+        <td class="text-right">
+          {{ a.totalValue | number: '1.0-0' }}
+        </td>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td colspan="4">目前還沒有任何帳戶，點右上角「新增帳戶」開始吧！</td>
+      </tr>
+    </ng-template>
+  </p-table>
+</p-card>
+
+<!-- ⭐ 新增帳戶 Dialog -->
+<p-dialog
+  header="新增帳戶"
+  [(visible)]="displayCreateDialog"
+  [modal]="true"
+  [style]="{ width: '400px' }"
+  [draggable]="false"
+  [resizable]="false"
+>
+  <form [formGroup]="createForm" class="form-grid">
+    <!-- 名稱 -->
+    <div class="form-field">
+      <label for="name">帳戶名稱</label>
+      <input
+        id="name"
+        type="text"
+        pInputText
+        formControlName="name"
+        placeholder="例如：台新 Richart TWD、富邦證券"
+      />
+      <div class="error" *ngIf="hasError('name', 'required')">
+        帳戶名稱為必填
+      </div>
+    </div>
+
+    <!-- 類型 -->
+    <div class="form-field">
+      <label for="accountType">帳戶類型</label>
+      <p-dropdown
+        id="accountType"
+        formControlName="accountType"
+        [options]="accountTypeOptions"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="請選擇帳戶類型"
+      ></p-dropdown>
+    </div>
+
+    <!-- 幣別 -->
+    <div class="form-field">
+      <label for="baseCurrency">基礎幣別</label>
+      <p-dropdown
+        id="baseCurrency"
+        formControlName="baseCurrency"
+        [options]="currencyOptions"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="請選擇幣別"
+      ></p-dropdown>
+    </div>
+  </form>
+
+  <!-- Dialog Footer -->
+  <ng-template pTemplate="footer">
+    <button
+      pButton
+      type="button"
+      label="取消"
+      class="p-button-text"
+      (click)="cancelCreate()"
+    ></button>
+
+    <button
+      pButton
+      type="button"
+      label="建立帳戶"
+      icon="pi pi-check"
+      (click)="submitCreate()"
+      [disabled]="createForm.invalid"
+    ></button>
+  </ng-template>
+</p-dialog>

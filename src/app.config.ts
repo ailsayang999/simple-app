@@ -36,6 +36,10 @@ export const appConfig: ApplicationConfig = {
 
     // ✅ 在這裡啟用 PrimeNG v20 theme，自行定義亮暗
     providePrimeNG({
+      // 你原本就有的設定（theme、ripple、inputVariant...）
+      ripple: true,
+      inputVariant: 'filled',
+      overlayAppendTo: 'body', // ⭐ 所有 overlay（select / dropdown / calendar…）都掛在 body，就不會下拉被困在dialog內
       theme: {
         preset: Aura,
         options: {

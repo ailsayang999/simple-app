@@ -183,6 +183,16 @@
       <span class="sidebar-item-text">Sample Page</span>
     </a>
 
+    <div class="sidebar-section-title">Accounts</div>
+    <a
+      routerLink="/accounts"
+      routerLinkActive="active"
+      class="sidebar-item"
+    >
+      <span class="sidebar-item-icon theme-icon pi pi-wallet"></span>
+      <span class="sidebar-item-text">Account List Page</span>
+    </a>
+
     <!-- Admin和Manager可以看 -->
     <div class="sidebar-section-title" *appHasRole="[Role.Admin, Role.Manager]">Authorization</div>
     <a

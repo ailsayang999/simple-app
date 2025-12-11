@@ -1,0 +1,210 @@
+
+
+.account-list-page {
+  padding: var(--space-xl) calc(var(--space-xl) + 8px) var(--space-xl);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xl);
+  background: var(--color-bg-page);
+  color: var(--color-text-primary);
+  min-height: 100%;
+}
+
+.account-list-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+
+  h1 {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--color-text-primary);
+  }
+
+  .account-list-header-subtitle {
+    margin: 4px 0 0;
+    font-size: 13px;
+    color: var(--color-text-secondary);
+  }
+}
+
+.add-account-btn{
+  margin-top: 20px;
+}
+
+
+
+/* 卡片整體樣式 */
+.accounts-card {
+  border-radius: var(--radius-lg);
+  background: var(--color-bg-surface);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-border-subtle);
+
+  /* p-card 的 header / body 間距 */
+  .p-card-header {
+    padding: var(--space-lg) var(--space-xl) var(--space-md);
+    border-bottom: 1px solid var(--color-border-subtle);
+  }
+
+  .p-card-body {
+    padding: 0; /* 表格自己處理 padding */
+  }
+}
+
+/* Header 區塊 */
+.accounts-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-lg);
+
+  .title {
+    h2 {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--color-text-primary);
+    }
+
+    p {
+      margin: 4px 0 0;
+      font-size: 13px;
+      color: var(--color-text-subtle);
+    }
+  }
+
+  .add-account-btn {
+    border-radius: var(--radius-full);
+    padding-inline: 18px;
+  }
+}
+
+/* 表格樣式 */
+.accounts-table {
+  width: 100%;
+
+  .p-table-thead > tr > th {
+    padding: 12px var(--space-xl);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    border: none;
+    border-bottom: 1px solid var(--color-border-subtle);
+    background: transparent;
+  }
+
+  .p-table-tbody > tr > td {
+    padding: 14px var(--space-xl);
+    font-size: 14px;
+    color: var(--color-text-primary);
+    border: none;
+    border-bottom: 1px solid var(--color-border-subtle);
+  }
+
+  .p-table-tbody > tr:last-child > td {
+    border-bottom: none;
+  }
+
+  .empty-message {
+    padding: 24px var(--space-xl);
+    font-size: 14px;
+    color: var(--color-text-subtle);
+  }
+}
+
+/* row hover 效果 */
+.click-row {
+  cursor: pointer;
+  transition: background-color 0.15s ease, transform 0.05s ease;
+
+  &:hover {
+    background: var(--color-bg-hover);
+  }
+}
+
+/* 共用工具 */
+.text-right {
+  text-align: right;
+}
+
+/* Dialog 內部 layout */
+.form-grid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  padding-top: var(--space-sm);
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  label {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--color-text-secondary);
+  }
+
+  input[pInputText],
+  p-select {
+    width: 100%;
+  }
+
+  .error {
+    font-size: 12px;
+    color: var(--color-danger);
+  }
+}
+
+/* Dialog 外觀（需要 ::ng-deep，這算是客製 PrimeNG 樣式的標準用法） */
+:host ::ng-deep .account-dialog {
+  .p-dialog {
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-md);
+  }
+
+  .p-dialog-header {
+    padding: 18px 24px 10px;
+    border-bottom: 1px solid var(--color-border-subtle);
+
+    .p-dialog-title {
+      font-size: 18px;
+      font-weight: 600;
+    }
+  }
+
+  .p-dialog-content {
+    padding: 12px 24px 8px;
+    background: var(--color-bg-surface);
+  }
+
+  .p-dialog-footer {
+    padding: 12px 24px 16px;
+    border-top: 1px solid var(--color-border-subtle);
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--space-sm);
+  }
+}
+
+/* Dialog 按鈕 */
+.dialog-btn-cancel {
+  color: var(--color-text-secondary);
+}
+
+.dialog-btn-primary {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--color-on-primary);
+  border-radius: var(--radius-full);
+  padding-inline: 18px;
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
