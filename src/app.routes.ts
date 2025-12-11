@@ -117,11 +117,11 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./app/pages/account-list/account-list').then((m) => m.AccountListPage),
       },
-      // {
-      //   path: 'accounts/:id',
-      //   loadComponent: () =>
-      //     import('./app/pages/accounts/account-detail.page').then((m) => m.AccountDetailPage),
-      // },
+      {
+        path: 'accounts/:id',
+        loadComponent: () =>
+          import('./app/pages/account-detail/account-detail').then((m) => m.AccountDetailPage),
+      },
       { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
     ],
   },

@@ -1,0 +1,254 @@
+:host {
+  display: block;
+  padding: 0 var(--space-xl) var(--space-2xl);
+}
+
+/* 上半部帳戶資訊卡片 */
+.account-info-card {
+  margin-bottom: var(--space-xl);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--color-border-subtle);
+  box-shadow: var(--shadow-sm);
+
+  .p-card-body {
+    padding: 18px 22px 16px;
+  }
+}
+
+.info-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+
+  h2 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 600;
+  }
+
+  p {
+    margin: 4px 0 0;
+    font-size: 13px;
+    color: var(--color-text-subtle);
+  }
+}
+
+.info-tags {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tag {
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  font-size: 12px;
+  font-weight: 500;
+
+  &.type {
+    background: var(--color-primary-soft);
+    color: var(--color-primary);
+  }
+
+  &.currency {
+    background: #e5f3ff;
+    color: #0369a1;
+  }
+}
+
+.info-body {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 120px;
+
+  .label {
+    font-size: 12px;
+    color: var(--color-text-subtle);
+  }
+
+  .value {
+    font-size: 16px;
+    font-weight: 600;
+  }
+}
+
+/* 下半部 Tabs + 表格 */
+.account-detail-card {
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--color-border-subtle);
+  box-shadow: var(--shadow-sm);
+
+  .p-card-body {
+    padding: 0;
+  }
+}
+
+/* Tabs header */
+:host ::ng-deep .account-detail-card .p-tabs {
+  .p-tabs-nav {
+    padding: 0 20px;
+    border-bottom: 1px solid var(--color-border-subtle);
+  }
+
+  .p-tablist {
+    gap: 8px;
+  }
+
+  .p-tab {
+    padding: 10px 12px;
+    border-radius: var(--radius-full);
+    font-size: 13px;
+  }
+
+  .p-tab.p-highlight {
+    background: var(--color-primary-soft);
+    color: var(--color-primary);
+  }
+
+  .p-tabpanels {
+    padding: 16px 20px 20px;
+  }
+}
+
+/* Panel header 區塊 */
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.panel-title {
+  h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+  }
+
+  p {
+    margin: 3px 0 0;
+    font-size: 13px;
+    color: var(--color-text-subtle);
+  }
+}
+
+.add-btn {
+  border-radius: var(--radius-full);
+  padding-inline: 16px;
+}
+
+/* 表格 */
+:host ::ng-deep .holdings-table .p-table thead > tr > th,
+:host ::ng-deep .transactions-table .p-table thead > tr > th {
+  padding: 10px 14px;
+  background: #f9fafb;
+  border: none;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+:host ::ng-deep .holdings-table .p-table tbody > tr > td,
+:host ::ng-deep .transactions-table .p-table tbody > tr > td {
+  padding: 10px 14px;
+  border: none;
+  font-size: 14px;
+  color: var(--color-text-primary);
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.text-right {
+  text-align: right;
+}
+
+.empty-block {
+  padding: 24px 8px;
+  font-size: 14px;
+  color: var(--color-text-subtle);
+}
+
+/* 損益正負色 */
+.positive {
+  color: #16a34a;
+}
+
+.negative {
+  color: #ef4444;
+}
+
+/* Dialog form layout */
+.form-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-row {
+  display: flex;
+  gap: 12px;
+
+  @media (max-width: 600px) {
+    flex-direction: column;
+  }
+}
+
+.form-field {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  label {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--color-text-secondary);
+  }
+
+  .error {
+    font-size: 12px;
+    color: var(--color-danger);
+  }
+}
+
+:host ::ng-deep .form-field .p-inputtext,
+:host ::ng-deep .form-field .p-select .p-inputtext {
+  background: var(--color-bg-input);
+  border-radius: var(--radius-md);
+  border-color: var(--color-border-subtle);
+}
+
+/* 操作欄位 */
+.actions-cell {
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* 列上的小 icon 按鈕（用你 global.scss 的 .icon-btn 再微調） */
+.row-icon-btn {
+  margin-left: 4px;
+  border-radius: var(--radius-full);
+
+  &.p-button {
+    border: none;
+    background: transparent;
+  }
+
+  &:hover {
+    background: var(--color-bg-hover);
+  }
+
+  &.danger:hover {
+    background: rgba(239, 68, 68, 0.08);
+    color: #b91c1c;
+  }
+}
+
