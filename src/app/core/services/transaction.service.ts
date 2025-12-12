@@ -1,7 +1,10 @@
-// src/app/core/services/transaction.service.ts
-import { Injectable, signal, inject } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
-import { TransactionDto, CreateTransactionDto } from '../models/transaction.model';
+import { Injectable, inject, signal } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import {
+  TransactionDto,
+  CreateTransactionDto,
+  UpdateTransactionDto,
+} from '../models/transaction.model';
 import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
@@ -12,14 +15,22 @@ export class TransactionService {
   transactions = signal<TransactionDto[]>([]);
 
   loadTransactionsByAccount(accountId: string) {
-    const params = new HttpParams().set('accountId', accountId);
-
-    this.http
-      .get<TransactionDto[]>(this.baseUrl, { params })
-      .subscribe((res) => this.transactions.set(res));
+    this.http.get<TransactionDto[]>(`${this.baseUrl}?accountId=${accountId}`).subscribe({
+      next: (res) => this.transactions.set(res),
+      error: (err) => console.error('loadTransactions error', err),
+    });
   }
 
   createTransaction(dto: CreateTransactionDto) {
     return this.http.post<TransactionDto>(this.baseUrl, dto);
   }
+
+  updateTransaction(id: string, dto: UpdateTransactionDto) {
+    return this.http.put<TransactionDto>(`${this.baseUrl}/${id}`, dto);
+  }
+
+  deleteTransaction(id: string) {
+    return this.http.delete<void>(`${this.baseUrl}/${id}`);
+  }
 }
+

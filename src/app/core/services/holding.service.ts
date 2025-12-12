@@ -1,36 +1,35 @@
-// src/app/core/services/holding.service.ts
-import { Injectable, signal, inject } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { HoldingDto, CreateHoldingDto, UpdateHoldingDto } from '../models/holding.model';
 import { environment } from '../../../environments/environment';
+import { HoldingDto, CreateHoldingDto, UpdateHoldingDto } from '../models/holding.model';
 
 @Injectable({ providedIn: 'root' })
 export class HoldingService {
   private http = inject(HttpClient);
+  private baseUrl = `${environment.apiUrl}/holdings`;
 
-  // 跟帳戶路由相關的 API
-  private accountsBaseUrl = `${environment.apiUrl}/accounts`;
-  // 單一 holding 相關（更新 / 刪除）
-  private holdingsBaseUrl = `${environment.apiUrl}/holdings`;
-
-  // 目前帳戶的 holdings
   holdings = signal<HoldingDto[]>([]);
 
   loadHoldings(accountId: string) {
-    this.http
-      .get<HoldingDto[]>(`${this.accountsBaseUrl}/${accountId}/holdings`)
-      .subscribe((res) => this.holdings.set(res));
+    this.http.get<HoldingDto[]>(`${this.baseUrl}?accountId=${accountId}`).subscribe({
+      next: (res) => this.holdings.set(res),
+      error: (err) => console.error('loadHoldings error', err),
+    });
   }
 
   createHolding(accountId: string, dto: CreateHoldingDto) {
-    return this.http.post<HoldingDto>(`${this.accountsBaseUrl}/${accountId}/holdings`, dto);
+    return this.http.post<HoldingDto>(`${this.baseUrl}?accountId=${accountId}`, dto);
   }
 
-  updateHolding(holdingId: string, dto: UpdateHoldingDto) {
-    return this.http.put<HoldingDto>(`${this.holdingsBaseUrl}/${holdingId}`, dto);
+  updateHolding(id: string, dto: UpdateHoldingDto) {
+    return this.http.put<HoldingDto>(`${this.baseUrl}/${id}`, dto);
   }
 
-  deleteHolding(holdingId: string) {
-    return this.http.delete<void>(`${this.holdingsBaseUrl}/${holdingId}`);
+  updateMarketPrice(id: string, marketPrice: number) {
+    return this.http.put<HoldingDto>(`${this.baseUrl}/${id}/market-price`, { marketPrice });
+  }
+
+  deleteHolding(id: string) {
+    return this.http.delete<void>(`${this.baseUrl}/${id}`);
   }
 }

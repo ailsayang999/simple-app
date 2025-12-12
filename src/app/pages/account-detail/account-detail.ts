@@ -12,16 +12,21 @@ import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
 import { SelectModule } from 'primeng/select';
 import { ToastModule } from 'primeng/toast';
+import { ChartModule } from 'primeng/chart';
 
 import { AccountService } from '../../core/services/account.service';
 import { HoldingService } from '../../core/services/holding.service';
 import { TransactionService } from '../../core/services/transaction.service';
-import { AccountDto } from '../../core/models/account.model';
-import { HoldingDto, CreateHoldingDto, UpdateHoldingDto } from '../../core/models/holding.model';
-import { TransactionDto, CreateTransactionDto } from '../../core/models/transaction.model';
 import { ToastService } from '../../core/services/toast.service';
 
-import { ChartModule } from 'primeng/chart';
+import { AccountDto } from '../../core/models/account.model';
+import { HoldingDto, CreateHoldingDto, UpdateHoldingDto } from '../../core/models/holding.model';
+import {
+  TransactionDto,
+  CreateTransactionDto,
+  UpdateTransactionDto,
+} from '../../core/models/transaction.model';
+
 import { calcArrPerHolding } from '../../core/utils/arr.util';
 
 @Component({
@@ -52,45 +57,32 @@ export class AccountDetailPage implements OnInit {
   private fb = inject(FormBuilder);
   private toast = inject(ToastService);
 
-  // route param
   private accountIdSignal = signal<string | null>(null);
 
-  // 目前帳戶
   account = computed<AccountDto | null>(() => {
     const id = this.accountIdSignal();
     if (!id) return null;
     return this.accountService.accounts().find((a) => a.id === id) ?? null;
   });
 
-  // ✅ 就加在這邊，跟上面一樣是 class 的屬性
-  // 依照目前 holdings 動態計算此帳戶總資產
-  accountTotalValue = computed(() => {
-    const holdings = this.holdings();
-    if (!holdings.length) return 0;
-
-    return holdings.reduce((sum, h) => {
-      const mv = h.marketValue ?? h.quantity * h.avgCost;
-      return sum + (mv || 0);
-    }, 0);
-  });
-
-  // Tabs
   activeTab = signal<'holdings' | 'transactions'>('holdings');
 
-  // signals from services
   holdings = this.holdingService.holdings;
   transactions = this.transactionService.transactions;
 
-  // Dialog 控制
+  // dialogs
   displayCreateHoldingDialog = false;
   displayEditHoldingDialog = false;
+
+  displayMarketPriceDialog = false;
+
   displayTransactionDialog = false;
+  displayEditTransactionDialog = false;
 
-  // Holding 操作用
+  // selected
   selectedHolding = signal<HoldingDto | null>(null);
-  isViewHoldingMode = signal<boolean>(false);
+  selectedTx = signal<TransactionDto | null>(null);
 
-  // 下拉選項
   assetTypeOptions = [
     { label: 'ETF / 指數型', value: 'ETF' },
     { label: '股票', value: 'STOCK' },
@@ -107,44 +99,65 @@ export class AccountDetailPage implements OnInit {
   ];
 
   transactionTypeOptions = [
-    { label: '買進 (BUY)', value: 'BUY' },
-    { label: '賣出 (SELL)', value: 'SELL' },
-    { label: '存入 (DEPOSIT)', value: 'DEPOSIT' },
-    { label: '提領 (WITHDRAW)', value: 'WITHDRAW' },
-    { label: '股利 (DIVIDEND)', value: 'DIVIDEND' },
-    { label: '利息 (INTEREST)', value: 'INTEREST' },
+    { label: '買進 (BUY) - 現金流出', value: 'BUY' },
+    { label: '賣出 (SELL) - 現金流入', value: 'SELL' },
+    { label: '存入 (DEPOSIT) - 現金流出', value: 'DEPOSIT' },
+    { label: '提領 (WITHDRAW) - 現金流入', value: 'WITHDRAW' },
+    { label: '股利 (DIVIDEND) - 現金流入', value: 'DIVIDEND' },
+    { label: '利息 (INTEREST) - 現金流入', value: 'INTEREST' },
   ];
 
-  // 建立 Holding 表單
+  // ====== forms ======
+
   createHoldingForm = this.fb.nonNullable.group({
     symbol: ['', [Validators.required, Validators.maxLength(20)]],
     name: ['', [Validators.required, Validators.maxLength(100)]],
     assetType: ['ETF', [Validators.required]],
     currency: ['TWD', [Validators.required]],
-    quantity: [0, [Validators.required, Validators.min(0)]],
-    avgCost: [0, [Validators.required, Validators.min(0)]],
+    marketPrice: [0, [Validators.required, Validators.min(0)]],
   });
 
-  // 編輯 Holding 表單（查看明細 / 調整數量 共用）
   editHoldingForm = this.fb.nonNullable.group({
     symbol: ['', [Validators.required, Validators.maxLength(20)]],
     name: ['', [Validators.required, Validators.maxLength(100)]],
     assetType: ['ETF', [Validators.required]],
     currency: ['TWD', [Validators.required]],
-    quantity: [0, [Validators.required, Validators.min(0)]],
-    avgCost: [0, [Validators.required, Validators.min(0)]],
   });
 
-  // 新增交易表單
+  marketPriceForm = this.fb.nonNullable.group({
+    marketPrice: [0, [Validators.required, Validators.min(0)]],
+  });
+
   createTransactionForm = this.fb.nonNullable.group({
-    holdingId: [''], // ⭐ 新增：關聯哪一個 holding（可空）
+    holdingId: ['', [Validators.required]],
     tradeDate: [this.todayStr(), [Validators.required]],
     type: ['BUY', [Validators.required]],
-    symbol: ['', [Validators.required]],
+    symbol: [{ value: '', disabled: true }],
+    currency: [{ value: '', disabled: true }],
     quantity: [0, [Validators.required, Validators.min(0.0001)]],
     price: [0, [Validators.required, Validators.min(0)]],
     fee: [0, [Validators.min(0)]],
-    currency: ['TWD', [Validators.required]],
+    note: [''],
+  });
+
+  editTransactionForm = this.fb.nonNullable.group({
+    holdingId: ['', [Validators.required]],
+    tradeDate: [this.todayStr(), [Validators.required]],
+    type: ['BUY', [Validators.required]],
+    symbol: [{ value: '', disabled: true }],
+    currency: [{ value: '', disabled: true }],
+    quantity: [0, [Validators.required, Validators.min(0.0001)]],
+    price: [0, [Validators.required, Validators.min(0)]],
+    fee: [0, [Validators.min(0)]],
+    note: [''],
+  });
+
+  // ===== computed =====
+
+  accountTotalValue = computed(() => {
+    const holdings = this.holdings();
+    if (!holdings.length) return 0;
+    return holdings.reduce((sum, h) => sum + (h.marketValue ?? 0), 0);
   });
 
   ngOnInit(): void {
@@ -160,8 +173,6 @@ export class AccountDetailPage implements OnInit {
     this.holdingService.loadHoldings(id);
     this.transactionService.loadTransactionsByAccount(id);
 
-    // ARR
-    // mini ARR chart options
     this.accountArrChartOptions = {
       maintainAspectRatio: false,
       plugins: {
@@ -169,15 +180,13 @@ export class AccountDetailPage implements OnInit {
         tooltip: {
           callbacks: {
             label: (ctx: any) => {
-              const raw = ctx.raw as any;
-              const arrPercent = ctx.parsed.y ?? 0;
-              const invested = raw?.totalInvested ?? 0;
-              const current = raw?.currentValue ?? 0;
-
+              const idx = ctx.dataIndex;
+              const meta = this.arrMeta();
+              const m = meta[idx];
               return [
-                `年化報酬率（XIRR）：${arrPercent.toFixed(2)} %`,
-                `總投入：${invested.toLocaleString()}`,
-                `目前市值：${current.toLocaleString()}`,
+                `年化報酬率（XIRR）：${ctx.parsed.y.toFixed(2)} %`,
+                `總投入：${(m?.totalInvested ?? 0).toLocaleString()}`,
+                `目前市值：${(m?.currentValue ?? 0).toLocaleString()}`,
               ];
             },
           },
@@ -185,21 +194,13 @@ export class AccountDetailPage implements OnInit {
       },
       scales: {
         y: {
-          ticks: {
-            callback: (value: number) => `${value}%`,
-          },
+          ticks: { callback: (v: number) => `${v}%` },
         },
-        x: {
-          ticks: {
-            maxRotation: 0,
-            autoSkip: true,
-          },
-        },
+        x: { ticks: { maxRotation: 0, autoSkip: true } },
       },
     };
   }
 
-  // 工具：今天的 yyyy-MM-dd 字串
   private todayStr() {
     const d = new Date();
     const m = `${d.getMonth() + 1}`.padStart(2, '0');
@@ -207,7 +208,7 @@ export class AccountDetailPage implements OnInit {
     return `${d.getFullYear()}-${m}-${day}`;
   }
 
-  // ---------- Holdings：新增 ----------
+  // ============ Holding: create/update/delete ============
 
   openCreateHoldingDialog() {
     this.createHoldingForm.reset({
@@ -215,8 +216,7 @@ export class AccountDetailPage implements OnInit {
       name: '',
       assetType: 'ETF',
       currency: 'TWD',
-      quantity: 0,
-      avgCost: 0,
+      marketPrice: 0,
     });
     this.displayCreateHoldingDialog = true;
   }
@@ -243,57 +243,20 @@ export class AccountDetailPage implements OnInit {
         this.holdingService.loadHoldings(accountId);
       },
       error: (err) => {
-        console.error('create holding error', err);
-        this.toast.error('新增失敗，請稍後再試');
+        console.error(err);
+        this.toast.error(err?.error?.message ?? '新增失敗');
       },
-    });
-  }
-
-  // ---------- Holdings：查看 / 編輯 / 刪除 ----------
-
-  openHoldingView(h: HoldingDto) {
-    this.selectedHolding.set(h);
-    this.isViewHoldingMode.set(true);
-
-    this.editHoldingForm.reset({
-      symbol: h.symbol,
-      name: h.name,
-      assetType: h.assetType,
-      currency: h.currency,
-      quantity: h.quantity,
-      avgCost: h.avgCost,
-    });
-
-    this.editHoldingForm.disable(); // 純查看
-    this.displayEditHoldingDialog = true;
-  }
-
-  onTxHoldingChange(holdingId: string | null) {
-    if (!holdingId) return;
-    const h = this.holdings().find((x) => x.id === holdingId);
-    if (!h) return;
-
-    // 自動帶入 symbol + 幣別
-    this.createTransactionForm.patchValue({
-      symbol: h.symbol,
-      currency: h.currency,
     });
   }
 
   openHoldingEdit(h: HoldingDto) {
     this.selectedHolding.set(h);
-    this.isViewHoldingMode.set(false);
-
     this.editHoldingForm.reset({
       symbol: h.symbol,
       name: h.name,
       assetType: h.assetType,
       currency: h.currency,
-      quantity: h.quantity,
-      avgCost: h.avgCost,
     });
-
-    this.editHoldingForm.enable(); // 可編輯
     this.displayEditHoldingDialog = true;
   }
 
@@ -320,8 +283,43 @@ export class AccountDetailPage implements OnInit {
         this.holdingService.loadHoldings(accountId);
       },
       error: (err) => {
-        console.error('update holding error', err);
-        this.toast.error('更新失敗，請稍後再試');
+        console.error(err);
+        this.toast.error(err?.error?.message ?? '更新失敗');
+      },
+    });
+  }
+
+  openMarketPriceDialog(h: HoldingDto) {
+    this.selectedHolding.set(h);
+    this.marketPriceForm.reset({ marketPrice: h.marketPrice ?? 0 });
+    this.displayMarketPriceDialog = true;
+  }
+
+  cancelMarketPrice() {
+    this.displayMarketPriceDialog = false;
+  }
+
+  submitMarketPrice() {
+    const holding = this.selectedHolding();
+    const accountId = this.accountIdSignal();
+    if (!holding || !accountId) return;
+
+    if (this.marketPriceForm.invalid) {
+      this.marketPriceForm.markAllAsTouched();
+      return;
+    }
+
+    const { marketPrice } = this.marketPriceForm.getRawValue();
+
+    this.holdingService.updateMarketPrice(holding.id, marketPrice).subscribe({
+      next: () => {
+        this.toast.success('已更新市價');
+        this.displayMarketPriceDialog = false;
+        this.holdingService.loadHoldings(accountId);
+      },
+      error: (err) => {
+        console.error(err);
+        this.toast.error(err?.error?.message ?? '更新市價失敗');
       },
     });
   }
@@ -330,7 +328,7 @@ export class AccountDetailPage implements OnInit {
     const accountId = this.accountIdSignal();
     if (!accountId) return;
 
-    const ok = window.confirm(`確定要刪除「${h.symbol} / ${h.name}」這筆持有標的嗎？`);
+    const ok = window.confirm(`刪除 holding 需要先刪交易。確定要刪除 ${h.symbol} 嗎？`);
     if (!ok) return;
 
     this.holdingService.deleteHolding(h.id).subscribe({
@@ -339,26 +337,47 @@ export class AccountDetailPage implements OnInit {
         this.holdingService.loadHoldings(accountId);
       },
       error: (err) => {
-        console.error('delete holding error', err);
-        this.toast.error('刪除失敗，請稍後再試');
+        console.error(err);
+        this.toast.error(err?.error?.message ?? '刪除失敗');
       },
     });
   }
 
-  // ---------- 交易：新增 ----------
+  // ============ Transaction: create/update/delete ============
+
+  onTxHoldingChange(holdingId: string | null) {
+    if (!holdingId) return;
+    const h = this.holdings().find((x) => x.id === holdingId);
+    if (!h) return;
+
+    this.createTransactionForm.patchValue({
+      symbol: h.symbol,
+      currency: h.currency,
+    });
+  }
+
+  onEditTxHoldingChange(holdingId: string | null) {
+    if (!holdingId) return;
+    const h = this.holdings().find((x) => x.id === holdingId);
+    if (!h) return;
+
+    this.editTransactionForm.patchValue({
+      symbol: h.symbol,
+      currency: h.currency,
+    });
+  }
 
   openTransactionDialog() {
-    const account = this.account();
-
     this.createTransactionForm.reset({
-      holdingId: '', // ⭐ 清空關聯標的
+      holdingId: '',
       tradeDate: this.todayStr(),
       type: 'BUY',
       symbol: '',
+      currency: '',
       quantity: 0,
       price: 0,
       fee: 0,
-      currency: account?.baseCurrency ?? 'TWD',
+      note: '',
     });
 
     this.displayTransactionDialog = true;
@@ -377,71 +396,128 @@ export class AccountDetailPage implements OnInit {
     const accountId = this.accountIdSignal();
     if (!accountId) return;
 
-    const value = this.createTransactionForm.getRawValue();
-    const {
-      holdingId, // ⭐ 取出
-      tradeDate,
-      type,
-      symbol,
-      quantity,
-      price,
-      fee,
-      currency,
-    } = value;
-
-    const gross = quantity * price;
-    const totalAmount = type === 'SELL' || type === 'WITHDRAW' ? -gross - fee : gross - fee;
-
+    const raw = this.createTransactionForm.getRawValue();
     const dto: CreateTransactionDto = {
       accountId,
-      holdingId: holdingId || null, // ⭐ 帶進去（可 null）
-      tradeDate: new Date(tradeDate).toISOString(),
-      type,
-      symbol,
-      quantity,
-      price,
-      fee,
-      totalAmount,
-      currency,
+      holdingId: raw.holdingId,
+      tradeDate: new Date(raw.tradeDate).toISOString(),
+      type: raw.type,
+      quantity: raw.quantity,
+      price: raw.price,
+      fee: raw.fee,
+      note: raw.note || null,
     };
 
     this.transactionService.createTransaction(dto).subscribe({
       next: () => {
         this.toast.success('已新增交易');
         this.displayTransactionDialog = false;
+
         this.holdingService.loadHoldings(accountId);
         this.transactionService.loadTransactionsByAccount(accountId);
       },
       error: (err) => {
-        console.error('create transaction error', err);
-        this.toast.error('新增交易失敗，請稍後再試');
+        console.error(err);
+        this.toast.error(err?.error?.message ?? '新增交易失敗');
       },
     });
   }
 
-  // ---------- 共用：驗證錯誤 ----------
+  openTransactionEdit(t: TransactionDto) {
+    this.selectedTx.set(t);
 
-  hasCreateHoldingError(controlName: keyof typeof this.createHoldingForm.controls, error: string) {
-    const ctrl = this.createHoldingForm.get(controlName);
-    return ctrl?.touched && ctrl.hasError(error);
+    const yyyyMmDd = new Date(t.tradeDate).toISOString().slice(0, 10);
+
+    this.editTransactionForm.reset({
+      holdingId: t.holdingId,
+      tradeDate: yyyyMmDd,
+      type: t.type,
+      symbol: t.symbol,
+      currency: t.currency,
+      quantity: t.quantity,
+      price: t.price,
+      fee: t.fee,
+      note: t.note ?? '',
+    });
+
+    this.displayEditTransactionDialog = true;
   }
 
-  hasEditHoldingError(controlName: keyof typeof this.editHoldingForm.controls, error: string) {
-    const ctrl = this.editHoldingForm.get(controlName);
-    return ctrl?.touched && ctrl.hasError(error);
+  cancelEditTransactionDialog() {
+    this.displayEditTransactionDialog = false;
   }
 
+  submitEditTransaction() {
+    const tx = this.selectedTx();
+    const accountId = this.accountIdSignal();
+    if (!tx || !accountId) return;
+
+    if (this.editTransactionForm.invalid) {
+      this.editTransactionForm.markAllAsTouched();
+      return;
+    }
+
+    const raw = this.editTransactionForm.getRawValue();
+
+    const dto: UpdateTransactionDto = {
+      accountId,
+      holdingId: raw.holdingId,
+      tradeDate: new Date(raw.tradeDate).toISOString(),
+      type: raw.type,
+      quantity: raw.quantity,
+      price: raw.price,
+      fee: raw.fee,
+      note: raw.note || null,
+    };
+
+    this.transactionService.updateTransaction(tx.id, dto).subscribe({
+      next: () => {
+        this.toast.success('已更新交易');
+        this.displayEditTransactionDialog = false;
+
+        this.holdingService.loadHoldings(accountId);
+        this.transactionService.loadTransactionsByAccount(accountId);
+      },
+      error: (err) => {
+        console.error(err);
+        this.toast.error(err?.error?.message ?? '更新交易失敗');
+      },
+    });
+  }
+
+  deleteTransaction(t: TransactionDto) {
+    const accountId = this.accountIdSignal();
+    if (!accountId) return;
+
+    const ok = window.confirm(`確定要刪除這筆交易嗎？（${t.symbol} ${t.type}）`);
+    if (!ok) return;
+
+    this.transactionService.deleteTransaction(t.id).subscribe({
+      next: () => {
+        this.toast.success('已刪除交易');
+        this.holdingService.loadHoldings(accountId);
+        this.transactionService.loadTransactionsByAccount(accountId);
+      },
+      error: (err) => {
+        console.error(err);
+        this.toast.error(err?.error?.message ?? '刪除交易失敗');
+      },
+    });
+  }
+
+  // ===== validation helpers =====
   hasTxError(controlName: keyof typeof this.createTransactionForm.controls, error: string) {
     const ctrl = this.createTransactionForm.get(controlName);
     return ctrl?.touched && ctrl.hasError(error);
   }
 
-  // 迷你 ARR 圖用
-  accountArrChartData = computed(() => {
+  // ===== ARR chart =====
+
+  // ✅ 修法 #1：先把原始 ARR 計算抽成「純 computed」，讓 chartData / meta 都共用同一份結果
+  private arrResults = computed(() => {
     const holdings = this.holdings();
     const txs = this.transactions();
-
-    if (!holdings.length || !txs.length) return null;
+    if (!holdings.length || !txs.length) return [];
 
     const arrResults = calcArrPerHolding(
       holdings.map((h) => ({
@@ -452,36 +528,33 @@ export class AccountDetailPage implements OnInit {
       txs
     );
 
-    // 只取有投入 & 有時間長度的標的
     const usable = arrResults.filter((r) => r.years > 0 && r.totalInvested > 0);
-    if (!usable.length) return null;
+    return usable;
+  });
 
-    // 排名前 5 名（由高到低）
-    //const top5 = usable.sort((a, b) => b.arr - a.arr).slice(0, 5);
-    // const data = top5.map((r) => ({
-    //   x: r.symbol,
-    //   y: r.arr * 100, // arr 現在是 XIRR，乘以 100 變成 %
-    //   totalInvested: r.totalInvested,
-    //   currentValue: r.currentValue,
-    //   isNegative: r.arr < 0,
-    // }));
-
-    // 顯示全部
-    const data = usable.map((r) => ({
-      x: r.symbol,
-      y: r.arr * 100, // arr 現在是 XIRR，乘以 100 變成 %
+  // ✅ 修法 #1：arrMeta 改成 computed（不再在 computed 內 set signal）
+  private arrMeta = computed<Array<{ totalInvested: number; currentValue: number }>>(() => {
+    const usable = this.arrResults();
+    return usable.map((r) => ({
       totalInvested: r.totalInvested,
       currentValue: r.currentValue,
-      isNegative: r.arr < 0,
     }));
-    
+  });
 
-    const labels = data.map((d) => d.x);
-    const backgroundColor = data.map((d) =>
-      d.isNegative ? 'rgb(239, 68, 68)' : 'rgb(80, 69, 229)'
+  accountArrChartData = computed(() => {
+    const usable = this.arrResults();
+    if (!usable.length) return null;
+
+    // ✅ 顯示全部（你要前五也可在這裡 slice）
+    const labels = usable.map((r) => r.symbol);
+    const values = usable.map((r) => r.arr * 100);
+
+    const backgroundColor = usable.map((r) =>
+      r.arr < 0 ? 'rgb(239, 68, 68)' : 'rgb(80, 69, 229)'
     );
-    const hoverBackgroundColor = data.map((d) =>
-      d.isNegative ? 'rgba(239, 68, 68, 0.85)' : 'rgba(80, 69, 229, 0.85)'
+
+    const hoverBackgroundColor = usable.map((r) =>
+      r.arr < 0 ? 'rgba(239, 68, 68, 0.85)' : 'rgba(80, 69, 229, 0.85)'
     );
 
     return {
@@ -489,7 +562,7 @@ export class AccountDetailPage implements OnInit {
       datasets: [
         {
           label: 'ARR (XIRR, %)',
-          data,
+          data: values,
           backgroundColor,
           hoverBackgroundColor,
           borderRadius: 10,
