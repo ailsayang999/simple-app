@@ -1,211 +1,288 @@
 <div class="dashboard-page">
+  <!-- Header -->
+  <header class="dashboard-header">
+    <div class="dashboard-header-text">
+      <h1>Dashboard</h1>
+      <p class="dashboard-header-subtitle">查看資金概況</p>
+    </div>
+  </header>
 
-<!-- Header -->
-<header class="dashboard-header">
-  <div class="dashboard-header-text">
-    <h1>Dashboard</h1>
-    <p class="dashboard-header-subtitle">查看資金概況</p>
-  </div>
-</header>
+  <div class="dashboard-root">
+    <!-- 最上排-->
+    <div class="info-grid" *appHasPermission="Permission.FundRead">
+      @for (item of fundLegend; track item) {
+      <p-card class="card fund-legend" [ngStyle]="{ 'background-color': item.color }">
+        <div class="fund-legend-label">{{ item.label }}</div>
+        <div class="fund-legend-amount text-overflow">{{ item.amount }}</div>
+      </p-card>
+      }
+    </div>
 
-<div class="dashboard-root">
-  <!-- 最上排-->
-  <div class="info-grid" *appHasPermission="Permission.FundRead">
-    @for (item of fundLegend; track item) {
-    <p-card class="card fund-legend" [ngStyle]="{ 'background-color': item.color }">
-      <div class="fund-legend-label">{{ item.label }}</div>
-      <div class="fund-legend-amount text-overflow">{{ item.amount }}</div>
-    </p-card>
-    }
-  </div>
+    <!-- 上排：左邊 donut，右邊匯率小卡 -->
+    <div class="top-grid" *appHasRole="Role.Admin">
+      <!-- 左：幣別圓餅 -->
+      <p-card class="card full-height bank-balance-by-currency-card">
+        <ng-template pTemplate="header">
+          <div class="card-title">銀行活存幣別餘額</div>
+        </ng-template>
 
-  <!-- 上排：左邊 donut，右邊匯率小卡 -->
-  <div class="top-grid" *appHasRole="Role.Admin">
-    <!-- 左：幣別圓餅 -->
-    <p-card class="card full-height bank-balance-by-currency-card">
-      <ng-template pTemplate="header">
-        <div class="card-title">銀行活存幣別餘額</div>
-      </ng-template>
+        <div class="card-content-split">
+          <div class="chart-area">
+            <p-chart
+              type="doughnut"
+              [data]="bankBalanceByCurrencyData"
+              [options]="bankBalanceByCurrencyOptions"
+            ></p-chart>
+          </div>
+          <div class="legend-area">
+            <!-- 這邊你可以自己排 USD / EUR ... -->
+            <div class="legend-row">
+              <span class="legend-label">USD</span>
+              <span class="legend-value text-overflow">NT$53,989,172,286</span>
+            </div>
+            <!-- 其他幣別... -->
+            <div class="legend-row">
+              <span class="legend-label">EUR</span>
+              <span class="legend-value text-overflow">NT$28,989,172,286</span>
+            </div>
+            <div class="legend-row">
+              <span class="legend-label">TWD</span>
+              <span class="legend-value text-overflow">NT$2,989,172,286</span>
+            </div>
+            <div class="legend-row">
+              <span class="legend-label">JPY</span>
+              <span class="legend-value text-overflow">NT$4,989,172,286</span>
+            </div>
+            <div class="legend-row">
+              <span class="legend-label">CNY</span>
+              <span class="legend-value text-overflow">NT$5,989,172,286</span>
+            </div>
+            <div class="legend-row">
+              <span class="legend-label">Other</span>
+              <span class="legend-value text-overflow">NT$22,989,172,286</span>
+            </div>
+          </div>
+        </div>
+      </p-card>
 
-      <div class="card-content-split">
-        <div class="chart-area">
+      <!-- 右：匯率小卡 -->
+      <div class="rate-grid">
+        <!-- 美元 card -->
+        <p-card class="card rate-card">
+          <div class="rate-header">
+            <span>美元匯率</span>
+            <span class="rate-number">30.47</span>
+          </div>
+          <div class="rate-chart">
+            <p-chart type="line" [data]="usdRateData" [options]="usdRateOptions"></p-chart>
+          </div>
+        </p-card>
+
+        <!-- 歐元 card -->
+        <p-card class="card rate-card">
+          <div class="rate-header">
+            <span>歐元匯率</span>
+            <span class="rate-number">35.673</span>
+          </div>
+          <div class="rate-chart">
+            <p-chart type="line" [data]="eurRateData" [options]="eurRateOptions"></p-chart>
+          </div>
+        </p-card>
+
+        <!-- 日幣 card -->
+        <p-card class="card rate-card">
+          <div class="rate-header">
+            <span>日幣匯率</span>
+            <span class="rate-number">0.2046</span>
+          </div>
+          <div class="rate-chart">
+            <p-chart type="line" [data]="jpyRateData" [options]="jpyRateOptions"></p-chart>
+          </div>
+        </p-card>
+
+        <!-- 人民幣 card -->
+        <p-card class="card rate-card">
+          <div class="rate-header">
+            <span>人民幣匯率</span>
+            <span class="rate-number">4.265</span>
+          </div>
+          <div class="rate-chart">
+            <p-chart type="line" [data]="cnyRateData" [options]="cnyRateOptions"></p-chart>
+          </div>
+        </p-card>
+      </div>
+    </div>
+
+    <!-- 下排：左邊總額 + 圓餅；右邊近三個月柱狀圖 -->
+    <div class="bottom-grid" *appHasRole="Role.Admin">
+      <p-card class="card total-group-funds">
+        <ng-template pTemplate="header">
+          <div class="card-title">集團資金總額</div>
+        </ng-template>
+        <div class="total-amount">NT$ 116,176,598,618</div>
+
+        <div class="bottom-left-content">
+          <!-- 這裡你可以再放一個圓餅圖，或靜態圖示 -->
           <p-chart
-            type="doughnut"
-            [data]="bankBalanceByCurrencyData"
-            [options]="bankBalanceByCurrencyOptions"
+            type="pie"
+            [data]="totalGroupFundsData"
+            [options]="totalGroupFundsOptions"
           ></p-chart>
         </div>
-        <div class="legend-area">
-          <!-- 這邊你可以自己排 USD / EUR ... -->
-          <div class="legend-row">
-            <span class="legend-label">USD</span>
-            <span class="legend-value text-overflow">NT$53,989,172,286</span>
-          </div>
-          <!-- 其他幣別... -->
-          <div class="legend-row">
-            <span class="legend-label">EUR</span>
-            <span class="legend-value text-overflow">NT$28,989,172,286</span>
-          </div>
-          <div class="legend-row">
-            <span class="legend-label">TWD</span>
-            <span class="legend-value text-overflow">NT$2,989,172,286</span>
-          </div>
-          <div class="legend-row">
-            <span class="legend-label">JPY</span>
-            <span class="legend-value text-overflow">NT$4,989,172,286</span>
-          </div>
-          <div class="legend-row">
-            <span class="legend-label">CNY</span>
-            <span class="legend-value text-overflow">NT$5,989,172,286</span>
-          </div>
-          <div class="legend-row">
-            <span class="legend-label">Other</span>
-            <span class="legend-value text-overflow">NT$22,989,172,286</span>
-          </div>
-        </div>
-      </div>
-    </p-card>
-
-    <!-- 右：匯率小卡 -->
-    <div class="rate-grid">
-      <!-- 美元 card -->
-      <p-card class="card rate-card">
-        <div class="rate-header">
-          <span>美元匯率</span>
-          <span class="rate-number">30.47</span>
-        </div>
-        <div class="rate-chart">
-          <p-chart type="line" [data]="usdRateData" [options]="usdRateOptions"></p-chart>
-        </div>
       </p-card>
 
-      <!-- 歐元 card -->
-      <p-card class="card rate-card">
-        <div class="rate-header">
-          <span>歐元匯率</span>
-          <span class="rate-number">35.673</span>
-        </div>
-        <div class="rate-chart">
-          <p-chart type="line" [data]="eurRateData" [options]="eurRateOptions"></p-chart>
-        </div>
-      </p-card>
+      <p-card class="card group-fund-by-month">
+        <ng-template pTemplate="header">
+          <div class="card-title">近三個月集團資金總額</div>
+        </ng-template>
 
-      <!-- 日幣 card -->
-      <p-card class="card rate-card">
-        <div class="rate-header">
-          <span>日幣匯率</span>
-          <span class="rate-number">0.2046</span>
-        </div>
-        <div class="rate-chart">
-          <p-chart type="line" [data]="jpyRateData" [options]="jpyRateOptions"></p-chart>
-        </div>
-      </p-card>
-
-      <!-- 人民幣 card -->
-      <p-card class="card rate-card">
-        <div class="rate-header">
-          <span>人民幣匯率</span>
-          <span class="rate-number">4.265</span>
-        </div>
-        <div class="rate-chart">
-          <p-chart type="line" [data]="cnyRateData" [options]="cnyRateOptions"></p-chart>
-        </div>
-      </p-card>
-    </div>
-  </div>
-
-  <!-- 下排：左邊總額 + 圓餅；右邊近三個月柱狀圖 -->
-  <div class="bottom-grid" *appHasRole="Role.Admin">
-    <p-card class="card total-group-funds">
-      <ng-template pTemplate="header">
-        <div class="card-title">集團資金總額</div>
-      </ng-template>
-      <div class="total-amount">NT$ 116,176,598,618</div>
-
-      <div class="bottom-left-content">
-        <!-- 這裡你可以再放一個圓餅圖，或靜態圖示 -->
-        <p-chart
-          type="pie"
-          [data]="totalGroupFundsData"
-          [options]="totalGroupFundsOptions"
-        ></p-chart>
-      </div>
-    </p-card>
-
-    <p-card class="card group-fund-by-month">
-      <ng-template pTemplate="header">
-        <div class="card-title">近三個月集團資金總額</div>
-      </ng-template>
-
-      <p-chart
-        class="chart-area"
-        type="bar"
-        [data]="groupFundByMonthData"
-        [options]="groupFundByMonthOptions"
-      ></p-chart>
-    </p-card>
-  </div>
-
-  <!-- 最下排：左邊近三個月集團銀行借款 + 近三個月集團未實現資產 ＋ 近一個月資金交易 -->
-  <div class="low-bottom-grid" *appHasRole="Role.Admin">
-    <!-- 近三個月集團銀行借款 -->
-    <p-card class="card group-bank-borrowings">
-      <ng-template pTemplate="header">
-        <div class="card-title">近三個月集團銀行借款</div>
-      </ng-template>
-
-      <p-chart
-        class="chart-area"
-        type="bar"
-        [data]="groupBankBorrowingsData"
-        [options]="groupBankBorrowingsOptions"
-      ></p-chart>
-    </p-card>
-
-    <!-- 近三個月集團未實現資產 -->
-    <p-card class="card group-unrealized-assets">
-      <ng-template pTemplate="header">
-        <div class="card-title">近三個月集團未實現資產</div>
-      </ng-template>
-
-      <div class="group-unrealized-assets-chart">
         <p-chart
           class="chart-area"
           type="bar"
-          [data]="groupUnrealizedAssetsData"
-          [options]="groupUnrealizedAssetsOptions"
+          [data]="groupFundByMonthData"
+          [options]="groupFundByMonthOptions"
         ></p-chart>
-      </div>
-    </p-card>
-    <!-- 近一個月資金交易 -->
-    <p-card class="card last-one-month-fund-transactions" >
-      <ng-template pTemplate="header">
-        <div class="card-title">近一個月資金交易</div>
-      </ng-template>
+      </p-card>
+    </div>
 
-      <div class="last-one-month-fund-transactions-doughnut">
+    <!-- 最下排：左邊近三個月集團銀行借款 + 近三個月集團未實現資產 ＋ 近一個月資金交易 -->
+    <div class="low-bottom-grid" *appHasRole="Role.Admin">
+      <!-- 近三個月集團銀行借款 -->
+      <p-card class="card group-bank-borrowings">
+        <ng-template pTemplate="header">
+          <div class="card-title">近三個月集團銀行借款</div>
+        </ng-template>
+
         <p-chart
-          type="doughnut"
-          [data]="lastOneMonthFundTransactionsData"
-          [options]="lastOneMonthFundTransactionsOptions"
+          class="chart-area"
+          type="bar"
+          [data]="groupBankBorrowingsData"
+          [options]="groupBankBorrowingsOptions"
         ></p-chart>
-      </div>
+      </p-card>
 
-      <div class="last-one-month-fund-transactions-detail">
-        <div class="fund-transactions-detail-label">
-          <span class="legend-dot legend-dot-color1"></span>
-          收入總額
+      <!-- 近三個月集團未實現資產 -->
+      <p-card class="card group-unrealized-assets">
+        <ng-template pTemplate="header">
+          <div class="card-title">近三個月集團未實現資產</div>
+        </ng-template>
+
+        <div class="group-unrealized-assets-chart">
+          <p-chart
+            class="chart-area"
+            type="bar"
+            [data]="groupUnrealizedAssetsData"
+            [options]="groupUnrealizedAssetsOptions"
+          ></p-chart>
         </div>
-        <div class="fund-transactions-detail-amount">NT$ 228,455,838,668</div>
-        <div class="fund-transactions-detail-label">
-          <span class="legend-dot legend-dot-color2"></span>支出總額
+      </p-card>
+      <!-- 近一個月資金交易 -->
+      <p-card class="card last-one-month-fund-transactions">
+        <ng-template pTemplate="header">
+          <div class="card-title">近一個月資金交易</div>
+        </ng-template>
+
+        <div class="last-one-month-fund-transactions-doughnut">
+          <p-chart
+            type="doughnut"
+            [data]="lastOneMonthFundTransactionsData"
+            [options]="lastOneMonthFundTransactionsOptions"
+          ></p-chart>
         </div>
-        <div class="fund-transactions-detail-amount">NT$ 185,843,079,632</div>
-      </div>
-    </p-card>
+
+        <div class="last-one-month-fund-transactions-detail">
+          <div class="fund-transactions-detail-label">
+            <span class="legend-dot legend-dot-color1"></span>
+            收入總額
+          </div>
+          <div class="fund-transactions-detail-amount">NT$ 228,455,838,668</div>
+          <div class="fund-transactions-detail-label">
+            <span class="legend-dot legend-dot-color2"></span>支出總額
+          </div>
+          <div class="fund-transactions-detail-amount">NT$ 185,843,079,632</div>
+        </div>
+      </p-card>
+    </div>
+
+    <!-- ARR -->
+    <div class="dashboard-grid">
+      <!-- 左：總資產卡片 -->
+      <p-card class="networth-card">
+        <ng-template pTemplate="header">
+          <div class="networth-header">
+            <h2>總資產總覽</h2>
+            <p>主帳戶：{{ mainAccountName() || '尚未建立帳戶' }}</p>
+          </div>
+        </ng-template>
+
+        <div class="networth-body" *ngIf="totalNetWorth() as total">
+          <div class="networth-main">
+            <span class="label">目前總資產</span>
+            <span class="value">
+              {{ total | number : '1.0-0' }}
+            </span>
+          </div>
+
+          <p class="networth-hint">以上金額為所有持有標的市值加總（不含未實現稅費）。</p>
+        </div>
+
+        <div class="networth-empty" *ngIf="totalNetWorth() === 0">
+          尚未有任何持有標的，請先到 Accounts 建立帳戶與部位。
+        </div>
+      </p-card>
+
+      <!-- 右：ARR 圖 -->
+      <p-card class="arr-card">
+        <ng-template pTemplate="header">
+          <div class="arr-header">
+            <h2>年化報酬率排行（ARR）</h2>
+            <p>根據歷史買進金額與目前市值估算每個標的的年化報酬率</p>
+          </div>
+        </ng-template>
+
+        <div class="arr-body">
+          <!-- 前 5 名 -->
+          <div class="arr-block">
+            <div class="arr-block-title">
+              <h3>表現最佳前 5 名</h3>
+              <p>僅統計有買進紀錄且持有市值 &gt; 0 的標的</p>
+            </div>
+
+            <div class="chart-wrapper" *ngIf="bestArrChartData() as chart; else noBest">
+              <p-chart type="bar" [data]="chart" [options]="arrChartOptions"></p-chart>
+            </div>
+
+            <ng-template #noBest>
+              <div class="empty-block">尚無足夠資料計算最佳 ARR。</div>
+            </ng-template>
+          </div>
+
+          <!-- 後 5 名 -->
+          <div class="arr-block">
+            <div class="arr-block-title">
+              <h3>表現最差後 5 名</h3>
+              <!-- <p>僅統計年化報酬率為負數的標的</p> -->
+               <p>顯示年化報酬率最低的 5 檔標的（可能為正也可能為負）</p>
+            </div>
+
+            <!-- noWorst 只會在「完全沒有 arrResults（還沒輸入任何交易）」時出現，不會再因為「大家都賺錢」而空白 -->
+            <div class="chart-wrapper" *ngIf="worstArrChartData() as chart; else noWorst">
+              <p-chart type="bar" [data]="chart" [options]="arrChartOptions"></p-chart>
+            </div>
+
+            <ng-template #noWorst>
+              <div class="empty-block">目前沒有足夠資料計算 ARR。</div>
+            </ng-template>
+          </div>
+        </div>
+      </p-card>
+    </div>
+
+
+
+
+
+
+    
   </div>
-</div>
-
-
-
 </div>

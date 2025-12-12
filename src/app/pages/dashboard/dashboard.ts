@@ -1,4 +1,4 @@
-import { Component, inject, Signal, computed } from '@angular/core';
+import { Component, inject, Signal, computed, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CardModule } from 'primeng/card';
 import { ChartModule } from 'primeng/chart';
@@ -11,6 +11,11 @@ import { ROUTER_OUTLET_DATA } from '@angular/router';
 // ⭐ 新增：把 ShellContext 型別拿進來用
 import type { ShellContext } from '../../layout/layout-shell';
 
+import { HoldingService } from '../../core/services/holding.service';
+import { TransactionService } from '../../core/services/transaction.service';
+import { AccountService } from '../../core/services/account.service';
+import { calcArrPerHolding } from '../../core/utils/arr.util';
+
 @Component({
   selector: 'app-dashboard',
   standalone: true,
@@ -18,7 +23,7 @@ import type { ShellContext } from '../../layout/layout-shell';
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.scss',
 })
-export class Dashboard {
+export class Dashboard implements OnInit {
   Role = Role; // ⭐⭐ 這行超重要，讓 HTML 可以用 Role.Admin
   Permission = Permission; // ✅ 給 template 使用 enum
 
@@ -28,6 +33,196 @@ export class Dashboard {
   // ⭐ 避免 template 一直 ?. ?. ?.：包成 computed 方便使用
   readonly user = computed(() => this._ctx()?.user ?? null);
   readonly collapsed = computed(() => this._ctx()?.collapsed ?? true);
+
+  ///////////////////////////////////////////////////////////// 加一張「各標的 ARR %」的 bar chart /////////////////////////////////////////////////////////////
+  private accountService = inject(AccountService);
+  private holdingService = inject(HoldingService);
+  private transactionService = inject(TransactionService);
+
+  // 主帳戶（這邊簡單用第一個）
+  mainAccountName = signal<string>('');
+
+  // 總資產（主帳戶）
+  totalNetWorth = computed(() =>
+    this.holdingService.holdings().reduce((sum, h) => sum + (h.marketValue ?? 0), 0)
+  );
+
+  // 共有的 ARR 計算結果（先算完，再切 top/bottom）
+  private arrResults = computed(() => {
+    const holdings = this.holdingService.holdings();
+    const txs = this.transactionService.transactions();
+
+    if (!holdings.length || !txs.length) return [];
+
+    return calcArrPerHolding(
+      holdings.map((h) => ({
+        symbol: h.symbol,
+        currency: h.currency,
+        marketValue: h.marketValue,
+      })),
+      txs
+    );
+  });
+
+  // 前 5 名 ARR
+  // 前 5 名 ARR
+  bestArrChartData = computed(() => {
+    const results = [...this.arrResults()]
+      .filter((r) => r.years > 0 && r.totalInvested > 0)
+      .sort((a, b) => b.arr - a.arr) // 由高到低
+      .slice(0, 5);
+
+    if (!results.length) return null;
+
+    // 把資料包成物件，順便標記是不是負報酬
+    const data = results.map((r) => ({
+      x: r.symbol,
+      y: r.arr * 100,
+      totalInvested: r.totalInvested,
+      currentValue: r.currentValue,
+      isNegative: r.arr < 0,
+    }));
+
+    const backgroundColor = data.map(
+      (d) => (d.isNegative ? 'rgb(239, 68, 68)' : 'rgb(80, 69, 229)') // 🔴 / 🔵
+    );
+    const hoverBackgroundColor = data.map((d) =>
+      d.isNegative ? 'rgba(239, 68, 68, 0.85)' : 'rgba(80, 69, 229, 0.85)'
+    );
+
+    return {
+      labels: results.map((r) => r.symbol),
+      datasets: [
+        {
+          label: 'Best 5 ARR (%)',
+          data,
+          backgroundColor,
+          hoverBackgroundColor,
+          borderRadius: 10,
+          maxBarThickness: 40,
+        },
+      ],
+    };
+  });
+
+  // 後 5 名（最慘 5 名）ARR – 只看 arr < 0
+  // worstArrChartData = computed(() => {
+  //   const results = [...this.arrResults()]
+  //     .filter((r) => r.arr < 0 && r.years > 0 && r.totalInvested > 0)
+  //     .sort((a, b) => a.arr - b.arr) // 由低到高（最爛在前）
+  //     .slice(0, 5);
+
+  //   if (!results.length) return null;
+
+  //   return {
+  //     labels: results.map((r) => r.symbol),
+  //     datasets: [
+  //       {
+  //         label: 'Worst 5 ARR (%)',
+  //         data: results.map((r) => r.arr * 100),
+  //       },
+  //     ],
+  //   };
+  // });
+
+  // 很慘的 5 名（最慘 5 名）ARR，抓 ARR 最低 5 名，不一定要負數
+  // 後 5 名（ARR 最低 5 檔）– 不限定一定是負報酬
+  worstArrChartData = computed(() => {
+    const all = [...this.arrResults()].filter((r) => r.years > 0 && r.totalInvested > 0);
+
+    if (!all.length) return null;
+
+    const results = all.sort((a, b) => a.arr - b.arr).slice(0, 5);
+
+    const data = results.map((r) => ({
+      x: r.symbol,
+      y: r.arr * 100,
+      totalInvested: r.totalInvested,
+      currentValue: r.currentValue,
+      isNegative: r.arr < 0,
+    }));
+
+    const backgroundColor = data.map((d) =>
+      d.isNegative ? 'rgb(239, 68, 68)' : 'rgb(80, 69, 229)'
+    );
+    const hoverBackgroundColor = data.map((d) =>
+      d.isNegative ? 'rgba(239, 68, 68, 0.85)' : 'rgba(80, 69, 229, 0.85)'
+    );
+
+    return {
+      labels: results.map((r) => r.symbol),
+      datasets: [
+        {
+          label: 'ARR 最低 5 名 (%)',
+          data,
+          backgroundColor,
+          hoverBackgroundColor,
+          borderRadius: 10,
+          maxBarThickness: 40,
+        },
+      ],
+    };
+  });
+
+  arrChartOptions: any;
+
+  ngOnInit(): void {
+    // 1. 先把帳戶載入
+    this.accountService.loadAccounts();
+
+    // 2. 用 setTimeout 確保 accounts signal 已更新再讀取
+    setTimeout(() => {
+      const accounts = this.accountService.accounts();
+      if (!accounts.length) return;
+
+      const main = accounts[0];
+      this.mainAccountName.set(main.name);
+
+      // 主帳戶的 holdings & transactions
+      this.holdingService.loadHoldings(main.id);
+      this.transactionService.loadTransactionsByAccount(main.id);
+    }, 0);
+
+    // 3. Chart options（共用給 best / worst）
+    this.arrChartOptions = {
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            // 🧠 ctx.raw 就是我們剛剛 data 裡塞進去的物件
+            label: (ctx: any) => {
+              const raw = ctx.raw as any;
+              const arrPercent = ctx.parsed.y ?? 0;
+              const invested = raw?.totalInvested ?? 0;
+              const current = raw?.currentValue ?? 0;
+
+              return [
+                `年化報酬率：${arrPercent.toFixed(2)} %`,
+                `總投入：${invested.toLocaleString()}`,
+                `目前市值：${current.toLocaleString()}`,
+              ];
+            },
+          },
+        },
+      },
+      scales: {
+        y: {
+          ticks: {
+            callback: (value: number) => `${value}%`,
+          },
+        },
+        x: {
+          ticks: {
+            maxRotation: 0,
+            autoSkip: true,
+          },
+        },
+      },
+    };
+  }
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   // info legend
   fundLegend = [

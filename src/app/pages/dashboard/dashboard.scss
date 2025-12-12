@@ -266,3 +266,148 @@
     gap: 0.6rem;
   }
 }
+
+
+
+
+////////////////////////// ARR ////////////////////////
+:host {
+  display: block;
+  padding: 0 var(--space-xl) var(--space-2xl);
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.6fr);
+  gap: var(--space-xl);
+
+  @media (max-width: 960px) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* 左側總資產卡 */
+.networth-card {
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--color-border-subtle);
+  box-shadow: var(--shadow-sm);
+
+  .p-card-body {
+    padding: 18px 22px 20px;
+  }
+}
+
+.networth-header {
+  h2 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 600;
+  }
+
+  p {
+    margin: 4px 0 0;
+    font-size: 13px;
+    color: var(--color-text-subtle);
+  }
+}
+
+.networth-body {
+  margin-top: 8px;
+}
+
+.networth-main {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+
+  .label {
+    font-size: 13px;
+    color: var(--color-text-subtle);
+  }
+
+  .value {
+    font-size: 28px;
+    font-weight: 700;
+  }
+}
+
+.networth-hint {
+  margin-top: 10px;
+  font-size: 12px;
+  color: var(--color-text-subtle);
+}
+
+.networth-empty {
+  font-size: 14px;
+  color: var(--color-text-subtle);
+}
+
+/* 右側 ARR 卡 */
+.arr-card {
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--color-border-subtle);
+  box-shadow: var(--shadow-sm);
+
+  .p-card-body {
+    padding: 18px 22px 20px;
+  }
+}
+
+.arr-header {
+  h2 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 600;
+  }
+
+  p {
+    margin: 4px 0 0;
+    font-size: 13px;
+    color: var(--color-text-subtle);
+  }
+}
+
+.arr-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+  margin-top: 10px;
+}
+
+.arr-block-title {
+  h3 {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 600;
+  }
+
+  p {
+    margin: 3px 0 0;
+    font-size: 12px;
+    color: var(--color-text-subtle);
+  }
+}
+
+.chart-wrapper {
+  margin-top: 8px;
+  height: 180px; // 上下兩張 chart 各 180px
+}
+
+.empty-block {
+  margin-top: 10px;
+  font-size: 13px;
+  color: var(--color-text-subtle);
+}
+
+/* 統一 networth / ARR 卡片 header 風格 */
+// .networth-card,
+// .arr-card {
+//   .p-card-header {
+//     padding: 14px 22px 10px;
+//     border-bottom: 1px solid var(--color-border-subtle);
+//   }
+
+//   .p-card-body {
+//     padding: 14px 22px 20px; // 比原本 18px 再稍微緊一點，看你喜歡
+//   }
+// }
