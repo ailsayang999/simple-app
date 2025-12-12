@@ -231,12 +231,15 @@
         </div>
       </p-card>
 
-      <!-- 右：ARR 圖 -->
+      <!-- 右：ARR / XIRR 圖 -->
       <p-card class="arr-card">
         <ng-template pTemplate="header">
           <div class="arr-header">
-            <h2>年化報酬率排行（ARR）</h2>
-            <p>根據歷史買進金額與目前市值估算每個標的的年化報酬率</p>
+            <h2>年化報酬率排行（ARR / XIRR）</h2>
+            <p>
+              依照主帳戶各標的的買進、賣出、股利與利息等現金流， 以 XIRR
+              方式估算實際年化報酬率（顯示前 5 名與最低 5 名）。
+            </p>
           </div>
         </ng-template>
 
@@ -245,7 +248,10 @@
           <div class="arr-block">
             <div class="arr-block-title">
               <h3>表現最佳前 5 名</h3>
-              <p>僅統計有買進紀錄且持有市值 &gt; 0 的標的</p>
+              <p>
+                依 XIRR 年化報酬率排序，僅統計有買進紀錄且目前市值 &gt; 0 的標的，
+                正報酬以藍色顯示，負報酬以紅色顯示。
+              </p>
             </div>
 
             <div class="chart-wrapper" *ngIf="bestArrChartData() as chart; else noBest">
@@ -253,7 +259,7 @@
             </div>
 
             <ng-template #noBest>
-              <div class="empty-block">尚無足夠資料計算最佳 ARR。</div>
+              <div class="empty-block">尚無足夠資料計算 XIRR。</div>
             </ng-template>
           </div>
 
@@ -261,28 +267,22 @@
           <div class="arr-block">
             <div class="arr-block-title">
               <h3>表現最差後 5 名</h3>
-              <!-- <p>僅統計年化報酬率為負數的標的</p> -->
-               <p>顯示年化報酬率最低的 5 檔標的（可能為正也可能為負）</p>
+              <p>
+                顯示 XIRR 年化報酬率最低的 5 檔標的，可能為正也可能為負，
+                有助於快速找出需要檢視的部位。
+              </p>
             </div>
 
-            <!-- noWorst 只會在「完全沒有 arrResults（還沒輸入任何交易）」時出現，不會再因為「大家都賺錢」而空白 -->
             <div class="chart-wrapper" *ngIf="worstArrChartData() as chart; else noWorst">
               <p-chart type="bar" [data]="chart" [options]="arrChartOptions"></p-chart>
             </div>
 
             <ng-template #noWorst>
-              <div class="empty-block">目前沒有足夠資料計算 ARR。</div>
+              <div class="empty-block">目前沒有足夠資料計算 XIRR。</div>
             </ng-template>
           </div>
         </div>
       </p-card>
     </div>
-
-
-
-
-
-
-    
   </div>
 </div>

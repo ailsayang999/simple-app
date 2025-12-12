@@ -65,16 +65,15 @@ export class Dashboard implements OnInit {
   });
 
   // 前 5 名 ARR
-  // 前 5 名 ARR
+  // 前 5 名 ARR（其實是 XIRR）
   bestArrChartData = computed(() => {
     const results = [...this.arrResults()]
       .filter((r) => r.years > 0 && r.totalInvested > 0)
-      .sort((a, b) => b.arr - a.arr) // 由高到低
+      .sort((a, b) => b.arr - a.arr)
       .slice(0, 5);
 
     if (!results.length) return null;
 
-    // 把資料包成物件，順便標記是不是負報酬
     const data = results.map((r) => ({
       x: r.symbol,
       y: r.arr * 100,
@@ -83,8 +82,8 @@ export class Dashboard implements OnInit {
       isNegative: r.arr < 0,
     }));
 
-    const backgroundColor = data.map(
-      (d) => (d.isNegative ? 'rgb(239, 68, 68)' : 'rgb(80, 69, 229)') // 🔴 / 🔵
+    const backgroundColor = data.map((d) =>
+      d.isNegative ? 'rgb(239, 68, 68)' : 'rgb(80, 69, 229)'
     );
     const hoverBackgroundColor = data.map((d) =>
       d.isNegative ? 'rgba(239, 68, 68, 0.85)' : 'rgba(80, 69, 229, 0.85)'
@@ -94,7 +93,7 @@ export class Dashboard implements OnInit {
       labels: results.map((r) => r.symbol),
       datasets: [
         {
-          label: 'Best 5 ARR (%)',
+          label: 'Best 5 XIRR (%)', // ⭐ 這行改名
           data,
           backgroundColor,
           hoverBackgroundColor,
@@ -125,8 +124,7 @@ export class Dashboard implements OnInit {
   //   };
   // });
 
-  // 很慘的 5 名（最慘 5 名）ARR，抓 ARR 最低 5 名，不一定要負數
-  // 後 5 名（ARR 最低 5 檔）– 不限定一定是負報酬
+  // ARR 最低 5 名（其實是 XIRR 最低） 不限定一定是負報酬
   worstArrChartData = computed(() => {
     const all = [...this.arrResults()].filter((r) => r.years > 0 && r.totalInvested > 0);
 
@@ -153,7 +151,7 @@ export class Dashboard implements OnInit {
       labels: results.map((r) => r.symbol),
       datasets: [
         {
-          label: 'ARR 最低 5 名 (%)',
+          label: 'XIRR 最低 5 名 (%)', // ⭐ 這行改名
           data,
           backgroundColor,
           hoverBackgroundColor,
@@ -190,7 +188,6 @@ export class Dashboard implements OnInit {
         legend: { display: false },
         tooltip: {
           callbacks: {
-            // 🧠 ctx.raw 就是我們剛剛 data 裡塞進去的物件
             label: (ctx: any) => {
               const raw = ctx.raw as any;
               const arrPercent = ctx.parsed.y ?? 0;
@@ -198,7 +195,7 @@ export class Dashboard implements OnInit {
               const current = raw?.currentValue ?? 0;
 
               return [
-                `年化報酬率：${arrPercent.toFixed(2)} %`,
+                `年化報酬率（XIRR）：${arrPercent.toFixed(2)} %`,
                 `總投入：${invested.toLocaleString()}`,
                 `目前市值：${current.toLocaleString()}`,
               ];

@@ -162,41 +162,42 @@ export class AccountDetailPage implements OnInit {
 
     // ARR
     // mini ARR chart options
-    this.accountArrChartOptions = {
-      maintainAspectRatio: false,
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          callbacks: {
-            label: (ctx: any) => {
-              const raw = ctx.raw as any; // 我們在 data 裡塞的物件
-              const arrPercent = ctx.parsed.y ?? 0;
-              const invested = raw?.totalInvested ?? 0;
-              const current = raw?.currentValue ?? 0;
+this.accountArrChartOptions = {
+  maintainAspectRatio: false,
+  plugins: {
+    legend: { display: false },
+    tooltip: {
+      callbacks: {
+        label: (ctx: any) => {
+          const raw = ctx.raw as any;
+          const arrPercent = ctx.parsed.y ?? 0;
+          const invested = raw?.totalInvested ?? 0;
+          const current = raw?.currentValue ?? 0;
 
-              return [
-                `年化報酬率：${arrPercent.toFixed(2)} %`,
-                `總投入：${invested.toLocaleString()}`,
-                `目前市值：${current.toLocaleString()}`,
-              ];
-            },
-          },
+          return [
+            `年化報酬率（XIRR）：${arrPercent.toFixed(2)} %`,
+            `總投入：${invested.toLocaleString()}`,
+            `目前市值：${current.toLocaleString()}`,
+          ];
         },
       },
-      scales: {
-        y: {
-          ticks: {
-            callback: (value: number) => `${value}%`,
-          },
-        },
-        x: {
-          ticks: {
-            maxRotation: 0,
-            autoSkip: true,
-          },
-        },
+    },
+  },
+  scales: {
+    y: {
+      ticks: {
+        callback: (value: number) => `${value}%`,
       },
-    };
+    },
+    x: {
+      ticks: {
+        maxRotation: 0,
+        autoSkip: true,
+      },
+    },
+  },
+};
+
   }
 
   // 工具：今天的 yyyy-MM-dd 字串
@@ -437,15 +438,12 @@ export class AccountDetailPage implements OnInit {
   }
 
   // 迷你 ARR 圖用
-  // 迷你 ARR 圖用
   accountArrChartData = computed(() => {
     const holdings = this.holdings();
     const txs = this.transactions();
 
-    // 沒有持有或沒有交易，就不畫
     if (!holdings.length || !txs.length) return null;
 
-    // 用 util 算 ARR
     const arrResults = calcArrPerHolding(
       holdings.map((h) => ({
         symbol: h.symbol,
@@ -457,24 +455,22 @@ export class AccountDetailPage implements OnInit {
 
     // 只取有投入 & 有時間長度的標的
     const usable = arrResults.filter((r) => r.years > 0 && r.totalInvested > 0);
-
     if (!usable.length) return null;
 
     // 排名前 5 名（由高到低）
     const top5 = usable.sort((a, b) => b.arr - a.arr).slice(0, 5);
 
-    // 給 chart.js 的 data：塞進額外欄位給 tooltip 用
-    const data = top5.map((r) => ({
+    const data = usable.map((r) => ({
       x: r.symbol,
-      y: r.arr * 100, // 轉成 %
+      y: r.arr * 100, // arr 現在是 XIRR，乘以 100 變成 %
       totalInvested: r.totalInvested,
       currentValue: r.currentValue,
       isNegative: r.arr < 0,
     }));
 
     const labels = data.map((d) => d.x);
-    const backgroundColor = data.map(
-      (d) => (d.isNegative ? 'rgb(239, 68, 68)' : 'rgb(80, 69, 229)') // 🔴 負 / 🔵 正
+    const backgroundColor = data.map((d) =>
+      d.isNegative ? 'rgb(239, 68, 68)' : 'rgb(80, 69, 229)'
     );
     const hoverBackgroundColor = data.map((d) =>
       d.isNegative ? 'rgba(239, 68, 68, 0.85)' : 'rgba(80, 69, 229, 0.85)'
@@ -484,8 +480,8 @@ export class AccountDetailPage implements OnInit {
       labels,
       datasets: [
         {
-          label: 'ARR (%)',
-          data, // ⬅ 這裡是整個物件，而不是單純 number
+          label: 'ARR (XIRR, %)',
+          data,
           backgroundColor,
           hoverBackgroundColor,
           borderRadius: 10,
