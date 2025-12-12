@@ -162,42 +162,41 @@ export class AccountDetailPage implements OnInit {
 
     // ARR
     // mini ARR chart options
-this.accountArrChartOptions = {
-  maintainAspectRatio: false,
-  plugins: {
-    legend: { display: false },
-    tooltip: {
-      callbacks: {
-        label: (ctx: any) => {
-          const raw = ctx.raw as any;
-          const arrPercent = ctx.parsed.y ?? 0;
-          const invested = raw?.totalInvested ?? 0;
-          const current = raw?.currentValue ?? 0;
+    this.accountArrChartOptions = {
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: (ctx: any) => {
+              const raw = ctx.raw as any;
+              const arrPercent = ctx.parsed.y ?? 0;
+              const invested = raw?.totalInvested ?? 0;
+              const current = raw?.currentValue ?? 0;
 
-          return [
-            `年化報酬率（XIRR）：${arrPercent.toFixed(2)} %`,
-            `總投入：${invested.toLocaleString()}`,
-            `目前市值：${current.toLocaleString()}`,
-          ];
+              return [
+                `年化報酬率（XIRR）：${arrPercent.toFixed(2)} %`,
+                `總投入：${invested.toLocaleString()}`,
+                `目前市值：${current.toLocaleString()}`,
+              ];
+            },
+          },
         },
       },
-    },
-  },
-  scales: {
-    y: {
-      ticks: {
-        callback: (value: number) => `${value}%`,
+      scales: {
+        y: {
+          ticks: {
+            callback: (value: number) => `${value}%`,
+          },
+        },
+        x: {
+          ticks: {
+            maxRotation: 0,
+            autoSkip: true,
+          },
+        },
       },
-    },
-    x: {
-      ticks: {
-        maxRotation: 0,
-        autoSkip: true,
-      },
-    },
-  },
-};
-
+    };
   }
 
   // 工具：今天的 yyyy-MM-dd 字串
@@ -458,8 +457,16 @@ this.accountArrChartOptions = {
     if (!usable.length) return null;
 
     // 排名前 5 名（由高到低）
-    const top5 = usable.sort((a, b) => b.arr - a.arr).slice(0, 5);
+    //const top5 = usable.sort((a, b) => b.arr - a.arr).slice(0, 5);
+    // const data = top5.map((r) => ({
+    //   x: r.symbol,
+    //   y: r.arr * 100, // arr 現在是 XIRR，乘以 100 變成 %
+    //   totalInvested: r.totalInvested,
+    //   currentValue: r.currentValue,
+    //   isNegative: r.arr < 0,
+    // }));
 
+    // 顯示全部
     const data = usable.map((r) => ({
       x: r.symbol,
       y: r.arr * 100, // arr 現在是 XIRR，乘以 100 變成 %
@@ -467,6 +474,7 @@ this.accountArrChartOptions = {
       currentValue: r.currentValue,
       isNegative: r.arr < 0,
     }));
+    
 
     const labels = data.map((d) => d.x);
     const backgroundColor = data.map((d) =>

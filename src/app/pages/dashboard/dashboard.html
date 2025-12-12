@@ -208,12 +208,10 @@
     <div class="dashboard-grid">
       <!-- 左：總資產卡片 -->
       <p-card class="networth-card">
-        <ng-template pTemplate="header">
-          <div class="networth-header">
-            <h2>總資產總覽</h2>
-            <p>主帳戶：{{ mainAccountName() || '尚未建立帳戶' }}</p>
-          </div>
-        </ng-template>
+        <div class="networth-header">
+          <h2>總資產總覽</h2>
+          <h3>主帳戶：{{ mainAccountName() || '尚未建立帳戶' }}</h3>
+        </div>
 
         <div class="networth-body" *ngIf="totalNetWorth() as total">
           <div class="networth-main">
@@ -233,15 +231,13 @@
 
       <!-- 右：ARR / XIRR 圖 -->
       <p-card class="arr-card">
-        <ng-template pTemplate="header">
-          <div class="arr-header">
-            <h2>年化報酬率排行（ARR / XIRR）</h2>
-            <p>
-              依照主帳戶各標的的買進、賣出、股利與利息等現金流， 以 XIRR
-              方式估算實際年化報酬率（顯示前 5 名與最低 5 名）。
-            </p>
-          </div>
-        </ng-template>
+        <div class="arr-header">
+          <h2>年化報酬率排行（ARR / XIRR）</h2>
+          <p>
+            依照主帳戶各標的的買進、賣出、股利與利息等現金流， 以 XIRR
+            方式估算實際年化報酬率（顯示前 5 名與最低 5 名）。
+          </p>
+        </div>
 
         <div class="arr-body">
           <!-- 前 5 名 -->

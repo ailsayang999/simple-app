@@ -208,21 +208,19 @@
 
 <!-- ARR -->
 @if (accountArrChartData()) {
-  <p-card class="arr-card">
-    <ng-template pTemplate="header">
-      <div class="arr-header">
-        <h2>年化報酬率（ARR / XIRR）</h2>
-        <p>
-          依照此帳戶每檔標的的買進、賣出、股利與利息等現金流，
-          以 XIRR 方式估算實際年化報酬率（顯示前五名標的）。
-        </p>
-      </div>
-    </ng-template>
+<p-card class="arr-card">
+  <div class="arr-header">
+    <h2>年化報酬率（ARR / XIRR）</h2>
+    <p>
+      依照此帳戶每檔標的的買進、賣出、股利與利息等現金流， 以 XIRR 方式估算實際年化報酬率。 //
+      如果只顯示前五名標的:（顯示前五名標的）
+    </p>
+  </div>
 
-    <div class="mini-arr-chart" *ngIf="accountArrChartData() as chart">
-      <p-chart type="bar" [data]="chart" [options]="accountArrChartOptions"></p-chart>
-    </div>
-  </p-card>
+  <div class="mini-arr-chart" *ngIf="accountArrChartData() as chart">
+    <p-chart type="bar" [data]="chart" [options]="accountArrChartOptions"></p-chart>
+  </div>
+</p-card>
 }
 
 <!-- 新增 Holding Dialog（原本那個） -->
