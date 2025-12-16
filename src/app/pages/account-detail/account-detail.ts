@@ -47,6 +47,7 @@ import { calcArrPerHolding } from '../../core/utils/arr.util';
     SelectModule,
     ToastModule,
     ChartModule,
+    ButtonModule,
   ],
 })
 export class AccountDetailPage implements OnInit {

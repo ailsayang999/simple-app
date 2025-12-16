@@ -22,7 +22,9 @@
         formControlName="name"
         placeholder="例如：台新 Richart TWD、富邦證券"
       />
-      <div class="error" *ngIf="hasError('name', 'required')">帳戶名稱為必填</div>
+      @if (hasError('name', 'required')) {
+        <div class="error">帳戶名稱為必填</div>
+      }
     </div>
 
     <!-- 類型 -->
@@ -92,19 +94,6 @@
         (click)="openCreateDialog()"
       ></button>
     </div>
-
-    <!-- <div class="account-header-actions">
-      <button type="button" class="btn ghost" (click)="onReset()">Reset</button>
-
-      <button
-        type="button"
-        class="btn primary"
-        [disabled]="isSaving || form.invalid"
-        (click)="onSubmit()"
-      >
-        {{ isSaving ? 'Saving…' : 'Save Changes' }}
-      </button>
-    </div> -->
   </header>
 
   <p-card class="accounts-card">

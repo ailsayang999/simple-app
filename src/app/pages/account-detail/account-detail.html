@@ -1,28 +1,35 @@
 <p-toast position="top-right"></p-toast>
 
-<p-card class="account-info-card" *ngIf="account() as acc">
-  <div class="info-header">
-    <div>
-      <h2>{{ acc.name }}</h2>
-      <p>管理此帳戶的持有標的與交易紀錄</p>
+@if (account()) {
+  <p-card class="account-info-card">
+    <div class="info-header">
+      <div>
+        <h2>{{ account()!.name }}</h2>
+        <p>管理此帳戶的持有標的與交易紀錄</p>
+      </div>
+      <div class="info-tags">
+        <span class="tag type">{{ account()!.accountType }}</span>
+        <span class="tag currency">{{ account()!.baseCurrency }}</span>
+      </div>
     </div>
-    <div class="info-tags">
-      <span class="tag type">{{ acc.accountType }}</span>
-      <span class="tag currency">{{ acc.baseCurrency }}</span>
-    </div>
-  </div>
 
-  <div class="info-body">
-    <div class="info-item">
-      <span class="label">基礎幣別</span>
-      <span class="value">{{ acc.baseCurrency }}</span>
+    <div class="info-body">
+      <div class="info-item">
+        <span class="label">基礎幣別</span>
+        <span class="value">{{ account()!.baseCurrency }}</span>
+      </div>
+      <div class="info-item">
+        <span class="label">總資產</span>
+        <span class="value">{{ accountTotalValue() | number : '1.0-0' }}</span>
+      </div>
     </div>
-    <div class="info-item">
-      <span class="label">總資產</span>
-      <span class="value">{{ accountTotalValue() | number : '1.0-0' }}</span>
-    </div>
-  </div>
-</p-card>
+  </p-card>
+} @else {
+  <p-card class="account-info-card">
+    <div class="p-skeleton p-skeleton-size">載入帳戶資訊...</div>
+  </p-card>
+}
+
 
 <p-card class="account-detail-card">
   <p-tabs [value]="activeTab()">
@@ -50,84 +57,84 @@
           ></button>
         </div>
 
-        <p-table [value]="holdings()" class="holdings-table" *ngIf="holdings().length > 0; else noHoldings">
-          <ng-template pTemplate="header">
-            <tr>
-              <th>代號</th>
-              <th>名稱</th>
-              <th>類型</th>
-              <th>幣別</th>
-              <th class="text-right">數量</th>
-              <th class="text-right">均價</th>
-              <th class="text-right">市價</th>
-              <th class="text-right">市值</th>
-              <th class="text-right">未實現損益</th>
-              <th class="text-right">報酬率</th>
-              <th class="actions-cell">操作</th>
-            </tr>
-          </ng-template>
+        @if (holdings().length > 0) {
+          <p-table [value]="holdings()" class="holdings-table">
+            <ng-template pTemplate="header">
+              <tr>
+                <th>代號</th>
+                <th>名稱</th>
+                <th>類型</th>
+                <th>幣別</th>
+                <th class="text-right">數量</th>
+                <th class="text-right">均價</th>
+                <th class="text-right">市價</th>
+                <th class="text-right">市值</th>
+                <th class="text-right">未實現損益</th>
+                <th class="text-right">報酬率</th>
+                <th class="actions-cell">操作</th>
+              </tr>
+            </ng-template>
 
-          <ng-template pTemplate="body" let-h>
-            <tr>
-              <td>{{ h.symbol }}</td>
-              <td>{{ h.name }}</td>
-              <td>{{ h.assetType }}</td>
-              <td>{{ h.currency }}</td>
-              <td class="text-right">{{ h.quantity | number : '1.0-4' }}</td>
-              <td class="text-right">{{ h.avgCost | number : '1.0-4' }}</td>
-              <td class="text-right">{{ h.marketPrice | number : '1.0-4' }}</td>
-              <td class="text-right">{{ h.marketValue | number : '1.0-0' }}</td>
+            <ng-template pTemplate="body" let-h>
+              <tr>
+                <td>{{ h.symbol }}</td>
+                <td>{{ h.name }}</td>
+                <td>{{ h.assetType }}</td>
+                <td>{{ h.currency }}</td>
+                <td class="text-right">{{ h.quantity | number : '1.0-4' }}</td>
+                <td class="text-right">{{ h.avgCost | number : '1.0-4' }}</td>
+                <td class="text-right">{{ h.marketPrice | number : '1.0-4' }}</td>
+                <td class="text-right">{{ h.marketValue | number : '1.0-0' }}</td>
 
-              <td
-                class="text-right"
-                [ngClass]="{ positive: h.unrealizedPnl > 0, negative: h.unrealizedPnl < 0 }"
-              >
-                {{ h.unrealizedPnl | number : '1.0-0' }}
-              </td>
+                <td
+                  class="text-right"
+                  [ngClass]="{ positive: h.unrealizedPnl > 0, negative: h.unrealizedPnl < 0 }"
+                >
+                  {{ h.unrealizedPnl | number : '1.0-0' }}
+                </td>
 
-              <td
-                class="text-right"
-                [ngClass]="{ positive: h.returnRate > 0, negative: h.returnRate < 0 }"
-              >
-                {{ h.returnRate | number : '1.1-1' }}%
-              </td>
+                <td
+                  class="text-right"
+                  [ngClass]="{ positive: h.returnRate > 0, negative: h.returnRate < 0 }"
+                >
+                  {{ h.returnRate | number : '1.1-1' }}%
+                </td>
 
-              <td class="actions-cell">
-                <button
-                  class="icon-btn row-icon-btn"
-                  type="button"
-                  pButton
-                  icon="pi pi-dollar"
-                  pTooltip="更新市價"
-                  (click)="openMarketPriceDialog(h)"
-                ></button>
+                <td class="actions-cell">
+                  <button
+                    class="icon-btn row-icon-btn"
+                    type="button"
+                    pButton
+                    icon="pi pi-dollar"
+                    pTooltip="更新市價"
+                    (click)="openMarketPriceDialog(h)"
+                  ></button>
 
-                <button
-                  class="icon-btn row-icon-btn"
-                  type="button"
-                  pButton
-                  icon="pi pi-pencil"
-                  pTooltip="編輯基本資料"
-                  (click)="openHoldingEdit(h)"
-                ></button>
+                  <button
+                    class="icon-btn row-icon-btn"
+                    type="button"
+                    pButton
+                    icon="pi pi-pencil"
+                    pTooltip="編輯基本資料"
+                    (click)="openHoldingEdit(h)"
+                  ></button>
 
-                <button
-                  class="icon-btn row-icon-btn danger"
-                  type="button"
-                  pButton
-                  icon="pi pi-trash"
-                  pTooltip="刪除（需先刪交易）"
-                  (click)="deleteHolding(h)"
-                ></button>
-              </td>
-            </tr>
-          </ng-template>
-        </p-table>
-
-        <ng-template #noHoldings>
+                  <button
+                    class="icon-btn row-icon-btn danger"
+                    type="button"
+                    pButton
+                    icon="pi pi-trash"
+                    pTooltip="刪除（需先刪交易）"
+                    (click)="deleteHolding(h)"
+                  ></button>
+                </td>
+              </tr>
+            </ng-template>
+          </p-table>
+        } @else {
           <div class="empty-block">目前尚未建立任何持有標的。</div>
-        </ng-template>
-      </p-tabpanel>
+        }
+        </p-tabpanel>
 
       <!-- Transactions Panel -->
       <p-tabpanel value="transactions">
@@ -146,68 +153,67 @@
           ></button>
         </div>
 
-        <p-table
-          [value]="transactions()"
-          class="transactions-table"
-          *ngIf="transactions().length > 0; else noTx"
-        >
-          <ng-template pTemplate="header">
-            <tr>
-              <th>日期</th>
-              <th>類型</th>
-              <th>標的</th>
-              <th>幣別</th>
-              <th class="text-right">數量</th>
-              <th class="text-right">價格</th>
-              <th class="text-right">手續費</th>
-              <th class="text-right">現金流</th>
-              <th class="actions-cell">操作</th>
-            </tr>
-          </ng-template>
+        @if (transactions().length > 0) {
+          <p-table
+            [value]="transactions()"
+            class="transactions-table"
+          >
+            <ng-template pTemplate="header">
+              <tr>
+                <th>日期</th>
+                <th>類型</th>
+                <th>標的</th>
+                <th>幣別</th>
+                <th class="text-right">數量</th>
+                <th class="text-right">價格</th>
+                <th class="text-right">手續費</th>
+                <th class="text-right">現金流</th>
+                <th class="actions-cell">操作</th>
+              </tr>
+            </ng-template>
 
-          <ng-template pTemplate="body" let-t>
-            <tr>
-              <td>{{ t.tradeDate | date : 'yyyy/MM/dd' }}</td>
-              <td>{{ t.type }}</td>
-              <td>{{ t.symbol }}</td>
-              <td>{{ t.currency }}</td>
-              <td class="text-right">{{ t.quantity | number : '1.0-4' }}</td>
-              <td class="text-right">{{ t.price | number : '1.0-4' }}</td>
-              <td class="text-right">{{ t.fee | number : '1.0-0' }}</td>
-              <td
-                class="text-right"
-                [ngClass]="{ positive: t.totalAmount > 0, negative: t.totalAmount < 0 }"
-              >
-                {{ t.totalAmount | number : '1.0-0' }}
-              </td>
+            <ng-template pTemplate="body" let-t>
+              <tr>
+                <td>{{ t.tradeDate | date : 'yyyy/MM/dd' }}</td>
+                <td>{{ t.type }}</td>
+                <td>{{ t.symbol }}</td>
+                <td>{{ t.currency }}</td>
+                <td class="text-right">{{ t.quantity | number : '1.0-4' }}</td>
+                <td class="text-right">{{ t.price | number : '1.0-4' }}</td>
+                <td class="text-right">{{ t.fee | number : '1.0-0' }}</td>
+                <td
+                  class="text-right"
+                  [ngClass]="{ positive: t.totalAmount > 0, negative: t.totalAmount < 0 }"
+                >
+                  {{ t.totalAmount | number : '1.0-0' }}
+                </td>
 
-              <td class="actions-cell">
-                <button
-                  class="icon-btn row-icon-btn"
-                  type="button"
-                  pButton
-                  icon="pi pi-pencil"
-                  pTooltip="編輯交易"
-                  (click)="openTransactionEdit(t)"
-                ></button>
+                <td class="actions-cell">
+                  <button
+                    class="icon-btn row-icon-btn"
+                    type="button"
+                    pButton
+                    icon="pi pi-pencil"
+                    pTooltip="編輯交易"
+                    (click)="openTransactionEdit(t)"
+                  ></button>
 
-                <button
-                  class="icon-btn row-icon-btn danger"
-                  type="button"
-                  pButton
-                  icon="pi pi-trash"
-                  pTooltip="刪除交易"
-                  (click)="deleteTransaction(t)"
-                ></button>
-              </td>
-            </tr>
-          </ng-template>
-        </p-table>
-
-        <ng-template #noTx>
+                  <button
+                    class="icon-btn row-icon-btn danger"
+                    type="button"
+                    pButton
+                    icon="pi pi-trash"
+                    pTooltip="刪除交易"
+                    (click)="deleteTransaction(t)"
+                  ></button>
+                </td>
+              </tr>
+            </ng-template>
+          </p-table>
+        } @else {
           <div class="empty-block">目前尚未有任何交易紀錄。</div>
-        </ng-template>
-      </p-tabpanel>
+        }
+        </p-tabpanel>
     </p-tabpanels>
   </p-tabs>
 </p-card>
@@ -220,8 +226,8 @@
       <p>正式版：使用投資人現金流方向（TotalAmount） + 期末市值，XIRR 可顯示負值。</p>
     </div>
 
-    <div class="mini-arr-chart" *ngIf="accountArrChartData() as chart">
-      <p-chart type="bar" [data]="chart" [options]="accountArrChartOptions"></p-chart>
+    <div class="mini-arr-chart">
+      <p-chart type="bar" [data]="accountArrChartData()!" [options]="accountArrChartOptions"></p-chart>
     </div>
   </p-card>
 }
@@ -419,7 +425,9 @@
         style="width: 100%"
         (onChange)="onTxHoldingChange($event.value)"
       ></p-select>
-      <div class="error" *ngIf="hasTxError('holdingId', 'required')">holdingId 必填</div>
+      @if (hasTxError('holdingId', 'required')) {
+        <div class="error">holdingId 必填</div>
+      }
     </div>
 
     <div class="form-row">
