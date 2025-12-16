@@ -14,6 +14,7 @@ export class ToastService {
     this.messageService.add({ severity: 'error', summary: '錯誤', detail: msg });
   }
 
+
   warn(msg: string) {
     this.messageService.add({ severity: 'warn', summary: '注意', detail: msg });
   }

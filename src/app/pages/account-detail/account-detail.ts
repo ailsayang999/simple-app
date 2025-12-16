@@ -2,10 +2,20 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
+import {
+  ReactiveFormsModule,
+  FormBuilder,
+  Validators,
+  AbstractControl,
+  FormGroup,
+} from '@angular/forms';
 import { FormsModule } from '@angular/forms';
 import { ViewChild } from '@angular/core';
-import {Table} from 'primeng/table';
+import { Table } from 'primeng/table';
+
+// ✅ 最佳實務：讓 valueChanges 訂閱自動 unsubscribe
+import { DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 import { CardModule } from 'primeng/card';
 import { TabsModule } from 'primeng/tabs';
@@ -39,6 +49,9 @@ import { calcArrPerHolding } from '../../core/utils/arr.util';
 // 定義 PrimeNG 標籤可接受的 severity 類型
 type SeverityType = 'success' | 'secondary' | 'info' | 'warn' | 'danger' | 'contrast';
 
+// ✅ 交易類型（前端用）
+type TxType = 'BUY' | 'SELL' | 'DEPOSIT' | 'WITHDRAW' | 'DIVIDEND' | 'INTEREST';
+
 @Component({
   selector: 'app-account-detail-page',
   standalone: true,
@@ -67,6 +80,8 @@ type SeverityType = 'success' | 'secondary' | 'info' | 'warn' | 'danger' | 'cont
 export class AccountDetailPage implements OnInit {
   // 獲取 p-table 實例 (如果還沒加的話)
   @ViewChild('dt') dt!: Table;
+
+  private destroyRef = inject(DestroyRef);
   private route = inject(ActivatedRoute);
   private accountService = inject(AccountService);
   private holdingService = inject(HoldingService);
@@ -156,6 +171,11 @@ export class AccountDetailPage implements OnInit {
     return type; // 如果找不到，則返回原始代碼
   }
 
+  // ✅ 給 HTML 判斷用：BUY/SELL
+  isBuySell(type: string | null | undefined): boolean {
+    return type === 'BUY' || type === 'SELL';
+  }
+
   // ====== forms ======
 
   createHoldingForm = this.fb.nonNullable.group({
@@ -177,14 +197,21 @@ export class AccountDetailPage implements OnInit {
     marketPrice: [0, [Validators.required, Validators.min(0)]],
   });
 
+  // ✅ amount：只在 DEPOSIT/WITHDRAW/DIVIDEND/INTEREST 必填
   createTransactionForm = this.fb.nonNullable.group({
     holdingId: ['', [Validators.required]],
     tradeDate: [this.todayStr(), [Validators.required]],
-    type: ['BUY', [Validators.required]],
+    type: ['BUY' as TxType, [Validators.required]],
     symbol: [{ value: '', disabled: true }],
     currency: [{ value: '', disabled: true }],
-    quantity: [0, [Validators.required, Validators.min(0.0001)]],
-    price: [0, [Validators.required, Validators.min(0)]],
+
+    // BUY/SELL 用
+    quantity: [0, []],
+    price: [0, []],
+
+    // ✅ 其他類型用
+    amount: [0, []],
+
     fee: [0, [Validators.min(0)]],
     note: [''],
   });
@@ -192,11 +219,14 @@ export class AccountDetailPage implements OnInit {
   editTransactionForm = this.fb.nonNullable.group({
     holdingId: ['', [Validators.required]],
     tradeDate: [this.todayStr(), [Validators.required]],
-    type: ['BUY', [Validators.required]],
+    type: ['BUY' as TxType, [Validators.required]],
     symbol: [{ value: '', disabled: true }],
     currency: [{ value: '', disabled: true }],
-    quantity: [0, [Validators.required, Validators.min(0.0001)]],
-    price: [0, [Validators.required, Validators.min(0)]],
+
+    quantity: [0, []],
+    price: [0, []],
+    amount: [0, []],
+
     fee: [0, [Validators.min(0)]],
     note: [''],
   });
@@ -221,6 +251,22 @@ export class AccountDetailPage implements OnInit {
 
     this.holdingService.loadHoldings(id);
     this.transactionService.loadTransactionsByAccount(id);
+
+    // ✅ 初始化：先依預設 type 套 validator（避免第一次開 dialog 就亂）
+    this.applyTxValidators(
+      this.createTransactionForm,
+      this.createTransactionForm.getRawValue().type
+    );
+    this.applyTxValidators(this.editTransactionForm, this.editTransactionForm.getRawValue().type);
+
+    // ✅ type 變更自動套 validator（產品級：表單永遠一致）
+    this.createTransactionForm.controls.type.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((t) => this.applyTxValidators(this.createTransactionForm, t as TxType));
+
+    this.editTransactionForm.controls.type.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((t) => this.applyTxValidators(this.editTransactionForm, t as TxType));
 
     this.accountArrChartOptions = {
       maintainAspectRatio: false,
@@ -255,6 +301,53 @@ export class AccountDetailPage implements OnInit {
     const m = `${d.getMonth() + 1}`.padStart(2, '0');
     const day = `${d.getDate()}`.padStart(2, '0');
     return `${d.getFullYear()}-${m}-${day}`;
+  }
+
+  // ==============================
+  // ✅ 交易表單：動態 Validators（你要的 applyTxValidators）
+  // ==============================
+  private applyTxValidators(form: typeof this.createTransactionForm, type: TxType) {
+    const qty = form.controls.quantity;
+    const price = form.controls.price;
+    const amount = form.controls.amount;
+
+    // 先清空（避免殘留）
+    qty.clearValidators();
+    price.clearValidators();
+    amount.clearValidators();
+
+    if (type === 'BUY' || type === 'SELL') {
+      // BUY/SELL：quantity + price 必填
+      qty.setValidators([Validators.required, Validators.min(0.0001)]);
+      price.setValidators([Validators.required, Validators.min(0)]);
+
+      // ✅ amount 不用 → 直接 reset 成 0（避免你送出去是舊值）
+      amount.setValue(0, { emitEvent: false });
+    } else {
+      // 其他：amount 必填
+      amount.setValidators([Validators.required, Validators.min(0.01)]);
+
+      // ✅ quantity/price 不用 → reset 成 0（讓 DTO 乾淨一致）
+      qty.setValue(0, { emitEvent: false });
+      price.setValue(0, { emitEvent: false });
+    }
+
+    // 讓表單立刻更新 valid 狀態
+    qty.updateValueAndValidity({ emitEvent: false });
+    price.updateValueAndValidity({ emitEvent: false });
+    amount.updateValueAndValidity({ emitEvent: false });
+  }
+
+  // ==============================
+  // ✅ HTML 的 onChange（讓 UI 切換當下就同步）
+  // （即使 valueChanges 會觸發，我也保留，這樣體感更即時）
+  // ==============================
+  onCreateTxTypeChange(type: TxType) {
+    this.applyTxValidators(this.createTransactionForm, type);
+  }
+
+  onEditTxTypeChange(type: TxType) {
+    this.applyTxValidators(this.editTransactionForm, type);
   }
 
   // ============ Holding: create/update/delete ============
@@ -293,7 +386,6 @@ export class AccountDetailPage implements OnInit {
       },
       error: (err) => {
         console.error(err);
-        this.toast.error(err?.error?.message ?? '新增失敗');
       },
     });
   }
@@ -333,7 +425,6 @@ export class AccountDetailPage implements OnInit {
       },
       error: (err) => {
         console.error(err);
-        this.toast.error(err?.error?.message ?? '更新失敗');
       },
     });
   }
@@ -368,7 +459,6 @@ export class AccountDetailPage implements OnInit {
       },
       error: (err) => {
         console.error(err);
-        this.toast.error(err?.error?.message ?? '更新市價失敗');
       },
     });
   }
@@ -387,7 +477,6 @@ export class AccountDetailPage implements OnInit {
       },
       error: (err) => {
         console.error(err);
-        this.toast.error(err?.error?.message ?? '刪除失敗');
       },
     });
   }
@@ -425,9 +514,16 @@ export class AccountDetailPage implements OnInit {
       currency: '',
       quantity: 0,
       price: 0,
+      amount: 0,
       fee: 0,
       note: '',
     });
+
+    // ✅ reset 後再套一次 validators（避免 reset 把 validator 狀態弄亂）
+    this.applyTxValidators(
+      this.createTransactionForm,
+      this.createTransactionForm.getRawValue().type
+    );
 
     this.displayTransactionDialog = true;
   }
@@ -446,13 +542,17 @@ export class AccountDetailPage implements OnInit {
     if (!accountId) return;
 
     const raw = this.createTransactionForm.getRawValue();
+    const type = raw.type as TxType;
+
+    // ✅ totalAmount 永遠後端算，所以前端只送必要欄位
     const dto: CreateTransactionDto = {
       accountId,
       holdingId: raw.holdingId,
       tradeDate: new Date(raw.tradeDate).toISOString(),
-      type: raw.type,
-      quantity: raw.quantity,
-      price: raw.price,
+      type,
+      quantity: this.isBuySell(type) ? raw.quantity : 0,
+      price: this.isBuySell(type) ? raw.price : 0,
+      amount: this.isBuySell(type) ? null : raw.amount, // ✅ amount 只給非 BUY/SELL
       fee: raw.fee,
       note: raw.note || null,
     };
@@ -467,7 +567,6 @@ export class AccountDetailPage implements OnInit {
       },
       error: (err) => {
         console.error(err);
-        this.toast.error(err?.error?.message ?? '新增交易失敗');
       },
     });
   }
@@ -480,14 +579,18 @@ export class AccountDetailPage implements OnInit {
     this.editTransactionForm.reset({
       holdingId: t.holdingId,
       tradeDate: yyyyMmDd,
-      type: t.type,
+      type: t.type as TxType,
       symbol: t.symbol,
       currency: t.currency,
-      quantity: t.quantity,
-      price: t.price,
+      quantity: t.quantity ?? 0,
+      price: t.price ?? 0,
+      amount: t.amount ?? 0,
       fee: t.fee,
       note: t.note ?? '',
     });
+
+    // ✅ reset 後立即依 type 套 validators
+    this.applyTxValidators(this.editTransactionForm, this.editTransactionForm.getRawValue().type);
 
     this.displayEditTransactionDialog = true;
   }
@@ -507,14 +610,16 @@ export class AccountDetailPage implements OnInit {
     }
 
     const raw = this.editTransactionForm.getRawValue();
+    const type = raw.type as TxType;
 
     const dto: UpdateTransactionDto = {
       accountId,
       holdingId: raw.holdingId,
       tradeDate: new Date(raw.tradeDate).toISOString(),
-      type: raw.type,
-      quantity: raw.quantity,
-      price: raw.price,
+      type,
+      quantity: this.isBuySell(type) ? raw.quantity : 0,
+      price: this.isBuySell(type) ? raw.price : 0,
+      amount: this.isBuySell(type) ? null : raw.amount,
       fee: raw.fee,
       note: raw.note || null,
     };
@@ -529,7 +634,6 @@ export class AccountDetailPage implements OnInit {
       },
       error: (err) => {
         console.error(err);
-        this.toast.error(err?.error?.message ?? '更新交易失敗');
       },
     });
   }
@@ -549,7 +653,6 @@ export class AccountDetailPage implements OnInit {
       },
       error: (err) => {
         console.error(err);
-        this.toast.error(err?.error?.message ?? '刪除交易失敗');
       },
     });
   }
@@ -557,6 +660,17 @@ export class AccountDetailPage implements OnInit {
   // ===== validation helpers =====
   hasTxError(controlName: keyof typeof this.createTransactionForm.controls, error: string) {
     const ctrl = this.createTransactionForm.get(controlName);
+    return ctrl?.touched && ctrl.hasError(error);
+  }
+
+  // ✅ 新增：讓 HTML 可以檢查 create/edit 特定欄位錯誤（不動你原本 hasTxError）
+  hasCreateTxError(controlName: keyof typeof this.createTransactionForm.controls, error: string) {
+    const ctrl = this.createTransactionForm.get(controlName);
+    return ctrl?.touched && ctrl.hasError(error);
+  }
+
+  hasEditTxError(controlName: keyof typeof this.editTransactionForm.controls, error: string) {
+    const ctrl = this.editTransactionForm.get(controlName);
     return ctrl?.touched && ctrl.hasError(error);
   }
 

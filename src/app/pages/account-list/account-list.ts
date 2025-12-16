@@ -112,7 +112,6 @@ export class AccountListPage implements OnInit {
       },
       error: (err) => {
         console.error('createAccount error:', err);
-        this.toast.error(err?.error?.message ?? '無法建立帳戶，請稍後再試');
       },
     });
   }

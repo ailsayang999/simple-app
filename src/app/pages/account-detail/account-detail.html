@@ -1,4 +1,4 @@
-<p-toast position="top-right"></p-toast>
+<!-- <p-toast position="top-right"></p-toast> -->
 
 <div class="account-detail-page">
   <!-- Header -->
@@ -231,6 +231,7 @@
               (click)="openTransactionDialog()"
             ></button>
           </div>
+
           @if (transactions().length > 0) {
           <p-table
             #dt
@@ -612,6 +613,7 @@
           optionLabel="label"
           optionValue="value"
           style="width: 100%"
+          (onChange)="onCreateTxTypeChange($event.value)"
         ></p-select>
       </div>
     </div>
@@ -644,17 +646,34 @@
       </div>
     </div>
 
+    <!-- ✅ 依 type 顯示欄位：BUY/SELL 顯示 quantity+price；其他顯示 amount -->
+    @if (isBuySell(createTransactionForm.getRawValue().type)) {
     <div class="form-row">
       <div class="form-field">
         <label>數量</label>
         <input type="number" pInputText formControlName="quantity" min="0.0001" />
+        @if (hasCreateTxError('quantity', 'required') || hasCreateTxError('quantity', 'min')) {
+        <div class="error">quantity 必須 > 0</div>
+        }
       </div>
 
       <div class="form-field">
         <label>價格</label>
         <input type="number" pInputText formControlName="price" min="0" />
+        @if (hasCreateTxError('price', 'required') || hasCreateTxError('price', 'min')) {
+        <div class="error">price 必須 >= 0</div>
+        }
       </div>
     </div>
+    } @else {
+    <div class="form-field">
+      <label>金額（amount）</label>
+      <input type="number" pInputText formControlName="amount" min="0.01" />
+      @if (hasCreateTxError('amount', 'required') || hasCreateTxError('amount', 'min')) {
+      <div class="error">amount 必填，且必須 > 0</div>
+      }
+    </div>
+    }
 
     <div class="form-row">
       <div class="form-field">
@@ -713,6 +732,7 @@
           optionLabel="label"
           optionValue="value"
           style="width: 100%"
+          (onChange)="onEditTxTypeChange($event.value)"
         ></p-select>
       </div>
     </div>
@@ -741,17 +761,34 @@
       </div>
     </div>
 
+    <!-- ✅ 依 type 顯示欄位：BUY/SELL 顯示 quantity+price；其他顯示 amount -->
+    @if (isBuySell(editTransactionForm.getRawValue().type)) {
     <div class="form-row">
       <div class="form-field">
         <label>數量</label>
         <input type="number" pInputText formControlName="quantity" min="0.0001" />
+        @if (hasEditTxError('quantity', 'required') || hasEditTxError('quantity', 'min')) {
+        <div class="error">quantity 必須 > 0</div>
+        }
       </div>
 
       <div class="form-field">
         <label>價格</label>
         <input type="number" pInputText formControlName="price" min="0" />
+        @if (hasEditTxError('price', 'required') || hasEditTxError('price', 'min')) {
+        <div class="error">price 必須 >= 0</div>
+        }
       </div>
     </div>
+    } @else {
+    <div class="form-field">
+      <label>金額（amount）</label>
+      <input type="number" pInputText formControlName="amount" min="0.01" />
+      @if (hasEditTxError('amount', 'required') || hasEditTxError('amount', 'min')) {
+      <div class="error">amount 必填，且必須 > 0</div>
+      }
+    </div>
+    }
 
     <div class="form-row">
       <div class="form-field">
