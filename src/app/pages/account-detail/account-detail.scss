@@ -3,6 +3,38 @@
   padding: 0 var(--space-xl) var(--space-2xl);
 }
 
+.account-detail-page {
+  
+  padding: var(--space-xl) calc(var(--space-xl) + 8px) var(--space-xl);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xl);
+  background: var(--color-bg-page);
+  color: var(--color-text-primary);
+  min-height: 100%;
+}
+
+.account-detail-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+
+  h1 {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--color-text-primary);
+  }
+
+  .account-detail-header-subtitle {
+    margin: 4px 0 0;
+    font-size: 13px;
+    color: var(--color-text-secondary);
+  }
+}
+
+
 /* 上半部帳戶資訊卡片 */
 .account-info-card {
   margin-bottom: var(--space-xl);

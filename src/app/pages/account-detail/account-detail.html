@@ -1,243 +1,252 @@
 <p-toast position="top-right"></p-toast>
 
-@if (account()) {
-<p-card class="account-info-card">
-  <div class="info-header">
-    <div>
-      <h2>{{ account()!.name }}</h2>
-      <p>管理此帳戶的持有標的與交易紀錄</p>
+<div class="account-detail-page">
+  <!-- Header -->
+  <header class="account-detail-header">
+    <div class="account-detail-header-text">
+      <h1>Finance Accounts Detail</h1>
+      <!-- <p class="account-detail-header-subtitle">管理你的資金帳戶（台幣、外幣、券商…）。</p> -->
     </div>
-    <div class="info-tags">
-      <span class="tag type">{{ account()!.accountType }}</span>
-      <span class="tag currency">{{ account()!.baseCurrency }}</span>
+  </header>
+
+  @if (account()) {
+  <p-card class="account-info-card">
+    <div class="info-header">
+      <div>
+        <h2>{{ account()!.name }}</h2>
+        <p>管理此帳戶的持有標的與交易紀錄</p>
+      </div>
+      <div class="info-tags">
+        <span class="tag type">{{ account()!.accountType }}</span>
+        <span class="tag currency">{{ account()!.baseCurrency }}</span>
+      </div>
     </div>
-  </div>
 
-  <div class="info-body">
-    <div class="info-item">
-      <span class="label">基礎幣別</span>
-      <span class="value">{{ account()!.baseCurrency }}</span>
+    <div class="info-body">
+      <div class="info-item">
+        <span class="label">基礎幣別</span>
+        <span class="value">{{ account()!.baseCurrency }}</span>
+      </div>
+      <div class="info-item">
+        <span class="label">總資產</span>
+        <span class="value">{{ accountTotalValue() | number : '1.0-0' }}</span>
+      </div>
     </div>
-    <div class="info-item">
-      <span class="label">總資產</span>
-      <span class="value">{{ accountTotalValue() | number : '1.0-0' }}</span>
-    </div>
-  </div>
-</p-card>
-} @else {
-<p-card class="account-info-card">
-  <div class="p-skeleton p-skeleton-size">載入帳戶資訊...</div>
-</p-card>
-}
+  </p-card>
+  } @else {
+  <p-card class="account-info-card">
+    <div class="p-skeleton p-skeleton-size">載入帳戶資訊...</div>
+  </p-card>
+  }
 
-<p-card class="account-detail-card">
-  <p-tabs [value]="activeTab()">
-    <p-tablist>
-      <p-tab value="holdings" (click)="activeTab.set('holdings')">持有標的</p-tab>
-      <p-tab value="transactions" (click)="activeTab.set('transactions')">交易紀錄</p-tab>
-    </p-tablist>
+  <p-card class="account-detail-card">
+    <p-tabs [value]="activeTab()">
+      <p-tablist>
+        <p-tab value="holdings" (click)="activeTab.set('holdings')">持有標的</p-tab>
+        <p-tab value="transactions" (click)="activeTab.set('transactions')">交易紀錄</p-tab>
+      </p-tablist>
 
-    <p-tabpanels>
-      <!-- Holdings Panel -->
-      <p-tabpanel value="holdings">
-        <div class="panel-header">
-          <div class="panel-title">
-            <h3>持有標的</h3>
-            <p>持有部位由交易自動重建（產品級正式版）</p>
-          </div>
-
-          <button
-            pButton
-            type="button"
-            label="新增持有標的"
-            icon="pi pi-plus"
-            class="add-btn"
-            (click)="openCreateHoldingDialog()"
-          ></button>
-        </div>
-
-        @if (holdings().length > 0) {
-        <p-table
-          #dt
-          [value]="holdings()"
-          dataKey="symbol"
-          [rows]="10"
-          [rowsPerPageOptions]="[10, 25, 50]"
-          [loading]="false"
-          [paginator]="true"
-          [globalFilterFields]="['symbol', 'name', 'assetType', 'currency']"
-          class="holdings-table"
-        >
-          <ng-template pTemplate="caption">
-            <div class="flex">
-              <p-iconfield iconPosition="left" class="ml-auto">
-                <p-inputicon>
-                  <i class="pi pi-search"></i>
-                </p-inputicon>
-                <input
-                  pInputText
-                  type="text"
-                  (input)="dt.filterGlobal($event.target.value, 'contains')"
-                  placeholder="搜尋關鍵字"
-                />
-              </p-iconfield>
+      <p-tabpanels>
+        <!-- Holdings Panel -->
+        <p-tabpanel value="holdings">
+          <div class="panel-header">
+            <div class="panel-title">
+              <h3>持有標的</h3>
+              <p>持有部位由交易自動重建（產品級正式版）</p>
             </div>
-          </ng-template>
 
-          <ng-template pTemplate="header">
-            <tr>
-              <th>代號</th>
-              <th>名稱</th>
-              <th>類型</th>
-              <th>幣別</th>
-              <th class="text-right">數量</th>
-              <th class="text-right">均價</th>
-              <th class="text-right">市價</th>
-              <th class="text-right">市值</th>
-              <th class="text-right">未實現損益</th>
-              <th class="text-right">報酬率</th>
-              <th class="actions-cell">操作</th>
-            </tr>
-            <tr>
-              <th>
-                <p-columnFilter
-                  type="text"
-                  field="symbol"
-                  placeholder="代號"
-                  ariaLabel="Filter Symbol"
-                  filterOn="input"
-                ></p-columnFilter>
-              </th>
-              <th>
-                <p-columnFilter
-                  type="text"
-                  field="name"
-                  placeholder="名稱"
-                  ariaLabel="Filter Name"
-                  filterOn="input"
-                ></p-columnFilter>
-              </th>
-              <th>
-                <p-columnFilter
-                  type="text"
-                  field="assetType"
-                  placeholder="類型"
-                  ariaLabel="Filter Type"
-                  filterOn="input"
-                ></p-columnFilter>
-              </th>
-              <th>
-                <p-columnFilter
-                  type="text"
-                  field="currency"
-                  placeholder="幣別"
-                  ariaLabel="Filter Currency"
-                  filterOn="input"
-                ></p-columnFilter>
-              </th>
-              <th></th>
-              <th></th>
-              <th></th>
-              <th></th>
-              <th></th>
-              <th></th>
-              <th class="actions-cell"></th>
-            </tr>
-          </ng-template>
-
-          <ng-template pTemplate="body" let-h>
-            <tr>
-              <td>{{ h.symbol }}</td>
-              <td>{{ h.name }}</td>
-              <td>{{ h.assetType }}</td>
-              <td>{{ h.currency }}</td>
-              <td class="text-right">{{ h.quantity | number : '1.0-4' }}</td>
-              <td class="text-right">{{ h.avgCost | number : '1.0-4' }}</td>
-              <td class="text-right">{{ h.marketPrice | number : '1.0-4' }}</td>
-              <td class="text-right">{{ h.marketValue | number : '1.0-0' }}</td>
-
-              <td
-                class="text-right"
-                [ngClass]="{ positive: h.unrealizedPnl > 0, negative: h.unrealizedPnl < 0 }"
-              >
-                {{ h.unrealizedPnl | number : '1.0-0' }}
-              </td>
-
-              <td
-                class="text-right"
-                [ngClass]="{ positive: h.returnRate > 0, negative: h.returnRate < 0 }"
-              >
-                {{ h.returnRate | number : '1.1-1' }}%
-              </td>
-
-              <td class="actions-cell">
-                <button
-                  class="icon-btn row-icon-btn"
-                  type="button"
-                  pButton
-                  icon="pi pi-dollar"
-                  pTooltip="更新市價"
-                  (click)="openMarketPriceDialog(h)"
-                ></button>
-
-                <button
-                  class="icon-btn row-icon-btn"
-                  type="button"
-                  pButton
-                  icon="pi pi-pencil"
-                  pTooltip="編輯基本資料"
-                  (click)="openHoldingEdit(h)"
-                ></button>
-
-                <button
-                  class="icon-btn row-icon-btn danger"
-                  type="button"
-                  pButton
-                  icon="pi pi-trash"
-                  pTooltip="刪除（需先刪交易）"
-                  (click)="deleteHolding(h)"
-                ></button>
-              </td>
-            </tr>
-          </ng-template>
-        </p-table>
-        } @else {
-        <div class="empty-block">目前尚未建立任何持有標的。</div>
-        }
-      </p-tabpanel>
-
-      <!-- Transactions Panel -->
-      <p-tabpanel value="transactions">
-        <div class="panel-header">
-          <div class="panel-title">
-            <h3>交易紀錄</h3>
-            <p>正式版：交易新增/編輯/刪除都會自動重建持有部位</p>
+            <button
+              pButton
+              type="button"
+              label="新增持有標的"
+              icon="pi pi-plus"
+              class="add-btn"
+              (click)="openCreateHoldingDialog()"
+            ></button>
           </div>
-          <button
-            pButton
-            type="button"
-            label="新增交易"
-            icon="pi pi-plus"
-            class="add-btn"
-            (click)="openTransactionDialog()"
-          ></button>
-        </div>
-        @if (transactions().length > 0) {
-        <p-table
-          #dt
-          [value]="transactions()"
-          dataKey="symbol"
-          [rows]="10"
-          [rowsPerPageOptions]="[10, 25, 50]"
-          [loading]="false"
-          [paginator]="true"
-          [globalFilterFields]="['tradeDate', 'type', 'symbol', 'currency']"
-          class="transactions-table"
-        >
-          <ng-template pTemplate="caption">
-            <div class="flex">
-              <!-- class="ml-auto" 可以讓搜尋框在右邊 -->
-              <!-- <p-iconfield iconPosition="left" class="ml-auto">
+
+          @if (holdings().length > 0) {
+          <p-table
+            #dt
+            [value]="holdings()"
+            dataKey="symbol"
+            [rows]="10"
+            [rowsPerPageOptions]="[10, 25, 50]"
+            [loading]="false"
+            [paginator]="true"
+            [globalFilterFields]="['symbol', 'name', 'assetType', 'currency']"
+            class="holdings-table"
+          >
+            <ng-template pTemplate="caption">
+              <div class="flex">
+                <p-iconfield iconPosition="left" class="ml-auto">
+                  <p-inputicon>
+                    <i class="pi pi-search"></i>
+                  </p-inputicon>
+                  <input
+                    pInputText
+                    type="text"
+                    (input)="dt.filterGlobal($event.target.value, 'contains')"
+                    placeholder="搜尋關鍵字"
+                  />
+                </p-iconfield>
+              </div>
+            </ng-template>
+
+            <ng-template pTemplate="header">
+              <tr>
+                <th>代號</th>
+                <th>名稱</th>
+                <th>類型</th>
+                <th>幣別</th>
+                <th class="text-right">數量</th>
+                <th class="text-right">均價</th>
+                <th class="text-right">市價</th>
+                <th class="text-right">市值</th>
+                <th class="text-right">未實現損益</th>
+                <th class="text-right">報酬率</th>
+                <th class="actions-cell">操作</th>
+              </tr>
+              <tr>
+                <th>
+                  <p-columnFilter
+                    type="text"
+                    field="symbol"
+                    placeholder="代號"
+                    ariaLabel="Filter Symbol"
+                    filterOn="input"
+                  ></p-columnFilter>
+                </th>
+                <th>
+                  <p-columnFilter
+                    type="text"
+                    field="name"
+                    placeholder="名稱"
+                    ariaLabel="Filter Name"
+                    filterOn="input"
+                  ></p-columnFilter>
+                </th>
+                <th>
+                  <p-columnFilter
+                    type="text"
+                    field="assetType"
+                    placeholder="類型"
+                    ariaLabel="Filter Type"
+                    filterOn="input"
+                  ></p-columnFilter>
+                </th>
+                <th>
+                  <p-columnFilter
+                    type="text"
+                    field="currency"
+                    placeholder="幣別"
+                    ariaLabel="Filter Currency"
+                    filterOn="input"
+                  ></p-columnFilter>
+                </th>
+                <th></th>
+                <th></th>
+                <th></th>
+                <th></th>
+                <th></th>
+                <th></th>
+                <th class="actions-cell"></th>
+              </tr>
+            </ng-template>
+
+            <ng-template pTemplate="body" let-h>
+              <tr>
+                <td>{{ h.symbol }}</td>
+                <td>{{ h.name }}</td>
+                <td>{{ h.assetType }}</td>
+                <td>{{ h.currency }}</td>
+                <td class="text-right">{{ h.quantity | number : '1.0-4' }}</td>
+                <td class="text-right">{{ h.avgCost | number : '1.0-4' }}</td>
+                <td class="text-right">{{ h.marketPrice | number : '1.0-4' }}</td>
+                <td class="text-right">{{ h.marketValue | number : '1.0-0' }}</td>
+
+                <td
+                  class="text-right"
+                  [ngClass]="{ positive: h.unrealizedPnl > 0, negative: h.unrealizedPnl < 0 }"
+                >
+                  {{ h.unrealizedPnl | number : '1.0-0' }}
+                </td>
+
+                <td
+                  class="text-right"
+                  [ngClass]="{ positive: h.returnRate > 0, negative: h.returnRate < 0 }"
+                >
+                  {{ h.returnRate | number : '1.1-1' }}%
+                </td>
+
+                <td class="actions-cell">
+                  <button
+                    class="icon-btn row-icon-btn"
+                    type="button"
+                    pButton
+                    icon="pi pi-dollar"
+                    pTooltip="更新市價"
+                    (click)="openMarketPriceDialog(h)"
+                  ></button>
+
+                  <button
+                    class="icon-btn row-icon-btn"
+                    type="button"
+                    pButton
+                    icon="pi pi-pencil"
+                    pTooltip="編輯基本資料"
+                    (click)="openHoldingEdit(h)"
+                  ></button>
+
+                  <button
+                    class="icon-btn row-icon-btn danger"
+                    type="button"
+                    pButton
+                    icon="pi pi-trash"
+                    pTooltip="刪除（需先刪交易）"
+                    (click)="deleteHolding(h)"
+                  ></button>
+                </td>
+              </tr>
+            </ng-template>
+          </p-table>
+          } @else {
+          <div class="empty-block">目前尚未建立任何持有標的。</div>
+          }
+        </p-tabpanel>
+
+        <!-- Transactions Panel -->
+        <p-tabpanel value="transactions">
+          <div class="panel-header">
+            <div class="panel-title">
+              <h3>交易紀錄</h3>
+              <p>正式版：交易新增/編輯/刪除都會自動重建持有部位</p>
+            </div>
+            <button
+              pButton
+              type="button"
+              label="新增交易"
+              icon="pi pi-plus"
+              class="add-btn"
+              (click)="openTransactionDialog()"
+            ></button>
+          </div>
+          @if (transactions().length > 0) {
+          <p-table
+            #dt
+            [value]="transactions()"
+            dataKey="symbol"
+            [rows]="10"
+            [rowsPerPageOptions]="[10, 25, 50]"
+            [loading]="false"
+            [paginator]="true"
+            [globalFilterFields]="['tradeDate', 'type', 'symbol', 'currency']"
+            class="transactions-table"
+          >
+            <ng-template pTemplate="caption">
+              <div class="flex">
+                <!-- class="ml-auto" 可以讓搜尋框在右邊 -->
+                <!-- <p-iconfield iconPosition="left" class="ml-auto">
                 <p-inputicon>
                   <i class="pi pi-search"></i>
                 </p-inputicon>
@@ -250,157 +259,158 @@
                 />
               </p-iconfield> -->
 
-              <p-iconfield iconPosition="left">
-                <p-inputicon>
-                  <i class="pi pi-search"></i>
-                </p-inputicon>
-                <input
-                  pInputText
-                  type="text"
-                  (input)="dt.filterGlobal($event.target.value, 'contains')"
-                  placeholder="搜尋關鍵字 (日期/類型/標的/幣別)"
-                  style="width: 20rem"
-                />
-              </p-iconfield>
-            </div>
-          </ng-template>
+                <p-iconfield iconPosition="left">
+                  <p-inputicon>
+                    <i class="pi pi-search"></i>
+                  </p-inputicon>
+                  <input
+                    pInputText
+                    type="text"
+                    (input)="dt.filterGlobal($event.target.value, 'contains')"
+                    placeholder="搜尋關鍵字 (日期/類型/標的/幣別)"
+                    style="width: 20rem"
+                  />
+                </p-iconfield>
+              </div>
+            </ng-template>
 
-          <ng-template pTemplate="header">
-            <tr>
-              <th>日期</th>
-              <th>類型</th>
-              <th>標的</th>
-              <th>幣別</th>
-              <th class="text-right">數量</th>
-              <th class="text-right">價格</th>
-              <th class="text-right">手續費</th>
-              <th class="text-right">現金流</th>
-              <th class="actions-cell">操作</th>
-            </tr>
+            <ng-template pTemplate="header">
+              <tr>
+                <th>日期</th>
+                <th>類型</th>
+                <th>標的</th>
+                <th>幣別</th>
+                <th class="text-right">數量</th>
+                <th class="text-right">價格</th>
+                <th class="text-right">手續費</th>
+                <th class="text-right">現金流</th>
+                <th class="actions-cell">操作</th>
+              </tr>
 
-            <tr>
-              <th>
-                <p-columnFilter type="date" field="tradeDate" [showMenu]="false"></p-columnFilter>
-              </th>
+              <tr>
+                <th>
+                  <p-columnFilter type="date" field="tradeDate" [showMenu]="false"></p-columnFilter>
+                </th>
 
-              <th>
-                <p-columnFilter field="type" matchMode="equals" [showMenu]="false">
-                  <ng-template pTemplate="filter" let-value let-filter="filterCallback">
-                    <p-select
-                      [ngModel]="value"
-                      [options]="transactionTypeOptions"
-                      (onChange)="filter($event.value)"
-                      placeholder="選擇類型"
-                      [showClear]="true"
-                      style="min-width: 9rem"
-                    >
-                      <ng-template let-option pTemplate="item">
-                        <p-tag [value]="option.label" [severity]="getSeverity(option.value)" />
-                      </ng-template>
-                    </p-select>
-                  </ng-template>
-                </p-columnFilter>
-              </th>
+                <th>
+                  <p-columnFilter field="type" matchMode="equals" [showMenu]="false">
+                    <ng-template pTemplate="filter" let-value let-filter="filterCallback">
+                      <p-select
+                        [ngModel]="value"
+                        [options]="transactionTypeOptions"
+                        (onChange)="filter($event.value)"
+                        placeholder="選擇類型"
+                        [showClear]="true"
+                        style="min-width: 9rem"
+                      >
+                        <ng-template let-option pTemplate="item">
+                          <p-tag [value]="option.label" [severity]="getSeverity(option.value)" />
+                        </ng-template>
+                      </p-select>
+                    </ng-template>
+                  </p-columnFilter>
+                </th>
 
-              <th>
-                <p-columnFilter
-                  type="text"
-                  field="symbol"
-                  placeholder="標的代號"
-                  filterOn="input"
-                ></p-columnFilter>
-              </th>
+                <th>
+                  <p-columnFilter
+                    type="text"
+                    field="symbol"
+                    placeholder="標的代號"
+                    filterOn="input"
+                  ></p-columnFilter>
+                </th>
 
-              <th>
-                <p-columnFilter field="currency" matchMode="equals" [showMenu]="false">
-                  <ng-template pTemplate="filter" let-value let-filter="filterCallback">
-                    <p-select
-                      [ngModel]="value"
-                      [options]="currencyOptions"
-                      (onChange)="filter($event.value)"
-                      placeholder="選擇幣別"
-                      [showClear]="true"
-                      style="min-width: 9rem"
-                    ></p-select>
-                  </ng-template>
-                </p-columnFilter>
-              </th>
+                <th>
+                  <p-columnFilter field="currency" matchMode="equals" [showMenu]="false">
+                    <ng-template pTemplate="filter" let-value let-filter="filterCallback">
+                      <p-select
+                        [ngModel]="value"
+                        [options]="currencyOptions"
+                        (onChange)="filter($event.value)"
+                        placeholder="選擇幣別"
+                        [showClear]="true"
+                        style="min-width: 9rem"
+                      ></p-select>
+                    </ng-template>
+                  </p-columnFilter>
+                </th>
 
-              <th></th>
-              <th></th>
-              <th></th>
-              <th></th>
-              <th class="actions-cell"></th>
-            </tr>
-          </ng-template>
+                <th></th>
+                <th></th>
+                <th></th>
+                <th></th>
+                <th class="actions-cell"></th>
+              </tr>
+            </ng-template>
 
-          <ng-template pTemplate="body" let-t>
-            <tr>
-              <td>{{ t.tradeDate | date : 'yyyy/MM/dd' }}</td>
-              <!-- <td>{{ t.type }}</td> -->
-              <td>
-                <p-tag [value]="getFriendlyTypeLabel(t.type)" [severity]="getSeverity(t.type)" />
-              </td>
+            <ng-template pTemplate="body" let-t>
+              <tr>
+                <td>{{ t.tradeDate | date : 'yyyy/MM/dd' }}</td>
+                <!-- <td>{{ t.type }}</td> -->
+                <td>
+                  <p-tag [value]="getFriendlyTypeLabel(t.type)" [severity]="getSeverity(t.type)" />
+                </td>
 
-              <td>{{ t.symbol }}</td>
-              <td>{{ t.currency }}</td>
-              <td class="text-right">{{ t.quantity | number : '1.0-4' }}</td>
-              <td class="text-right">{{ t.price | number : '1.0-4' }}</td>
-              <td class="text-right">{{ t.fee | number : '1.0-0' }}</td>
-              <td
-                class="text-right"
-                [ngClass]="{ positive: t.totalAmount > 0, negative: t.totalAmount < 0 }"
-              >
-                {{ t.totalAmount | number : '1.0-0' }}
-              </td>
+                <td>{{ t.symbol }}</td>
+                <td>{{ t.currency }}</td>
+                <td class="text-right">{{ t.quantity | number : '1.0-4' }}</td>
+                <td class="text-right">{{ t.price | number : '1.0-4' }}</td>
+                <td class="text-right">{{ t.fee | number : '1.0-0' }}</td>
+                <td
+                  class="text-right"
+                  [ngClass]="{ positive: t.totalAmount > 0, negative: t.totalAmount < 0 }"
+                >
+                  {{ t.totalAmount | number : '1.0-0' }}
+                </td>
 
-              <td class="actions-cell">
-                <button
-                  class="icon-btn row-icon-btn"
-                  type="button"
-                  pButton
-                  icon="pi pi-pencil"
-                  pTooltip="編輯交易"
-                  (click)="openTransactionEdit(t)"
-                ></button>
+                <td class="actions-cell">
+                  <button
+                    class="icon-btn row-icon-btn"
+                    type="button"
+                    pButton
+                    icon="pi pi-pencil"
+                    pTooltip="編輯交易"
+                    (click)="openTransactionEdit(t)"
+                  ></button>
 
-                <button
-                  class="icon-btn row-icon-btn danger"
-                  type="button"
-                  pButton
-                  icon="pi pi-trash"
-                  pTooltip="刪除交易"
-                  (click)="deleteTransaction(t)"
-                ></button>
-              </td>
-            </tr>
-          </ng-template>
-        </p-table>
-        } @else {
-        <div class="empty-block">目前尚未有任何交易紀錄。</div>
-        }
-      </p-tabpanel>
-    </p-tabpanels>
-  </p-tabs>
-</p-card>
+                  <button
+                    class="icon-btn row-icon-btn danger"
+                    type="button"
+                    pButton
+                    icon="pi pi-trash"
+                    pTooltip="刪除交易"
+                    (click)="deleteTransaction(t)"
+                  ></button>
+                </td>
+              </tr>
+            </ng-template>
+          </p-table>
+          } @else {
+          <div class="empty-block">目前尚未有任何交易紀錄。</div>
+          }
+        </p-tabpanel>
+      </p-tabpanels>
+    </p-tabs>
+  </p-card>
 
-<!-- ARR -->
-@if (accountArrChartData()) {
-<p-card class="arr-card">
-  <div class="arr-header">
-    <h2>年化報酬率（ARR / XIRR）</h2>
-    <p>正式版：使用投資人現金流方向（TotalAmount） + 期末市值，XIRR 可顯示負值。</p>
-  </div>
+  <!-- ARR -->
+  @if (accountArrChartData()) {
+  <p-card class="arr-card">
+    <div class="arr-header">
+      <h2>年化報酬率（ARR / XIRR）</h2>
+      <p>正式版：使用投資人現金流方向（TotalAmount） + 期末市值，XIRR 可顯示負值。</p>
+    </div>
 
-  <div class="mini-arr-chart">
-    <p-chart
-      type="bar"
-      [data]="accountArrChartData()!"
-      [options]="accountArrChartOptions"
-    ></p-chart>
-  </div>
-</p-card>
-}
+    <div class="mini-arr-chart">
+      <p-chart
+        type="bar"
+        [data]="accountArrChartData()!"
+        [options]="accountArrChartOptions"
+      ></p-chart>
+    </div>
+  </p-card>
+  }
+</div>
 
 <!-- ====================== Holding：新增 Dialog ====================== -->
 <p-dialog

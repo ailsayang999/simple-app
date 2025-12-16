@@ -113,12 +113,17 @@ export const routes: Routes = [
         path: 'accounts',
         data: {
           breadcrumb: 'Accounts List', // ⭐ 只寫字串
+          breadcrumbKey: 'accounts',
         },
         loadComponent: () =>
           import('./app/pages/account-list/account-list').then((m) => m.AccountListPage),
       },
       {
         path: 'accounts/:id',
+        data: {
+          breadcrumb: { label: "Account's Detail" },
+          breadcrumbParent: 'accounts',
+        },
         loadComponent: () =>
           import('./app/pages/account-detail/account-detail').then((m) => m.AccountDetailPage),
       },
