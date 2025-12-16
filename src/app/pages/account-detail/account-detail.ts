@@ -3,16 +3,19 @@ import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
+import { FormsModule } from '@angular/forms';
+import { ViewChild } from '@angular/core';
+import {Table} from 'primeng/table';
 
 import { CardModule } from 'primeng/card';
 import { TabsModule } from 'primeng/tabs';
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
-import { InputTextModule } from 'primeng/inputtext';
 import { SelectModule } from 'primeng/select';
 import { ToastModule } from 'primeng/toast';
 import { ChartModule } from 'primeng/chart';
+import { TagModule } from 'primeng/tag';
 
 import { AccountService } from '../../core/services/account.service';
 import { HoldingService } from '../../core/services/holding.service';
@@ -27,7 +30,14 @@ import {
   UpdateTransactionDto,
 } from '../../core/models/transaction.model';
 
+import { InputTextModule } from 'primeng/inputtext'; // for p-iconfield
+import { IconFieldModule } from 'primeng/iconfield'; // for p-iconfield
+import { InputIconModule } from 'primeng/inputicon'; // for p-iconfield
+
 import { calcArrPerHolding } from '../../core/utils/arr.util';
+
+// 定義 PrimeNG 標籤可接受的 severity 類型
+type SeverityType = 'success' | 'secondary' | 'info' | 'warn' | 'danger' | 'contrast';
 
 @Component({
   selector: 'app-account-detail-page',
@@ -36,6 +46,7 @@ import { calcArrPerHolding } from '../../core/utils/arr.util';
   styleUrl: './account-detail.scss',
   imports: [
     CommonModule,
+    FormsModule,
     RouterLink,
     ReactiveFormsModule,
     CardModule,
@@ -44,13 +55,18 @@ import { calcArrPerHolding } from '../../core/utils/arr.util';
     ButtonModule,
     DialogModule,
     InputTextModule,
+    IconFieldModule,
+    InputIconModule,
     SelectModule,
     ToastModule,
     ChartModule,
     ButtonModule,
+    TagModule,
   ],
 })
 export class AccountDetailPage implements OnInit {
+  // 獲取 p-table 實例 (如果還沒加的話)
+  @ViewChild('dt') dt!: Table;
   private route = inject(ActivatedRoute);
   private accountService = inject(AccountService);
   private holdingService = inject(HoldingService);
@@ -107,6 +123,38 @@ export class AccountDetailPage implements OnInit {
     { label: '股利 (DIVIDEND) - 現金流入', value: 'DIVIDEND' },
     { label: '利息 (INTEREST) - 現金流入', value: 'INTEREST' },
   ];
+
+  // 必須加入的方法 3：用於 p-tag 顏色顯示
+  getSeverity(type: string): SeverityType {
+    // ⬅️ 將回傳類型從 string 更改為 SeverityType
+    switch (type) {
+      case 'BUY':
+        return 'success';
+      case 'SELL':
+        return 'danger';
+      case 'DIVIDEND':
+        return 'info';
+      case 'INTEREST':
+        return 'info';
+      case 'DEPOSIT':
+        return 'secondary';
+      case 'WITHDRAW':
+        return 'contrast';
+      default:
+        return 'secondary';
+    }
+  }
+
+  getFriendlyTypeLabel(type: string): string {
+    const option = this.transactionTypeOptions.find((opt) => opt.value === type);
+    // 提取中文部分或只返回 value
+    if (option) {
+      // 這裡假設我們只想要顯示 '買進'，而不是 '買進 (BUY) - 現金流出'
+      const match = option.label.match(/([^\s]+)\s*\(/);
+      return match ? match[1] : option.label;
+    }
+    return type; // 如果找不到，則返回原始代碼
+  }
 
   // ====== forms ======
 
