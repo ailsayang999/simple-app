@@ -179,7 +179,7 @@ export class Dashboard implements OnInit {
       // 主帳戶的 holdings & transactions
       this.holdingService.loadHoldings(main.id);
       this.transactionService.loadTransactionsByAccount(main.id);
-    }, 0);
+    }, 1000);
 
     // 3. Chart options（共用給 best / worst）
     this.arrChartOptions = {
