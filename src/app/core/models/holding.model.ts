@@ -16,8 +16,21 @@ export interface HoldingDto {
 
   // ✅ 可存可算：我們後端已算好回傳（dashboard 快）
   marketValue: number;
+
+  // ✅ 未實現損益（不含股利）
   unrealizedPnl: number;
+
+  // ✅ 未實現報酬率（不含股利，%）
   returnRate: number; // 報酬率 %
+
+  // ✅ 累積股利（已實現）
+  realizedDividend: number;
+
+  // ✅ 總損益（含股利）
+  totalPnl: number;
+
+  // ✅ 總報酬率（含股利，%）
+  totalReturnRate: number;
 }
 
 export interface CreateHoldingDto {

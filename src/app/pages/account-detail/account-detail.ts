@@ -1,4 +1,3 @@
-// src/app/pages/accounts/account-detail.page.ts
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
@@ -26,6 +25,7 @@ import { SelectModule } from 'primeng/select';
 import { ToastModule } from 'primeng/toast';
 import { ChartModule } from 'primeng/chart';
 import { TagModule } from 'primeng/tag';
+import { TooltipModule } from 'primeng/tooltip'; // ✅ 讓 p-tag 也能用 pTooltip（產品級最佳實務）
 
 import { AccountService } from '../../core/services/account.service';
 import { HoldingService } from '../../core/services/holding.service';
@@ -75,6 +75,7 @@ type TxType = 'BUY' | 'SELL' | 'DEPOSIT' | 'WITHDRAW' | 'DIVIDEND' | 'INTEREST';
     ChartModule,
     ButtonModule,
     TagModule,
+    TooltipModule, // ✅ 讓 p-tag 的 tooltip 正式可用
   ],
 })
 export class AccountDetailPage implements OnInit {
@@ -160,7 +161,12 @@ export class AccountDetailPage implements OnInit {
     }
   }
 
+  // ✅ 讓「股利」更明顯：交易列表的 Tag 文字顯示
   getFriendlyTypeLabel(type: string): string {
+    // ✅ 特例：股利（已實現）
+    if (type === 'DIVIDEND') return '股利（已實現）';
+    if (type === 'INTEREST') return '利息（已實現）';
+
     const option = this.transactionTypeOptions.find((opt) => opt.value === type);
     // 提取中文部分或只返回 value
     if (option) {
@@ -169,6 +175,27 @@ export class AccountDetailPage implements OnInit {
       return match ? match[1] : option.label;
     }
     return type; // 如果找不到，則返回原始代碼
+  }
+
+  // ✅ 讓「股利」更明顯：交易列表的 Tag tooltip（已實現說明）
+  // 你只要在 HTML 的 <p-tag> 加上 [pTooltip]="getTxTagTooltip(t.type)" 就會生效
+  getTxTagTooltip(type: string): string {
+    switch (type) {
+      case 'DIVIDEND':
+        return '已實現：股利入帳（現金流入）。不影響持倉數量，但會影響總損益/總報酬率。';
+      case 'INTEREST':
+        return '已實現：利息入帳（現金流入）。不影響持倉數量，但會影響總損益/總報酬率。';
+      case 'BUY':
+        return '買進：現金流出，會增加持倉數量，並影響均價/未實現損益。';
+      case 'SELL':
+        return '賣出：現金流入，會減少持倉數量。';
+      case 'DEPOSIT':
+        return '存入：現金流出（投資人視角），通常用於現金帳戶資金投入。';
+      case 'WITHDRAW':
+        return '提領：現金流入（投資人視角），通常用於現金帳戶資金抽回。';
+      default:
+        return '';
+    }
   }
 
   // ✅ 給 HTML 判斷用：BUY/SELL

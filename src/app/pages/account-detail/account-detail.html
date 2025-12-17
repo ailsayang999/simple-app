@@ -99,12 +99,21 @@
                 <th>名稱</th>
                 <th>類型</th>
                 <th>幣別</th>
+
                 <th class="text-right">數量</th>
                 <th class="text-right">均價</th>
                 <th class="text-right">市價</th>
                 <th class="text-right">市值</th>
-                <th class="text-right">未實現損益</th>
-                <th class="text-right">報酬率</th>
+
+                <!-- ✅ 你要的 UI 標示：清楚拆出股利 -->
+                <th class="text-right">未實現損益（不含股利）</th>
+                <th class="text-right">累積股利（已實現）</th>
+                <th class="text-right">總損益（含股利）</th>
+
+                <!-- ✅ 報酬率也拆兩個：不含股利 vs 含股利 -->
+                <th class="text-right">報酬率（不含股利）</th>
+                <th class="text-right">總報酬率（含股利）</th>
+
                 <th class="actions-cell">操作</th>
               </tr>
               <tr>
@@ -144,12 +153,19 @@
                     filterOn="input"
                   ></p-columnFilter>
                 </th>
+
                 <th></th>
                 <th></th>
                 <th></th>
                 <th></th>
+
                 <th></th>
                 <th></th>
+                <th></th>
+
+                <th></th>
+                <th></th>
+
                 <th class="actions-cell"></th>
               </tr>
             </ng-template>
@@ -160,11 +176,13 @@
                 <td>{{ h.name }}</td>
                 <td>{{ h.assetType }}</td>
                 <td>{{ h.currency }}</td>
+
                 <td class="text-right">{{ h.quantity | number : '1.0-4' }}</td>
                 <td class="text-right">{{ h.avgCost | number : '1.0-4' }}</td>
                 <td class="text-right">{{ h.marketPrice | number : '1.0-4' }}</td>
                 <td class="text-right">{{ h.marketValue | number : '1.0-0' }}</td>
 
+                <!-- ✅ 未實現損益（不含股利） -->
                 <td
                   class="text-right"
                   [ngClass]="{ positive: h.unrealizedPnl > 0, negative: h.unrealizedPnl < 0 }"
@@ -172,11 +190,36 @@
                   {{ h.unrealizedPnl | number : '1.0-0' }}
                 </td>
 
+                <!-- ✅ 累積股利（已實現） -->
+                <td
+                  class="text-right"
+                  [ngClass]="{ positive: h.realizedDividend > 0, negative: h.realizedDividend < 0 }"
+                >
+                  {{ h.realizedDividend | number : '1.0-0' }}
+                </td>
+
+                <!-- ✅ 總損益（含股利） -->
+                <td
+                  class="text-right"
+                  [ngClass]="{ positive: h.totalPnl > 0, negative: h.totalPnl < 0 }"
+                >
+                  {{ h.totalPnl | number : '1.0-0' }}
+                </td>
+
+                <!-- ✅ 報酬率（不含股利） -->
                 <td
                   class="text-right"
                   [ngClass]="{ positive: h.returnRate > 0, negative: h.returnRate < 0 }"
                 >
                   {{ h.returnRate | number : '1.1-1' }}%
+                </td>
+
+                <!-- ✅ 總報酬率（含股利） -->
+                <td
+                  class="text-right"
+                  [ngClass]="{ positive: h.totalReturnRate > 0, negative: h.totalReturnRate < 0 }"
+                >
+                  {{ h.totalReturnRate | number : '1.1-1' }}%
                 </td>
 
                 <td class="actions-cell">
@@ -349,7 +392,12 @@
                 <td>{{ t.tradeDate | date : 'yyyy/MM/dd' }}</td>
                 <!-- <td>{{ t.type }}</td> -->
                 <td>
-                  <p-tag [value]="getFriendlyTypeLabel(t.type)" [severity]="getSeverity(t.type)" />
+                  <p-tag
+                    [value]="getFriendlyTypeLabel(t.type)"
+                    [severity]="getSeverity(t.type)"
+                    [pTooltip]="getTxTagTooltip(t.type)"
+                    tooltipPosition="top"
+                  />
                 </td>
 
                 <td>{{ t.symbol }}</td>
