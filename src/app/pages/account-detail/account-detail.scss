@@ -4,7 +4,6 @@
 }
 
 .account-detail-page {
-  
   padding: var(--space-xl) calc(var(--space-xl) + 8px) var(--space-xl);
   display: flex;
   flex-direction: column;
@@ -33,7 +32,6 @@
     color: var(--color-text-secondary);
   }
 }
-
 
 /* 上半部帳戶資訊卡片 */
 .account-info-card {
@@ -179,24 +177,80 @@
   padding-inline: 16px;
 }
 
+/* ✅ Caption：搜尋框右對齊 + 不擠 */
+.table-caption {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 0 12px;
+}
+
+.table-caption-right {
+  display: flex;
+  justify-content: flex-end;
+  flex: 1;
+}
+
+:host ::ng-deep .table-caption .p-inputtext {
+  width: 260px;
+  border-radius: var(--radius-full);
+}
+
 /* 表格 */
-:host ::ng-deep .holdings-table .p-table thead > tr > th,
-:host ::ng-deep .transactions-table .p-table thead > tr > th {
+:host ::ng-deep .holdings-table .p-datatable-wrapper,
+:host ::ng-deep .transactions-table .p-datatable-wrapper {
+  border-radius: 12px;
+  overflow: auto; /* ✅ colgroup 撐寬後可以水平捲動 */
+}
+
+/* ✅ 表頭：不要縮小字體（讓它跟你的全站一致） */
+:host ::ng-deep .holdings-table .p-datatable-thead > tr > th,
+:host ::ng-deep .transactions-table .p-datatable-thead > tr > th {
   padding: 10px 14px;
   background: #f9fafb;
   border: none;
-  font-size: 13px;
+
+  /* ✅ 不硬改小字體，回到你原本的全站預設 */
+  font-size: inherit;
   font-weight: 600;
   color: var(--color-text-secondary);
+  white-space: nowrap;
 }
 
-:host ::ng-deep .holdings-table .p-table tbody > tr > td,
-:host ::ng-deep .transactions-table .p-table tbody > tr > td {
+/* ✅ filter row：乾淨、input 不爆 */
+:host ::ng-deep .holdings-table .p-datatable-thead > tr.filter-row > th,
+:host ::ng-deep .transactions-table .p-datatable-thead > tr.filter-row > th {
+  background: #ffffff;
+  padding: 8px 12px 10px;
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+:host ::ng-deep .holdings-table .p-column-filter .p-inputtext,
+:host ::ng-deep .transactions-table .p-column-filter .p-inputtext {
+  width: 100%;
+  min-width: 0;
+  border-radius: var(--radius-full);
+}
+
+/* ✅ body：不要指定 color（避免壓過 positive/negative） */
+:host ::ng-deep .holdings-table .p-datatable-tbody > tr > td,
+:host ::ng-deep .transactions-table .p-datatable-tbody > tr > td {
   padding: 10px 14px;
   border: none;
-  font-size: 14px;
-  color: var(--color-text-primary);
+
+  /* ✅ 不硬改小字體，維持你原本的大小 */
+  font-size: inherit;
+
   border-bottom: 1px solid var(--color-border-subtle);
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+/* hover */
+:host ::ng-deep .holdings-table .p-datatable-tbody > tr:hover,
+:host ::ng-deep .transactions-table .p-datatable-tbody > tr:hover {
+  background: rgba(2, 132, 199, 0.04);
 }
 
 .text-right {
@@ -210,12 +264,34 @@
 }
 
 /* 損益正負色 */
-.positive {
+/* ✅ 用更強 selector，確保不會被 table td 規則蓋掉 */
+:host ::ng-deep .holdings-table .p-datatable-tbody > tr > td.positive,
+:host ::ng-deep .transactions-table .p-datatable-tbody > tr > td.positive {
   color: #16a34a;
 }
 
-.negative {
+:host ::ng-deep .holdings-table .p-datatable-tbody > tr > td.negative,
+:host ::ng-deep .transactions-table .p-datatable-tbody > tr > td.negative {
   color: #ef4444;
+}
+
+/* ✅ 小 chip（資產類型） */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  font-size: 12px;
+  font-weight: 600;
+  background: rgba(2, 132, 199, 0.08);
+  color: #0369a1;
+}
+
+/* ✅ 名稱欄：避免太長看不清 */
+.cell-title {
+  max-width: 240px;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* Dialog form layout */
@@ -261,7 +337,7 @@
 
 /* 操作欄位 */
 .actions-cell {
-  text-align: right;
+  text-align: center;
   white-space: nowrap;
 }
 
@@ -297,5 +373,45 @@
 
   :host ::ng-deep canvas {
     border-radius: var(--radius-md);
+  }
+}
+
+// 代號 & 操作欄固定
+/* ✅ 用 ::ng-deep 版本，確保真的作用到 PrimeNG 生成的 DOM */
+:host ::ng-deep .holdings-table .p-datatable-thead > tr > th:first-child,
+:host ::ng-deep .holdings-table .p-datatable-tbody > tr > td:first-child,
+:host ::ng-deep .transactions-table .p-datatable-thead > tr > th:first-child,
+:host ::ng-deep .transactions-table .p-datatable-tbody > tr > td:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 3;
+  background: #ffffff;
+}
+
+:host ::ng-deep .holdings-table .p-datatable-thead > tr > th.actions-cell,
+:host ::ng-deep .holdings-table .p-datatable-tbody > tr > td.actions-cell,
+:host ::ng-deep .transactions-table .p-datatable-thead > tr > th.actions-cell,
+:host ::ng-deep .transactions-table .p-datatable-tbody > tr > td.actions-cell {
+  position: sticky;
+  right: 0;
+  z-index: 3;
+  background: #ffffff;
+}
+
+/* 手機：縮小 padding，避免卡片內太擠 */
+@media (max-width: 768px) {
+  .account-detail-page {
+    padding: var(--space-md);
+  }
+
+  :host ::ng-deep .account-detail-card .p-tabs .p-tabpanels {
+    padding: 12px 12px 16px;
+  }
+
+  :host ::ng-deep .holdings-table .p-datatable-thead > tr > th,
+  :host ::ng-deep .transactions-table .p-datatable-thead > tr > th,
+  :host ::ng-deep .holdings-table .p-datatable-tbody > tr > td,
+  :host ::ng-deep .transactions-table .p-datatable-tbody > tr > td {
+    padding: 10px 10px;
   }
 }

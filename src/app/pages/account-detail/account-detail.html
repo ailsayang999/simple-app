@@ -76,47 +76,81 @@
             [paginator]="true"
             [globalFilterFields]="['symbol', 'name', 'assetType', 'currency']"
             class="holdings-table"
+            [scrollable]="true"
+            scrollHeight="flex"
           >
+            <!-- ⭐⭐⭐ 控制欄寬：header / filter / body 完全同步（最推薦產品級做法） -->
+            <ng-template pTemplate="colgroup">
+              <colgroup>
+                <col style="width: 110px" />
+                <col style="width: 220px" />
+                <col style="width: 96px" />
+                <col style="width: 90px" />
+
+                <col style="width: 110px" />
+                <col style="width: 120px" />
+                <col style="width: 120px" />
+                <col style="width: 130px" />
+
+                <col style="width: 170px" />
+                <col style="width: 160px" />
+                <col style="width: 160px" />
+
+                <col style="width: 170px" />
+                <col style="width: 190px" />
+
+                <col style="width: 128px" />
+              </colgroup>
+            </ng-template>
+
             <ng-template pTemplate="caption">
-              <div class="flex">
-                <p-iconfield iconPosition="left" class="ml-auto">
-                  <p-inputicon>
-                    <i class="pi pi-search"></i>
-                  </p-inputicon>
-                  <input
-                    pInputText
-                    type="text"
-                    (input)="dt.filterGlobal($event.target.value, 'contains')"
-                    placeholder="搜尋關鍵字"
-                  />
-                </p-iconfield>
+              <div class="table-caption">
+                <div class="table-caption-left">
+                  <!-- 你未來想放統計 chips / 提示文字可以放這裡 -->
+                </div>
+
+                <div class="table-caption-right">
+                  <p-iconfield iconPosition="left">
+                    <p-inputicon>
+                      <i class="pi pi-search"></i>
+                    </p-inputicon>
+                    <input
+                      pInputText
+                      type="text"
+                      (input)="dt.filterGlobal($event.target.value, 'contains')"
+                      placeholder="搜尋關鍵字"
+                    />
+                  </p-iconfield>
+                </div>
               </div>
             </ng-template>
 
             <ng-template pTemplate="header">
               <tr>
-                <th>代號</th>
-                <th>名稱</th>
-                <th>類型</th>
-                <th>幣別</th>
+                <th class="col-symbol">代號</th>
+                <th class="col-name">名稱</th>
+                <th class="col-type">類型</th>
+                <th class="col-currency">幣別</th>
 
-                <th class="text-right">數量</th>
-                <th class="text-right">均價</th>
-                <th class="text-right">市價</th>
-                <th class="text-right">市值</th>
+                <th class="text-right col-num">數量</th>
+                <th class="text-right col-price">均價</th>
+                <th class="text-right col-price">市價</th>
+                <th class="text-right col-money">市值</th>
 
                 <!-- ✅ 你要的 UI 標示：清楚拆出股利 -->
-                <th class="text-right">未實現損益（不含股利）</th>
-                <th class="text-right">累積股利（已實現）</th>
-                <th class="text-right">總損益（含股利）</th>
+                <th class="text-right col-money">未實現損益（不含股利）</th>
+                <th class="text-right col-money">累積股利（已實現）</th>
+                <th class="text-right col-money">總損益（含股利）</th>
 
                 <!-- ✅ 報酬率也拆兩個：不含股利 vs 含股利 -->
-                <th class="text-right">報酬率（不含股利）</th>
-                <th class="text-right">總報酬率（含股利）</th>
+                <th class="text-right col-rate">報酬率（不含股利）</th>
+                <th class="text-right col-rate">總報酬率（含股利）</th>
 
                 <th class="actions-cell">操作</th>
               </tr>
-              <tr>
+
+              <!-- filter row -->
+              <tr class="filter-row">
                 <th>
                   <p-columnFilter
                     type="text"
@@ -172,19 +206,23 @@
 
             <ng-template pTemplate="body" let-h>
               <tr>
-                <td>{{ h.symbol }}</td>
-                <td>{{ h.name }}</td>
-                <td>{{ h.assetType }}</td>
-                <td>{{ h.currency }}</td>
+                <td class="col-symbol">{{ h.symbol }}</td>
+                <td class="col-name">
+                  <div class="cell-title">{{ h.name }}</div>
+                </td>
+                <td class="col-type">
+                  <span class="chip">{{ h.assetType }}</span>
+                </td>
+                <td class="col-currency">{{ h.currency }}</td>
 
-                <td class="text-right">{{ h.quantity | number : '1.0-4' }}</td>
-                <td class="text-right">{{ h.avgCost | number : '1.0-4' }}</td>
-                <td class="text-right">{{ h.marketPrice | number : '1.0-4' }}</td>
-                <td class="text-right">{{ h.marketValue | number : '1.0-0' }}</td>
+                <td class="text-right col-num">{{ h.quantity | number : '1.0-4' }}</td>
+                <td class="text-right col-price">{{ h.avgCost | number : '1.0-4' }}</td>
+                <td class="text-right col-price">{{ h.marketPrice | number : '1.0-4' }}</td>
+                <td class="text-right col-money">{{ h.marketValue | number : '1.0-0' }}</td>
 
                 <!-- ✅ 未實現損益（不含股利） -->
                 <td
-                  class="text-right"
+                  class="text-right col-money"
                   [ngClass]="{ positive: h.unrealizedPnl > 0, negative: h.unrealizedPnl < 0 }"
                 >
                   {{ h.unrealizedPnl | number : '1.0-0' }}
@@ -192,7 +230,7 @@
 
                 <!-- ✅ 累積股利（已實現） -->
                 <td
-                  class="text-right"
+                  class="text-right col-money"
                   [ngClass]="{ positive: h.realizedDividend > 0, negative: h.realizedDividend < 0 }"
                 >
                   {{ h.realizedDividend | number : '1.0-0' }}
@@ -200,7 +238,7 @@
 
                 <!-- ✅ 總損益（含股利） -->
                 <td
-                  class="text-right"
+                  class="text-right col-money"
                   [ngClass]="{ positive: h.totalPnl > 0, negative: h.totalPnl < 0 }"
                 >
                   {{ h.totalPnl | number : '1.0-0' }}
@@ -208,7 +246,7 @@
 
                 <!-- ✅ 報酬率（不含股利） -->
                 <td
-                  class="text-right"
+                  class="text-right col-rate"
                   [ngClass]="{ positive: h.returnRate > 0, negative: h.returnRate < 0 }"
                 >
                   {{ h.returnRate | number : '1.1-1' }}%
@@ -216,7 +254,7 @@
 
                 <!-- ✅ 總報酬率（含股利） -->
                 <td
-                  class="text-right"
+                  class="text-right col-rate"
                   [ngClass]="{ positive: h.totalReturnRate > 0, negative: h.totalReturnRate < 0 }"
                 >
                   {{ h.totalReturnRate | number : '1.1-1' }}%
@@ -277,7 +315,7 @@
 
           @if (transactions().length > 0) {
           <p-table
-            #dt
+            #dtTx
             [value]="transactions()"
             dataKey="symbol"
             [rows]="10"
@@ -286,52 +324,61 @@
             [paginator]="true"
             [globalFilterFields]="['tradeDate', 'type', 'symbol', 'currency']"
             class="transactions-table"
+            [scrollable]="true"
+            scrollHeight="flex"
           >
-            <ng-template pTemplate="caption">
-              <div class="flex">
-                <!-- class="ml-auto" 可以讓搜尋框在右邊 -->
-                <!-- <p-iconfield iconPosition="left" class="ml-auto">
-                <p-inputicon>
-                  <i class="pi pi-search"></i>
-                </p-inputicon>
-                <input
-                  pInputText
-                  type="text"
-                  (input)="dt.filterGlobal($event.target.value, 'contains')"
-                  placeholder="搜尋關鍵字 (日期/類型/標的/幣別)"
-                  style="width: 20rem;"
-                />
-              </p-iconfield> -->
+            <!-- ⭐⭐⭐ Transactions 欄寬也用 colgroup（不然 header/filter/body 會不同步） -->
+            <ng-template pTemplate="colgroup">
+              <colgroup>
+                <col style="width: 120px" /> <!-- 日期 -->
+                <col style="width: 140px" /> <!-- 類型 -->
+                <col style="width: 140px" /> <!-- 標的 -->
+                <col style="width: 90px" />  <!-- 幣別 -->
+                <col style="width: 110px" /> <!-- 數量 -->
+                <col style="width: 120px" /> <!-- 價格 -->
+                <col style="width: 110px" /> <!-- 手續費 -->
+                <col style="width: 140px" /> <!-- 現金流 -->
+                <col style="width: 128px" /> <!-- 操作 -->
+              </colgroup>
+            </ng-template>
 
-                <p-iconfield iconPosition="left">
-                  <p-inputicon>
-                    <i class="pi pi-search"></i>
-                  </p-inputicon>
-                  <input
-                    pInputText
-                    type="text"
-                    (input)="dt.filterGlobal($event.target.value, 'contains')"
-                    placeholder="搜尋關鍵字 (日期/類型/標的/幣別)"
-                    style="width: 20rem"
-                  />
-                </p-iconfield>
+            <ng-template pTemplate="caption">
+              <div class="table-caption">
+                <div class="table-caption-left">
+                  <!-- 你未來想加：快速篩選（BUY/SELL/Dividend）按鈕群 可以放這 -->
+                </div>
+
+                <div class="table-caption-right">
+                  <p-iconfield iconPosition="left">
+                    <p-inputicon>
+                      <i class="pi pi-search"></i>
+                    </p-inputicon>
+                    <input
+                      pInputText
+                      type="text"
+                      (input)="dtTx.filterGlobal($event.target.value, 'contains')"
+                      placeholder="搜尋關鍵字 (日期/類型/標的/幣別)"
+                      style="width: 20rem"
+                    />
+                  </p-iconfield>
+                </div>
               </div>
             </ng-template>
 
             <ng-template pTemplate="header">
               <tr>
-                <th>日期</th>
-                <th>類型</th>
-                <th>標的</th>
-                <th>幣別</th>
-                <th class="text-right">數量</th>
-                <th class="text-right">價格</th>
-                <th class="text-right">手續費</th>
-                <th class="text-right">現金流</th>
+                <th class="col-date">日期</th>
+                <th class="col-txtype">類型</th>
+                <th class="col-symbol">標的</th>
+                <th class="col-currency">幣別</th>
+                <th class="text-right col-num">數量</th>
+                <th class="text-right col-price">價格</th>
+                <th class="text-right col-money">手續費</th>
+                <th class="text-right col-money">現金流</th>
                 <th class="actions-cell">操作</th>
               </tr>
 
-              <tr>
+              <tr class="filter-row">
                 <th>
                   <p-columnFilter type="date" field="tradeDate" [showMenu]="false"></p-columnFilter>
                 </th>
@@ -389,9 +436,10 @@
 
             <ng-template pTemplate="body" let-t>
               <tr>
-                <td>{{ t.tradeDate | date : 'yyyy/MM/dd' }}</td>
+                <td class="col-date">{{ t.tradeDate | date : 'yyyy/MM/dd' }}</td>
+
                 <!-- <td>{{ t.type }}</td> -->
-                <td>
+                <td class="col-txtype">
                   <p-tag
                     [value]="getFriendlyTypeLabel(t.type)"
                     [severity]="getSeverity(t.type)"
@@ -400,13 +448,15 @@
                   />
                 </td>
 
-                <td>{{ t.symbol }}</td>
-                <td>{{ t.currency }}</td>
-                <td class="text-right">{{ t.quantity | number : '1.0-4' }}</td>
-                <td class="text-right">{{ t.price | number : '1.0-4' }}</td>
-                <td class="text-right">{{ t.fee | number : '1.0-0' }}</td>
+                <td class="col-symbol">{{ t.symbol }}</td>
+                <td class="col-currency">{{ t.currency }}</td>
+
+                <td class="text-right col-num">{{ t.quantity | number : '1.0-4' }}</td>
+                <td class="text-right col-price">{{ t.price | number : '1.0-4' }}</td>
+                <td class="text-right col-money">{{ t.fee | number : '1.0-0' }}</td>
+
                 <td
-                  class="text-right"
+                  class="text-right col-money"
                   [ngClass]="{ positive: t.totalAmount > 0, negative: t.totalAmount < 0 }"
                 >
                   {{ t.totalAmount | number : '1.0-0' }}
