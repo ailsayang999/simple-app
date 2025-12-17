@@ -1,12 +1,11 @@
 <!-- <p-toast position="top-right"></p-toast> -->
- <p-confirmDialog
+<p-confirmDialog
   header="刪除確認"
   icon="pi pi-exclamation-triangle"
   acceptLabel="刪除"
   rejectLabel="取消"
   acceptButtonStyleClass="p-button-danger"
 ></p-confirmDialog>
-
 
 <div class="account-detail-page">
   <!-- Header -->
@@ -35,9 +34,38 @@
         <span class="label">基礎幣別</span>
         <span class="value">{{ account()!.baseCurrency }}</span>
       </div>
+
       <div class="info-item">
-        <span class="label">總資產</span>
+        <span
+          class="label"
+          pTooltip="總資產＝目前所有持有標的的市值總和（不等於投入金額，會隨市場價格變動）"
+          tooltipPosition="top"
+        >
+          總資產
+        </span>
         <span class="value">{{ accountTotalValue() | number : '1.0-0' }}</span>
+      </div>
+
+      <div class="info-item">
+        <span
+          class="label"
+          pTooltip="把所有現金流出（例如買進/存入）加總，為投資人視角的累計投入"
+          tooltipPosition="top"
+        >
+          總投入
+        </span>
+        <span class="value">{{ accountTotalInvested() | number : '1.0-0' }}</span>
+      </div>
+
+      <div class="info-item">
+        <span
+          class="label"
+          pTooltip="淨投入 = 總投入 - 提領（WITHDRAW）。代表目前還在帳戶池子裡的本金"
+          tooltipPosition="top"
+        >
+          淨投入
+        </span>
+        <span class="value">{{ accountNetInvested() | number : '1.0-0' }}</span>
       </div>
     </div>
   </p-card>
@@ -338,15 +366,24 @@
             <!-- ⭐⭐⭐ Transactions 欄寬也用 colgroup（不然 header/filter/body 會不同步） -->
             <ng-template pTemplate="colgroup">
               <colgroup>
-                <col style="width: 120px" /> <!-- 日期 -->
-                <col style="width: 140px" /> <!-- 類型 -->
-                <col style="width: 140px" /> <!-- 標的 -->
-                <col style="width: 90px" />  <!-- 幣別 -->
-                <col style="width: 110px" /> <!-- 數量 -->
-                <col style="width: 120px" /> <!-- 價格 -->
-                <col style="width: 110px" /> <!-- 手續費 -->
-                <col style="width: 140px" /> <!-- 現金流 -->
-                <col style="width: 128px" /> <!-- 操作 -->
+                <col style="width: 120px" />
+                <!-- 日期 -->
+                <col style="width: 140px" />
+                <!-- 類型 -->
+                <col style="width: 140px" />
+                <!-- 標的 -->
+                <col style="width: 90px" />
+                <!-- 幣別 -->
+                <col style="width: 110px" />
+                <!-- 數量 -->
+                <col style="width: 120px" />
+                <!-- 價格 -->
+                <col style="width: 110px" />
+                <!-- 手續費 -->
+                <col style="width: 140px" />
+                <!-- 現金流 -->
+                <col style="width: 128px" />
+                <!-- 操作 -->
               </colgroup>
             </ng-template>
 

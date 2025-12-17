@@ -273,6 +273,36 @@ export class AccountDetailPage implements OnInit {
     return holdings.reduce((sum, h) => sum + (h.marketValue ?? 0), 0);
   });
 
+  // ✅ 總投入（投資人視角）：把所有「現金流出」加總（totalAmount < 0）
+  // 這會包含 BUY / DEPOSIT 等（你後端 totalAmount 已算好最乾淨）
+  accountTotalInvested = computed(() => {
+    const txs = this.transactions();
+    if (!txs.length) return 0;
+
+    return txs.reduce((sum, t) => {
+      const amt = t.totalAmount ?? 0; // totalAmount: 買進/存入為負，賣出/股利/利息為正
+      return amt < 0 ? sum + Math.abs(amt) : sum;
+    }, 0);
+  });
+
+  // ✅ 淨投入：總投入 - 提領（WITHDRAW 為現金流入）
+  accountNetInvested = computed(() => {
+    const txs = this.transactions();
+    if (!txs.length) return 0;
+
+    let investedOut = 0;
+    let withdrawnIn = 0;
+
+    for (const t of txs) {
+      const amt = t.totalAmount ?? 0;
+      if (amt < 0) investedOut += Math.abs(amt);
+      if (t.type === 'WITHDRAW' && amt > 0) withdrawnIn += amt;
+    }
+
+    return investedOut - withdrawnIn;
+  });
+
+
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
     if (!id) return;
