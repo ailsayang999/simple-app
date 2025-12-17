@@ -46,6 +46,10 @@ import { InputIconModule } from 'primeng/inputicon'; // for p-iconfield
 
 import { calcArrPerHolding } from '../../core/utils/arr.util';
 
+import { ConfirmationService } from 'primeng/api';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
+
+
 // 定義 PrimeNG 標籤可接受的 severity 類型
 type SeverityType = 'success' | 'secondary' | 'info' | 'warn' | 'danger' | 'contrast';
 
@@ -76,7 +80,9 @@ type TxType = 'BUY' | 'SELL' | 'DEPOSIT' | 'WITHDRAW' | 'DIVIDEND' | 'INTEREST';
     ButtonModule,
     TagModule,
     TooltipModule, // ✅ 讓 p-tag 的 tooltip 正式可用
+    ConfirmDialogModule,
   ],
+  providers: [ConfirmationService],
 })
 export class AccountDetailPage implements OnInit {
   // 獲取 p-table 實例 (如果還沒加的話)
@@ -89,6 +95,7 @@ export class AccountDetailPage implements OnInit {
   private transactionService = inject(TransactionService);
   private fb = inject(FormBuilder);
   private toast = inject(ToastService);
+  private confirmService = inject(ConfirmationService);
 
   private accountIdSignal = signal<string | null>(null);
 
@@ -494,16 +501,27 @@ export class AccountDetailPage implements OnInit {
     const accountId = this.accountIdSignal();
     if (!accountId) return;
 
-    const ok = window.confirm(`刪除 holding 需要先刪交易。確定要刪除 ${h.symbol} 嗎？`);
-    if (!ok) return;
+    this.confirmService.confirm({
+      message: `此持有標的仍有交易紀錄，請先刪除交易後，才能刪除。\n\n確定要刪除「${h.symbol}」嗎？`,
+      header: '刪除持有標的',
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: '刪除',
+      rejectLabel: '取消',
+      acceptButtonStyleClass: 'p-button-danger',
 
-    this.holdingService.deleteHolding(h.id).subscribe({
-      next: () => {
-        this.toast.success('已刪除持有標的');
-        this.holdingService.loadHoldings(accountId);
-      },
-      error: (err) => {
-        console.error(err);
+      accept: () => {
+        this.holdingService.deleteHolding(h.id).subscribe({
+          next: () => {
+            this.toast.success('已刪除持有標的');
+            this.holdingService.loadHoldings(accountId);
+          },
+          error: (err) => {
+            // ✅ 這裡可以接後端錯誤訊息
+            const msg = err?.error?.message ?? '此持有標的仍有交易紀錄，請先刪除交易後再嘗試。';
+            this.toast.error(msg);
+            console.error(err);
+          },
+        });
       },
     });
   }
@@ -669,17 +687,30 @@ export class AccountDetailPage implements OnInit {
     const accountId = this.accountIdSignal();
     if (!accountId) return;
 
-    const ok = window.confirm(`確定要刪除這筆交易嗎？（${t.symbol} ${t.type}）`);
-    if (!ok) return;
+    const typeLabel = this.getFriendlyTypeLabel(t.type); // ✅ 你原本就有
+    const realizedHint = t.type === 'DIVIDEND' || t.type === 'INTEREST' ? '（已實現）' : '';
 
-    this.transactionService.deleteTransaction(t.id).subscribe({
-      next: () => {
-        this.toast.success('已刪除交易');
-        this.holdingService.loadHoldings(accountId);
-        this.transactionService.loadTransactionsByAccount(accountId);
-      },
-      error: (err) => {
-        console.error(err);
+    this.confirmService.confirm({
+      header: '刪除交易確認',
+      icon: 'pi pi-exclamation-triangle',
+      message: `確定要刪除這筆交易嗎？\n\n標的：${t.symbol}\n類型：${typeLabel} ${realizedHint}`,
+      acceptLabel: '刪除',
+      rejectLabel: '取消',
+      acceptButtonStyleClass: 'p-button-danger',
+
+      accept: () => {
+        this.transactionService.deleteTransaction(t.id).subscribe({
+          next: () => {
+            this.toast.success('已刪除交易');
+            this.holdingService.loadHoldings(accountId);
+            this.transactionService.loadTransactionsByAccount(accountId);
+          },
+          error: (err) => {
+            const msg = err?.error?.message ?? '刪除失敗，請稍後再試。';
+            this.toast.error(msg);
+            console.error(err);
+          },
+        });
       },
     });
   }
