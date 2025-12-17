@@ -14,6 +14,10 @@ export interface TransactionDto {
   amount?: number | null;
 
   fee: number;
+
+  // ✅ ✅ 新增：交易稅（正式版）
+  tax: number;
+
   totalAmount: number;
   note?: string | null;
 }
@@ -31,6 +35,10 @@ export interface CreateTransactionDto {
   amount?: number | null;
 
   fee: number;
+
+  // ✅ ✅ 新增：交易稅（正式版）
+  tax: number;
+
   note?: string | null;
 }
 
@@ -46,5 +54,9 @@ export interface UpdateTransactionDto {
   amount?: number | null;
 
   fee: number;
+
+  // ✅ ✅ 新增：交易稅（正式版）
+  tax: number;
+
   note?: string | null;
 }

@@ -17,7 +17,7 @@ export interface HoldingDto {
   // ✅ 可存可算：我們後端已算好回傳（dashboard 快）
   marketValue: number;
 
-  // ✅ 未實現損益（不含股利）
+  // ✅ 未實現損益（不含股利/利息）
   unrealizedPnl: number;
 
   // ✅ 未實現報酬率（不含股利，%）
@@ -26,10 +26,19 @@ export interface HoldingDto {
   // ✅ 累積股利（已實現）
   realizedDividend: number;
 
-  // ✅ 總損益（含股利）
+  // ✅ ✅ 新增：已實現差價損益（含 fee + tax）
+  realizedTradePnl: number;
+
+  // ✅ ✅ 新增：已實現收入（股利 + 利息）
+  realizedIncome: number;
+
+  // ✅ ✅ 新增：真實已實現獲利（差價 + 股利 + 利息）
+  realizedPnl: number;
+
+  // ✅ 總損益（含已實現全部）
   totalPnl: number;
 
-  // ✅ 總報酬率（含股利，%）
+  // ✅ 總報酬率（含已實現全部，%）
   totalReturnRate: number;
 }
 

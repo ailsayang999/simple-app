@@ -1,18 +1,11 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, RouterLink } from '@angular/router';
-import {
-  ReactiveFormsModule,
-  FormBuilder,
-  Validators,
-  AbstractControl,
-  FormGroup,
-} from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
+import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { FormsModule } from '@angular/forms';
 import { ViewChild } from '@angular/core';
 import { Table } from 'primeng/table';
 
-// ✅ 最佳實務：讓 valueChanges 訂閱自動 unsubscribe
 import { DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
@@ -25,7 +18,7 @@ import { SelectModule } from 'primeng/select';
 import { ToastModule } from 'primeng/toast';
 import { ChartModule } from 'primeng/chart';
 import { TagModule } from 'primeng/tag';
-import { TooltipModule } from 'primeng/tooltip'; // ✅ 讓 p-tag 也能用 pTooltip（產品級最佳實務）
+import { TooltipModule } from 'primeng/tooltip';
 
 import { AccountService } from '../../core/services/account.service';
 import { HoldingService } from '../../core/services/holding.service';
@@ -40,15 +33,16 @@ import {
   UpdateTransactionDto,
 } from '../../core/models/transaction.model';
 
-import { InputTextModule } from 'primeng/inputtext'; // for p-iconfield
-import { IconFieldModule } from 'primeng/iconfield'; // for p-iconfield
-import { InputIconModule } from 'primeng/inputicon'; // for p-iconfield
+import { InputTextModule } from 'primeng/inputtext';
+import { IconFieldModule } from 'primeng/iconfield';
+import { InputIconModule } from 'primeng/inputicon';
 
 import { calcArrPerHolding } from '../../core/utils/arr.util';
 
 import { ConfirmationService } from 'primeng/api';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 
+import { AccountSummaryDto } from '../../core/models/account-summary.model';
 
 // 定義 PrimeNG 標籤可接受的 severity 類型
 type SeverityType = 'success' | 'secondary' | 'info' | 'warn' | 'danger' | 'contrast';
@@ -64,7 +58,6 @@ type TxType = 'BUY' | 'SELL' | 'DEPOSIT' | 'WITHDRAW' | 'DIVIDEND' | 'INTEREST';
   imports: [
     CommonModule,
     FormsModule,
-    RouterLink,
     ReactiveFormsModule,
     CardModule,
     TabsModule,
@@ -77,7 +70,6 @@ type TxType = 'BUY' | 'SELL' | 'DEPOSIT' | 'WITHDRAW' | 'DIVIDEND' | 'INTEREST';
     SelectModule,
     ToastModule,
     ChartModule,
-    ButtonModule,
     TagModule,
     TooltipModule, // ✅ 讓 p-tag 的 tooltip 正式可用
     ConfirmDialogModule,
@@ -85,8 +77,7 @@ type TxType = 'BUY' | 'SELL' | 'DEPOSIT' | 'WITHDRAW' | 'DIVIDEND' | 'INTEREST';
   providers: [ConfirmationService],
 })
 export class AccountDetailPage implements OnInit {
-  // 獲取 p-table 實例 (如果還沒加的話)
-  @ViewChild('dt') dt!: Table;
+  @ViewChild('dt') dt!: Table; // 獲取 p-table 實例 (如果還沒加的話)
 
   private destroyRef = inject(DestroyRef);
   private route = inject(ActivatedRoute);
@@ -98,6 +89,9 @@ export class AccountDetailPage implements OnInit {
   private confirmService = inject(ConfirmationService);
 
   private accountIdSignal = signal<string | null>(null);
+
+  // ✅ Summary（後端算好最乾淨）
+  accountSummary = signal<AccountSummaryDto | null>(null);
 
   account = computed<AccountDto | null>(() => {
     const id = this.accountIdSignal();
@@ -113,9 +107,7 @@ export class AccountDetailPage implements OnInit {
   // dialogs
   displayCreateHoldingDialog = false;
   displayEditHoldingDialog = false;
-
   displayMarketPriceDialog = false;
-
   displayTransactionDialog = false;
   displayEditTransactionDialog = false;
 
@@ -175,9 +167,7 @@ export class AccountDetailPage implements OnInit {
     if (type === 'INTEREST') return '利息（已實現）';
 
     const option = this.transactionTypeOptions.find((opt) => opt.value === type);
-    // 提取中文部分或只返回 value
     if (option) {
-      // 這裡假設我們只想要顯示 '買進'，而不是 '買進 (BUY) - 現金流出'
       const match = option.label.match(/([^\s]+)\s*\(/);
       return match ? match[1] : option.label;
     }
@@ -189,13 +179,13 @@ export class AccountDetailPage implements OnInit {
   getTxTagTooltip(type: string): string {
     switch (type) {
       case 'DIVIDEND':
-        return '已實現：股利入帳（現金流入）。不影響持倉數量，但會影響總損益/總報酬率。';
+        return '已實現：股利入帳（現金流入）。不影響持倉數量，但會影響「已實現獲利/總獲利」。';
       case 'INTEREST':
-        return '已實現：利息入帳（現金流入）。不影響持倉數量，但會影響總損益/總報酬率。';
+        return '已實現：利息入帳（現金流入）。不影響持倉數量，但會影響「已實現獲利/總獲利」。';
       case 'BUY':
         return '買進：現金流出，會增加持倉數量，並影響均價/未實現損益。';
       case 'SELL':
-        return '賣出：現金流入，會減少持倉數量。';
+        return '賣出：現金流入，會減少持倉數量，並影響「已實現獲利」。';
       case 'DEPOSIT':
         return '存入：現金流出（投資人視角），通常用於現金帳戶資金投入。';
       case 'WITHDRAW':
@@ -208,6 +198,11 @@ export class AccountDetailPage implements OnInit {
   // ✅ 給 HTML 判斷用：BUY/SELL
   isBuySell(type: string | null | undefined): boolean {
     return type === 'BUY' || type === 'SELL';
+  }
+
+  // ✅ 給 HTML 判斷用：SELL（解你 template 的 isSell 報錯）
+  isSell(type: string | null | undefined): boolean {
+    return type === 'SELL';
   }
 
   // ====== forms ======
@@ -231,22 +226,24 @@ export class AccountDetailPage implements OnInit {
     marketPrice: [0, [Validators.required, Validators.min(0)]],
   });
 
-  // ✅ amount：只在 DEPOSIT/WITHDRAW/DIVIDEND/INTEREST 必填
+  // ✅ 交易表單：新增 tax（產品級：cash-in/out 要準）
   createTransactionForm = this.fb.nonNullable.group({
     holdingId: ['', [Validators.required]],
     tradeDate: [this.todayStr(), [Validators.required]],
     type: ['BUY' as TxType, [Validators.required]],
     symbol: [{ value: '', disabled: true }],
     currency: [{ value: '', disabled: true }],
-
     // BUY/SELL 用
     quantity: [0, []],
     price: [0, []],
-
     // ✅ 其他類型用
     amount: [0, []],
 
     fee: [0, [Validators.min(0)]],
+
+    // ✅ NEW
+    tax: [0, [Validators.min(0)]],
+
     note: [''],
   });
 
@@ -262,11 +259,17 @@ export class AccountDetailPage implements OnInit {
     amount: [0, []],
 
     fee: [0, [Validators.min(0)]],
+
+    // ✅ NEW
+    tax: [0, [Validators.min(0)]],
+
     note: [''],
   });
 
   // ===== computed =====
 
+  // ✅ 這裡你的「總資產 / 投入 / 淨投入」你已經能用交易與 holdings 算出來
+  // 但「已實現/未實現/總獲利」我們改成直接吃後端 summary（最乾淨）
   accountTotalValue = computed(() => {
     const holdings = this.holdings();
     if (!holdings.length) return 0;
@@ -302,6 +305,55 @@ export class AccountDetailPage implements OnInit {
     return investedOut - withdrawnIn;
   });
 
+  // ✅ 三段式：已實現 / 未實現 / 總獲利（顯示用，直接讀 Summary）
+  accountRealizedProfit = computed(() => this.accountSummary()?.realizedProfit ?? 0);
+  accountRealizedReturnRate = computed(() => this.accountSummary()?.realizedReturnRate ?? 0);
+
+  accountUnrealizedProfit = computed(() => this.accountSummary()?.unrealizedProfit ?? 0);
+
+  accountTotalProfit = computed(() => this.accountSummary()?.totalProfit ?? 0);
+
+  // ✅ 你後端目前 DTO 沒有 totalReturnRate，我們用「總獲利 ÷ 總投入」前端即時計（不會跟後端衝突）
+  accountTotalReturnRate = computed(() => {
+    const invested = this.accountTotalInvested();
+    if (!invested) return 0;
+    return (this.accountTotalProfit() / invested) * 100;
+  });
+
+  // ✅ Tooltip：你要「介紹 accountRealizedReturnRate 怎麼算」
+  getRealizedTooltip(): string {
+    return [
+      '✅ 已實現獲利（Realized Profit）',
+      '把「已結束的現金成果」算進來：',
+      '＝ 賣出收入 + 股利/利息',
+      '－ 買進成本（平均成本法）',
+      '－ 手續費（fee）',
+      '－ 交易稅（tax）',
+      '',
+      '📌 已實現報酬率（Realized Return Rate, %）',
+      '＝ 已實現獲利 ÷ 總投入 × 100%',
+      '(總投入：所有現金流出加總，例如 BUY/DEPOSIT)',
+    ].join('\n');
+  }
+
+  getUnrealizedTooltip(): string {
+    return [
+      '✅ 未實現損益（Unrealized Profit）',
+      '只看「目前還持有的部位」：',
+      '＝ 目前市值（市價×數量）－ 持倉成本（均價×數量）',
+      '（不含股利/利息，因為那是已實現現金流入）',
+    ].join('\n');
+  }
+
+  getTotalProfitTooltip(): string {
+    return [
+      '✅ 總獲利（Total Profit）',
+      '＝ 已實現獲利 + 未實現損益',
+      '',
+      '📌 總報酬率（Total Return Rate, %）',
+      '＝ 總獲利 ÷ 總投入 × 100%',
+    ].join('\n');
+  }
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
@@ -315,6 +367,9 @@ export class AccountDetailPage implements OnInit {
 
     this.holdingService.loadHoldings(id);
     this.transactionService.loadTransactionsByAccount(id);
+
+    // ✅ 初始化：載入 Summary（後端算好最乾淨）
+    this.loadAccountSummary(id);
 
     // ✅ 初始化：先依預設 type 套 validator（避免第一次開 dialog 就亂）
     this.applyTxValidators(
@@ -332,6 +387,7 @@ export class AccountDetailPage implements OnInit {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((t) => this.applyTxValidators(this.editTransactionForm, t as TxType));
 
+    // ARR options（你原本保留）
     this.accountArrChartOptions = {
       maintainAspectRatio: false,
       plugins: {
@@ -352,12 +408,17 @@ export class AccountDetailPage implements OnInit {
         },
       },
       scales: {
-        y: {
-          ticks: { callback: (v: number) => `${v}%` },
-        },
+        y: { ticks: { callback: (v: number) => `${v}%` } },
         x: { ticks: { maxRotation: 0, autoSkip: true } },
       },
     };
+  }
+
+  private loadAccountSummary(accountId: string) {
+    this.accountService.getAccountSummary(accountId).subscribe({
+      next: (res) => this.accountSummary.set(res),
+      error: (err) => console.error(err),
+    });
   }
 
   private todayStr() {
@@ -370,15 +431,20 @@ export class AccountDetailPage implements OnInit {
   // ==============================
   // ✅ 交易表單：動態 Validators（你要的 applyTxValidators）
   // ==============================
+  // ✅ 動態 Validators（含 tax：只在 SELL 必填）
   private applyTxValidators(form: typeof this.createTransactionForm, type: TxType) {
     const qty = form.controls.quantity;
     const price = form.controls.price;
     const amount = form.controls.amount;
+    const tax = form.controls.tax;
 
-    // 先清空（避免殘留）
     qty.clearValidators();
     price.clearValidators();
     amount.clearValidators();
+    tax.clearValidators();
+
+    // tax 永遠 >=0，但「SELL 必填」才有意義
+    tax.setValidators([Validators.min(0)]);
 
     if (type === 'BUY' || type === 'SELL') {
       // BUY/SELL：quantity + price 必填
@@ -387,19 +453,27 @@ export class AccountDetailPage implements OnInit {
 
       // ✅ amount 不用 → 直接 reset 成 0（避免你送出去是舊值）
       amount.setValue(0, { emitEvent: false });
+
+      // ✅ SELL：tax 也必填（讓真實獲利計算更準）
+      if (type === 'SELL') {
+        tax.addValidators([Validators.required]);
+      } else {
+        // BUY 預設 0（台股通常買進沒交易稅）
+        tax.setValue(0, { emitEvent: false });
+      }
     } else {
       // 其他：amount 必填
       amount.setValidators([Validators.required, Validators.min(0.01)]);
-
-      // ✅ quantity/price 不用 → reset 成 0（讓 DTO 乾淨一致）
       qty.setValue(0, { emitEvent: false });
       price.setValue(0, { emitEvent: false });
+      tax.setValue(0, { emitEvent: false }); // 非買賣：通常 0（股利扣繳你也可用 tax 欄位記）
     }
 
     // 讓表單立刻更新 valid 狀態
     qty.updateValueAndValidity({ emitEvent: false });
     price.updateValueAndValidity({ emitEvent: false });
     amount.updateValueAndValidity({ emitEvent: false });
+    tax.updateValueAndValidity({ emitEvent: false });
   }
 
   // ==============================
@@ -447,10 +521,9 @@ export class AccountDetailPage implements OnInit {
         this.toast.success('已新增持有標的');
         this.displayCreateHoldingDialog = false;
         this.holdingService.loadHoldings(accountId);
+        this.loadAccountSummary(accountId); // ✅ summary 也刷新
       },
-      error: (err) => {
-        console.error(err);
-      },
+      error: (err) => console.error(err),
     });
   }
 
@@ -486,10 +559,9 @@ export class AccountDetailPage implements OnInit {
         this.toast.success('已更新持有標的');
         this.displayEditHoldingDialog = false;
         this.holdingService.loadHoldings(accountId);
+        this.loadAccountSummary(accountId); // ✅ summary 也刷新
       },
-      error: (err) => {
-        console.error(err);
-      },
+      error: (err) => console.error(err),
     });
   }
 
@@ -520,10 +592,9 @@ export class AccountDetailPage implements OnInit {
         this.toast.success('已更新市價');
         this.displayMarketPriceDialog = false;
         this.holdingService.loadHoldings(accountId);
+        this.loadAccountSummary(accountId); // ✅ summary 也刷新
       },
-      error: (err) => {
-        console.error(err);
-      },
+      error: (err) => console.error(err),
     });
   }
 
@@ -538,15 +609,14 @@ export class AccountDetailPage implements OnInit {
       acceptLabel: '刪除',
       rejectLabel: '取消',
       acceptButtonStyleClass: 'p-button-danger',
-
       accept: () => {
         this.holdingService.deleteHolding(h.id).subscribe({
           next: () => {
             this.toast.success('已刪除持有標的');
             this.holdingService.loadHoldings(accountId);
+            this.loadAccountSummary(accountId); // ✅ summary 也刷新
           },
           error: (err) => {
-            // ✅ 這裡可以接後端錯誤訊息
             const msg = err?.error?.message ?? '此持有標的仍有交易紀錄，請先刪除交易後再嘗試。';
             this.toast.error(msg);
             console.error(err);
@@ -591,15 +661,14 @@ export class AccountDetailPage implements OnInit {
       price: 0,
       amount: 0,
       fee: 0,
+      tax: 0, // ✅
       note: '',
     });
 
-    // ✅ reset 後再套一次 validators（避免 reset 把 validator 狀態弄亂）
     this.applyTxValidators(
       this.createTransactionForm,
       this.createTransactionForm.getRawValue().type
     );
-
     this.displayTransactionDialog = true;
   }
 
@@ -619,7 +688,6 @@ export class AccountDetailPage implements OnInit {
     const raw = this.createTransactionForm.getRawValue();
     const type = raw.type as TxType;
 
-    // ✅ totalAmount 永遠後端算，所以前端只送必要欄位
     const dto: CreateTransactionDto = {
       accountId,
       holdingId: raw.holdingId,
@@ -627,8 +695,9 @@ export class AccountDetailPage implements OnInit {
       type,
       quantity: this.isBuySell(type) ? raw.quantity : 0,
       price: this.isBuySell(type) ? raw.price : 0,
-      amount: this.isBuySell(type) ? null : raw.amount, // ✅ amount 只給非 BUY/SELL
+      amount: this.isBuySell(type) ? null : raw.amount,
       fee: raw.fee,
+      tax: raw.tax, // ✅
       note: raw.note || null,
     };
 
@@ -639,16 +708,14 @@ export class AccountDetailPage implements OnInit {
 
         this.holdingService.loadHoldings(accountId);
         this.transactionService.loadTransactionsByAccount(accountId);
+        this.loadAccountSummary(accountId); // ✅ summary 也刷新
       },
-      error: (err) => {
-        console.error(err);
-      },
+      error: (err) => console.error(err),
     });
   }
 
   openTransactionEdit(t: TransactionDto) {
     this.selectedTx.set(t);
-
     const yyyyMmDd = new Date(t.tradeDate).toISOString().slice(0, 10);
 
     this.editTransactionForm.reset({
@@ -659,14 +726,13 @@ export class AccountDetailPage implements OnInit {
       currency: t.currency,
       quantity: t.quantity ?? 0,
       price: t.price ?? 0,
-      amount: t.amount ?? 0,
+      amount: (t as any).amount ?? 0,
       fee: t.fee,
+      tax: (t as any).tax ?? 0, // ✅
       note: t.note ?? '',
     });
 
-    // ✅ reset 後立即依 type 套 validators
     this.applyTxValidators(this.editTransactionForm, this.editTransactionForm.getRawValue().type);
-
     this.displayEditTransactionDialog = true;
   }
 
@@ -696,6 +762,7 @@ export class AccountDetailPage implements OnInit {
       price: this.isBuySell(type) ? raw.price : 0,
       amount: this.isBuySell(type) ? null : raw.amount,
       fee: raw.fee,
+      tax: raw.tax, // ✅
       note: raw.note || null,
     };
 
@@ -706,10 +773,9 @@ export class AccountDetailPage implements OnInit {
 
         this.holdingService.loadHoldings(accountId);
         this.transactionService.loadTransactionsByAccount(accountId);
+        this.loadAccountSummary(accountId); // ✅ summary 也刷新
       },
-      error: (err) => {
-        console.error(err);
-      },
+      error: (err) => console.error(err),
     });
   }
 
@@ -717,7 +783,7 @@ export class AccountDetailPage implements OnInit {
     const accountId = this.accountIdSignal();
     if (!accountId) return;
 
-    const typeLabel = this.getFriendlyTypeLabel(t.type); // ✅ 你原本就有
+    const typeLabel = this.getFriendlyTypeLabel(t.type);
     const realizedHint = t.type === 'DIVIDEND' || t.type === 'INTEREST' ? '（已實現）' : '';
 
     this.confirmService.confirm({
@@ -727,13 +793,13 @@ export class AccountDetailPage implements OnInit {
       acceptLabel: '刪除',
       rejectLabel: '取消',
       acceptButtonStyleClass: 'p-button-danger',
-
       accept: () => {
         this.transactionService.deleteTransaction(t.id).subscribe({
           next: () => {
             this.toast.success('已刪除交易');
             this.holdingService.loadHoldings(accountId);
             this.transactionService.loadTransactionsByAccount(accountId);
+            this.loadAccountSummary(accountId); // ✅ summary 也刷新
           },
           error: (err) => {
             const msg = err?.error?.message ?? '刪除失敗，請稍後再試。';
@@ -803,7 +869,6 @@ export class AccountDetailPage implements OnInit {
     const backgroundColor = usable.map((r) =>
       r.arr < 0 ? 'rgb(239, 68, 68)' : 'rgb(80, 69, 229)'
     );
-
     const hoverBackgroundColor = usable.map((r) =>
       r.arr < 0 ? 'rgba(239, 68, 68, 0.85)' : 'rgba(80, 69, 229, 0.85)'
     );

@@ -67,6 +67,57 @@
         </span>
         <span class="value">{{ accountNetInvested() | number : '1.0-0' }}</span>
       </div>
+
+      <!-- ✅ 已實現 / 未實現 / 總獲利（產品級 Summary） -->
+      <div class="info-item">
+        <span class="label" pTooltip="{{ getRealizedTooltip() }}" tooltipPosition="top">
+          已實現獲利
+        </span>
+
+        <span
+          class="value"
+          [ngClass]="{
+            positive: accountRealizedProfit() > 0,
+            negative: accountRealizedProfit() < 0
+          }"
+        >
+          {{ accountRealizedProfit() | number : '1.0-0' }}
+          <small class="muted">({{ accountRealizedReturnRate() | number : '1.1-1' }}%)</small>
+        </span>
+      </div>
+
+      <div class="info-item">
+        <span class="label" pTooltip="{{ getUnrealizedTooltip() }}" tooltipPosition="top">
+          未實現損益
+        </span>
+
+        <span
+          class="value"
+          [ngClass]="{
+            positive: accountUnrealizedProfit() > 0,
+            negative: accountUnrealizedProfit() < 0
+          }"
+        >
+          {{ accountUnrealizedProfit() | number : '1.0-0' }}
+        </span>
+      </div>
+
+      <div class="info-item">
+        <span class="label" pTooltip="{{ getTotalProfitTooltip() }}" tooltipPosition="top">
+          總獲利
+        </span>
+
+        <span
+          class="value"
+          [ngClass]="{
+            positive: accountTotalProfit() > 0,
+            negative: accountTotalProfit() < 0
+          }"
+        >
+          {{ accountTotalProfit() | number : '1.0-0' }}
+          <small class="muted">({{ accountTotalReturnRate() | number : '1.1-1' }}%)</small>
+        </span>
+      </div>
     </div>
   </p-card>
   } @else {
@@ -333,6 +384,7 @@
         </p-tabpanel>
 
         <!-- Transactions Panel -->
+        <!-- Transactions Panel -->
         <p-tabpanel value="transactions">
           <div class="panel-header">
             <div class="panel-title">
@@ -380,6 +432,8 @@
                 <!-- 價格 -->
                 <col style="width: 110px" />
                 <!-- 手續費 -->
+                <col style="width: 110px" />
+                <!-- ✅ 交易稅 -->
                 <col style="width: 140px" />
                 <!-- 現金流 -->
                 <col style="width: 128px" />
@@ -419,6 +473,7 @@
                 <th class="text-right col-num">數量</th>
                 <th class="text-right col-price">價格</th>
                 <th class="text-right col-money">手續費</th>
+                <th class="text-right col-money">交易稅</th>
                 <th class="text-right col-money">現金流</th>
                 <th class="actions-cell">操作</th>
               </tr>
@@ -475,6 +530,7 @@
                 <th></th>
                 <th></th>
                 <th></th>
+                <th></th>
                 <th class="actions-cell"></th>
               </tr>
             </ng-template>
@@ -499,6 +555,9 @@
                 <td class="text-right col-num">{{ t.quantity | number : '1.0-4' }}</td>
                 <td class="text-right col-price">{{ t.price | number : '1.0-4' }}</td>
                 <td class="text-right col-money">{{ t.fee | number : '1.0-0' }}</td>
+
+                <!-- ✅ 交易稅：非 SELL 通常為 0 -->
+                <td class="text-right col-money">{{ t.tax | number : '1.0-0' }}</td>
 
                 <td
                   class="text-right col-money"
@@ -824,6 +883,23 @@
         <input type="number" pInputText formControlName="fee" min="0" />
       </div>
 
+      <!-- ✅ ✅ 只有 SELL 顯示交易稅 -->
+      @if (isSell(createTransactionForm.getRawValue().type)) {
+      <div class="form-field">
+        <label
+          pTooltip="交易稅（正式版）：會納入「真實已實現獲利」與現金流計算（SELL: 扣除）。"
+          tooltipPosition="top"
+        >
+          交易稅
+        </label>
+        <input type="number" pInputText formControlName="tax" min="0" />
+      </div>
+      } @else {
+      <!-- ✅ 不是 SELL 時不顯示；值會被 TS 自動 reset 為 0 -->
+      }
+    </div>
+
+    <div class="form-row">
       <div class="form-field">
         <label>備註</label>
         <input pInputText formControlName="note" />
@@ -939,6 +1015,20 @@
         <input type="number" pInputText formControlName="fee" min="0" />
       </div>
 
+      @if (isSell(editTransactionForm.getRawValue().type)) {
+      <div class="form-field">
+        <label
+          pTooltip="交易稅（正式版）：會納入「真實已實現獲利」與現金流計算（SELL: 扣除）。"
+          tooltipPosition="top"
+        >
+          交易稅
+        </label>
+        <input type="number" pInputText formControlName="tax" min="0" />
+      </div>
+      }
+    </div>
+
+    <div class="form-row">
       <div class="form-field">
         <label>備註</label>
         <input pInputText formControlName="note" />
