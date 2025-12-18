@@ -139,6 +139,113 @@ export class AccountDetailPage implements OnInit {
     { label: '利息 (INTEREST) - 現金流入', value: 'INTEREST' },
   ];
 
+  // ==============================
+  // ✅ ✅ 小工具：自動計算手續費 / 交易稅（產品級）
+  // ==============================
+  // 台股常用：手續費 0.1425%（券商可折扣），交易稅 0.3%（賣出）
+  private readonly STOCK_FEE_RATE = 0.001425;
+  private readonly STOCK_TAX_RATE = 0.003;
+
+  // 你的券商折扣（例：5折 = 0.5、65折 = 0.65；不知道就先用 1）
+  // ✅ 你未來可把這個搬到 AccountSetting / Profile 裡
+  private readonly FEE_DISCOUNT = 1;
+
+  // 台股手續費最低通常 20（多數券商規則），這裡只對 TWD 套用
+  private readonly MIN_FEE_TWD = 20;
+
+  // ✅ 自動寫入欄位，但「如果使用者手動改過（dirty）就不覆蓋」
+  private setAutoNumber(control: { setValue: Function; markAsPristine: Function }, value: number) {
+    control.setValue(value, { emitEvent: false });
+    control.markAsPristine();
+  }
+
+  private roundMoney(v: number): number {
+    // 台股帳務常用四捨五入到整數元
+    if (!Number.isFinite(v)) return 0;
+    return Math.round(v);
+  }
+
+  private getHoldingById(holdingId: string | null | undefined): HoldingDto | null {
+    if (!holdingId) return null;
+    return this.holdings().find((h) => h.id === holdingId) ?? null;
+  }
+
+  // ✅ 判斷是否台股：TWD + (STOCK/ETF) → SELL 才要算交易稅
+  private isTaiwanStockOrEtf(h: HoldingDto | null): boolean {
+    if (!h) return false;
+    return h.currency === 'TWD' && (h.assetType === 'STOCK' || h.assetType === 'ETF');
+  }
+
+  private calcFee(gross: number, currency: string): number {
+    const raw = gross * this.STOCK_FEE_RATE * this.FEE_DISCOUNT;
+    const rounded = this.roundMoney(raw);
+
+    // 台股（TWD）常見最低手續費 20
+    if (currency === 'TWD') return Math.max(rounded, this.MIN_FEE_TWD);
+    return Math.max(rounded, 0);
+  }
+
+  private calcTax(gross: number): number {
+    return Math.max(this.roundMoney(gross * this.STOCK_TAX_RATE), 0);
+  }
+
+  // ✅ 在表單中自動計算 fee/tax（BUY: fee；SELL: fee+tax）
+  private wireAutoFeeTax(form: typeof this.createTransactionForm) {
+    const typeCtrl = form.controls.type;
+    const holdingIdCtrl = form.controls.holdingId;
+    const qtyCtrl = form.controls.quantity;
+    const priceCtrl = form.controls.price;
+
+    // fee/tax
+    const feeCtrl = form.controls.fee;
+    const taxCtrl = form.controls.tax;
+
+    // 只要這四個欄位任一變動就嘗試重算（產品級：即時）
+    const recalc = () => {
+      const raw = form.getRawValue();
+      const type = raw.type as TxType;
+
+      // 只有 BUY/SELL 才用 qty*price
+      if (!(type === 'BUY' || type === 'SELL')) return;
+
+      const h = this.getHoldingById(raw.holdingId);
+      const currency = h?.currency ?? raw.currency ?? 'TWD';
+
+      const qty = Number(raw.quantity ?? 0);
+      const price = Number(raw.price ?? 0);
+      if (!Number.isFinite(qty) || !Number.isFinite(price) || qty <= 0 || price < 0) return;
+
+      const gross = qty * price; // 成交金額（未含費稅）
+
+      // ✅ fee：如果使用者沒手改（pristine）才自動覆蓋
+      if (feeCtrl.pristine) {
+        const fee = this.calcFee(gross, currency);
+        this.setAutoNumber(feeCtrl, fee);
+      }
+
+      // ✅ tax：只在 SELL + 台股/ETF（TWD）自動算；其他自動 0
+      if (type === 'SELL') {
+        const shouldTax = this.isTaiwanStockOrEtf(h);
+        const tax = shouldTax ? this.calcTax(gross) : 0;
+
+        if (taxCtrl.pristine) {
+          this.setAutoNumber(taxCtrl, tax);
+        }
+      } else {
+        // BUY：通常 0
+        if (taxCtrl.pristine) {
+          this.setAutoNumber(taxCtrl, 0);
+        }
+      }
+    };
+
+    // ✅ 訂閱：任何相關欄位變動就 recalculation
+    typeCtrl.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => recalc());
+    holdingIdCtrl.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => recalc());
+    qtyCtrl.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => recalc());
+    priceCtrl.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => recalc());
+  }
+
   // 必須加入的方法 3：用於 p-tag 顏色顯示
   getSeverity(type: string): SeverityType {
     // ⬅️ 將回傳類型從 string 更改為 SeverityType
@@ -386,6 +493,10 @@ export class AccountDetailPage implements OnInit {
     this.editTransactionForm.controls.type.valueChanges
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((t) => this.applyTxValidators(this.editTransactionForm, t as TxType));
+
+    // ✅ ✅ NEW：自動算 fee/tax（買：fee；賣：fee+tax）
+    this.wireAutoFeeTax(this.createTransactionForm);
+    this.wireAutoFeeTax(this.editTransactionForm);
 
     // ARR options（你原本保留）
     this.accountArrChartOptions = {

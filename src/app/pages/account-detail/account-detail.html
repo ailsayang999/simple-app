@@ -70,6 +70,22 @@
 
       <!-- ✅ 已實現 / 未實現 / 總獲利（產品級 Summary） -->
       <div class="info-item">
+        <span class="label" pTooltip="{{ getUnrealizedTooltip() }}" tooltipPosition="top">
+          未實現損益
+        </span>
+
+        <span
+          class="value"
+          [ngClass]="{
+            positive: accountUnrealizedProfit() > 0,
+            negative: accountUnrealizedProfit() < 0
+          }"
+        >
+          {{ accountUnrealizedProfit() | number : '1.0-0' }}
+        </span>
+      </div>
+      
+      <div class="info-item">
         <span class="label" pTooltip="{{ getRealizedTooltip() }}" tooltipPosition="top">
           已實現獲利
         </span>
@@ -83,22 +99,6 @@
         >
           {{ accountRealizedProfit() | number : '1.0-0' }}
           <small class="muted">({{ accountRealizedReturnRate() | number : '1.1-1' }}%)</small>
-        </span>
-      </div>
-
-      <div class="info-item">
-        <span class="label" pTooltip="{{ getUnrealizedTooltip() }}" tooltipPosition="top">
-          未實現損益
-        </span>
-
-        <span
-          class="value"
-          [ngClass]="{
-            positive: accountUnrealizedProfit() > 0,
-            negative: accountUnrealizedProfit() < 0
-          }"
-        >
-          {{ accountUnrealizedProfit() | number : '1.0-0' }}
         </span>
       </div>
 
@@ -879,7 +879,12 @@
 
     <div class="form-row">
       <div class="form-field">
-        <label>手續費</label>
+        <label
+          pTooltip="手續費（自動計算）：fee = round(成交金額 × 0.1425% × 折扣)。台股最低手續費通常 20 元（此工具在 TWD 會套用）。若你手動修改 fee，系統就不再自動覆蓋。"
+          tooltipPosition="top"
+        >
+          手續費
+        </label>
         <input type="number" pInputText formControlName="fee" min="0" />
       </div>
 
@@ -1011,7 +1016,12 @@
 
     <div class="form-row">
       <div class="form-field">
-        <label>手續費</label>
+        <label
+          pTooltip="手續費（自動計算）：fee = round(成交金額 × 0.1425% × 折扣)。台股最低手續費通常 20 元（此工具在 TWD 會套用）。若你手動修改 fee，系統就不再自動覆蓋。"
+          tooltipPosition="top"
+        >
+          手續費
+        </label>
         <input type="number" pInputText formControlName="fee" min="0" />
       </div>
 
