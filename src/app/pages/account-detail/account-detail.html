@@ -84,9 +84,9 @@
           {{ accountUnrealizedProfit() | number : '1.0-0' }}
         </span>
       </div>
-      
+
       <div class="info-item">
-        <span class="label" pTooltip="{{ getRealizedTooltip() }}" tooltipPosition="top">
+        <span class="label" pTooltip="{{ getRealizedTooltip() }}" tooltipPosition="top" style="color: rgb(129, 71, 71);">
           已實現獲利
         </span>
 
@@ -214,20 +214,20 @@
 
             <ng-template pTemplate="header">
               <tr>
-                <th class="col-symbol">代號</th>
+                <th pFrozenColumn class="col-symbol">代號</th>
                 <th class="col-name">名稱</th>
                 <th class="col-type">類型</th>
                 <th class="col-currency">幣別</th>
 
                 <th class="text-right col-num">數量</th>
-                <th class="text-right col-price">均價</th>
-                <th class="text-right col-price">市價</th>
+                <th class="text-right col-price avg-cost">均價</th>
+                <th class="text-right col-price market-price">市價</th>
                 <th class="text-right col-money">市值</th>
 
                 <!-- ✅ 你要的 UI 標示：清楚拆出股利 -->
-                <th class="text-right col-money">未實現損益（不含股利）</th>
-                <th class="text-right col-money">累積股利（已實現）</th>
-                <th class="text-right col-money">總損益（含股利）</th>
+                <th class="text-right col-money unrealized-pnl">未實現損益（不含股利）</th>
+                <th class="text-right col-money realized-dividend">累積股利（已實現）</th>
+                <th class="text-right col-money total-pnl">總損益（含股利）</th>
 
                 <!-- ✅ 報酬率也拆兩個：不含股利 vs 含股利 -->
                 <th class="text-right col-rate">報酬率（不含股利）</th>
@@ -238,7 +238,7 @@
 
               <!-- filter row -->
               <tr class="filter-row">
-                <th>
+                <th pFrozenColumn>
                   <p-columnFilter
                     type="text"
                     field="symbol"
@@ -293,7 +293,7 @@
 
             <ng-template pTemplate="body" let-h>
               <tr>
-                <td class="col-symbol">{{ h.symbol }}</td>
+                <td pFrozenColumn class="col-symbol">{{ h.symbol }}</td>
                 <td class="col-name">
                   <div class="cell-title">{{ h.name }}</div>
                 </td>
@@ -303,13 +303,15 @@
                 <td class="col-currency">{{ h.currency }}</td>
 
                 <td class="text-right col-num">{{ h.quantity | number : '1.0-4' }}</td>
-                <td class="text-right col-price">{{ h.avgCost | number : '1.0-4' }}</td>
-                <td class="text-right col-price">{{ h.marketPrice | number : '1.0-4' }}</td>
+                <td class="text-right col-price avg-cost">{{ h.avgCost | number : '1.0-4' }}</td>
+                <td class="text-right col-price market-price">
+                  {{ h.marketPrice | number : '1.0-4' }}
+                </td>
                 <td class="text-right col-money">{{ h.marketValue | number : '1.0-0' }}</td>
 
                 <!-- ✅ 未實現損益（不含股利） -->
                 <td
-                  class="text-right col-money"
+                  class="text-right col-money unrealized-pnl"
                   [ngClass]="{ positive: h.unrealizedPnl > 0, negative: h.unrealizedPnl < 0 }"
                 >
                   {{ h.unrealizedPnl | number : '1.0-0' }}
@@ -317,7 +319,7 @@
 
                 <!-- ✅ 累積股利（已實現） -->
                 <td
-                  class="text-right col-money"
+                  class="text-right col-money realized-dividend"
                   [ngClass]="{ positive: h.realizedDividend > 0, negative: h.realizedDividend < 0 }"
                 >
                   {{ h.realizedDividend | number : '1.0-0' }}
@@ -325,7 +327,7 @@
 
                 <!-- ✅ 總損益（含股利） -->
                 <td
-                  class="text-right col-money"
+                  class="text-right col-money total-pnl"
                   [ngClass]="{ positive: h.totalPnl > 0, negative: h.totalPnl < 0 }"
                 >
                   {{ h.totalPnl | number : '1.0-0' }}
@@ -466,8 +468,8 @@
 
             <ng-template pTemplate="header">
               <tr>
-                <th class="col-date">日期</th>
-                <th class="col-txtype">類型</th>
+                <th pFrozenColumn class="col-date">日期</th>
+                <th pFrozenColumn class="col-txtype">類型</th>
                 <th class="col-symbol">標的</th>
                 <th class="col-currency">幣別</th>
                 <th class="text-right col-num">數量</th>
@@ -479,11 +481,11 @@
               </tr>
 
               <tr class="filter-row">
-                <th>
+                <th pFrozenColumn>
                   <p-columnFilter type="date" field="tradeDate" [showMenu]="false"></p-columnFilter>
                 </th>
 
-                <th>
+                <th pFrozenColumn>
                   <p-columnFilter field="type" matchMode="equals" [showMenu]="false">
                     <ng-template pTemplate="filter" let-value let-filter="filterCallback">
                       <p-select
@@ -492,7 +494,7 @@
                         (onChange)="filter($event.value)"
                         placeholder="選擇類型"
                         [showClear]="true"
-                        style="min-width: 9rem"
+                        style="width: 9rem"
                       >
                         <ng-template let-option pTemplate="item">
                           <p-tag [value]="option.label" [severity]="getSeverity(option.value)" />
@@ -520,7 +522,7 @@
                         (onChange)="filter($event.value)"
                         placeholder="選擇幣別"
                         [showClear]="true"
-                        style="min-width: 9rem"
+                        style="width: 9rem"
                       ></p-select>
                     </ng-template>
                   </p-columnFilter>
@@ -537,10 +539,10 @@
 
             <ng-template pTemplate="body" let-t>
               <tr>
-                <td class="col-date">{{ t.tradeDate | date : 'yyyy/MM/dd' }}</td>
+                <td pFrozenColumn class="col-date">{{ t.tradeDate | date : 'yyyy/MM/dd' }}</td>
 
                 <!-- <td>{{ t.type }}</td> -->
-                <td class="col-txtype">
+                <td pFrozenColumn class="col-txtype">
                   <p-tag
                     [value]="getFriendlyTypeLabel(t.type)"
                     [severity]="getSeverity(t.type)"

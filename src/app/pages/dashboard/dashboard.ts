@@ -173,7 +173,7 @@ export class Dashboard implements OnInit {
       const accounts = this.accountService.accounts();
       if (!accounts.length) return;
 
-      const main = accounts[0];
+      const main = accounts[0];// 第一個account假設為主帳號
       this.mainAccountName.set(main.name);
 
       // 主帳戶的 holdings & transactions

@@ -226,11 +226,21 @@
   border-bottom: 1px solid var(--color-border-subtle);
 }
 
-:host ::ng-deep .holdings-table .p-column-filter .p-inputtext,
-:host ::ng-deep .transactions-table .p-column-filter .p-inputtext {
+/* ✅ filter row：讓 input 變窄，不撐滿整個 th */
+:host ::ng-deep .holdings-table .p-datatable-thead > tr.filter-row th .p-column-filter,
+:host ::ng-deep .transactions-table .p-datatable-thead > tr.filter-row th .p-column-filter {
+  display: flex;
+  justify-content: flex-start; /* 想置中可改 center */
+}
+
+/* ✅ input 寬度改成可控 */
+:host ::ng-deep .holdings-table .p-datatable-thead > tr.filter-row th .p-inputtext,
+:host ::ng-deep .transactions-table .p-datatable-thead > tr.filter-row th .p-inputtext {
   width: 100%;
-  min-width: 0;
-  border-radius: var(--radius-full);
+  min-width: 6rem; // ⭐ 控制全部 table input的寬度
+  //border-radius: var(--radius-full);
+  //padding: 0.45rem 0.7rem;   /* ⭐ 讓高度/視覺更精緻 */
+  box-sizing: border-box;
 }
 
 /* ✅ body：不要指定 color（避免壓過 positive/negative） */
@@ -245,12 +255,6 @@
   border-bottom: 1px solid var(--color-border-subtle);
   white-space: nowrap;
   vertical-align: middle;
-}
-
-/* hover */
-:host ::ng-deep .holdings-table .p-datatable-tbody > tr:hover,
-:host ::ng-deep .transactions-table .p-datatable-tbody > tr:hover {
-  background: rgba(2, 132, 199, 0.04);
 }
 
 .text-right {
@@ -378,15 +382,15 @@
 
 // 代號 & 操作欄固定
 /* ✅ 用 ::ng-deep 版本，確保真的作用到 PrimeNG 生成的 DOM */
-:host ::ng-deep .holdings-table .p-datatable-thead > tr > th:first-child,
-:host ::ng-deep .holdings-table .p-datatable-tbody > tr > td:first-child,
-:host ::ng-deep .transactions-table .p-datatable-thead > tr > th:first-child,
-:host ::ng-deep .transactions-table .p-datatable-tbody > tr > td:first-child {
-  position: sticky;
-  left: 0;
-  z-index: 3;
-  background: #ffffff;
-}
+// :host ::ng-deep .holdings-table .p-datatable-thead > tr > th:first-child,
+// :host ::ng-deep .holdings-table .p-datatable-tbody > tr > td:first-child,
+// :host ::ng-deep .transactions-table .p-datatable-thead > tr > th:first-child,
+// :host ::ng-deep .transactions-table .p-datatable-tbody > tr > td:first-child {
+//   position: sticky;
+//   left: 0;
+//   z-index: 3;
+//   background: #c2e0de;
+// }
 
 :host ::ng-deep .holdings-table .p-datatable-thead > tr > th.actions-cell,
 :host ::ng-deep .holdings-table .p-datatable-tbody > tr > td.actions-cell,
@@ -395,7 +399,32 @@
   position: sticky;
   right: 0;
   z-index: 3;
-  background: #ffffff;
+  background: #c2e0de;
+}
+
+:host ::ng-deep .holdings-table .p-datatable-thead > tr > th.col-num,
+:host ::ng-deep .holdings-table .p-datatable-tbody > tr > td.col-num,
+:host ::ng-deep .holdings-table .p-datatable-thead > tr > th.avg-cost,
+:host ::ng-deep .holdings-table .p-datatable-tbody > tr > td.avg-cost {
+  background: #e0c2d6;
+}
+
+// 市價
+:host ::ng-deep .holdings-table .p-datatable-thead > tr > th.market-price,
+:host ::ng-deep .holdings-table .p-datatable-tbody > tr > td.market-price {
+  background: #e0b84b54;
+  font-weight: bold;
+}
+
+// 未實現損益（不含股利）	累積股利（已實現）	總損益（含股利）
+:host ::ng-deep .holdings-table .p-datatable-thead > tr > th.realized-dividend,
+:host ::ng-deep .holdings-table .p-datatable-tbody > tr > td.realized-dividend,
+:host ::ng-deep .holdings-table .p-datatable-thead > tr > th.total-pnl,
+:host ::ng-deep .holdings-table .p-datatable-tbody > tr > td.total-pnl,
+:host ::ng-deep .holdings-table .p-datatable-thead > tr > th.unrealized-pnl,
+:host ::ng-deep .holdings-table .p-datatable-tbody > tr > td.unrealized-pnl {
+  background: #e1edd2;
+  font-weight: bold;
 }
 
 /* 手機：縮小 padding，避免卡片內太擠 */

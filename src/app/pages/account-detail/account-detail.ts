@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, inject, signal, computed, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
@@ -92,6 +92,109 @@ export class AccountDetailPage implements OnInit {
 
   // ✅ Summary（後端算好最乾淨）
   accountSummary = signal<AccountSummaryDto | null>(null);
+
+  // ✅ ✅ 小保護：避免 holdings 先更新、summary 還沒更新造成畫面閃一下
+  // 我們會在「更新市價 / 新增交易 / 更新交易 / 刪除交易」後啟動 refresh guard
+  // 等 holdings + summary 都「更新過」再解除 isRefreshing
+  isRefreshing = signal(false);
+
+  // ✅ ✅ refresh guard：記錄刷新前的 baseline signature
+  private refreshNeed = signal<{ holdings: boolean; summary: boolean; txs: boolean } | null>(null);
+  private baselineHoldingsSig = signal<string>('');
+  private baselineSummarySig = signal<string>('');
+  private baselineTxsSig = signal<string>('');
+
+  constructor() {
+    // ✅ ✅ 監聽：當 refreshNeed 存在時，等所需資料都「變更」才解除刷新狀態
+    effect(() => {
+      const need = this.refreshNeed();
+      if (!need) return;
+
+      const holdingsNow = this.holdings();
+      const summaryNow = this.accountSummary();
+      const txsNow = this.transactions();
+
+      const holdingsSigNow = this.makeHoldingsSignature(holdingsNow);
+      const summarySigNow = this.makeSummarySignature(summaryNow);
+      const txsSigNow = this.makeTxsSignature(txsNow);
+
+      const holdingsOk =
+        !need.holdings || (holdingsSigNow && holdingsSigNow !== this.baselineHoldingsSig());
+      const summaryOk =
+        !need.summary || (summarySigNow && summarySigNow !== this.baselineSummarySig());
+      const txsOk = !need.txs || (txsSigNow && txsSigNow !== this.baselineTxsSig());
+
+      if (holdingsOk && summaryOk && txsOk) {
+        this.isRefreshing.set(false);
+        this.refreshNeed.set(null);
+      }
+    });
+  }
+
+  // ✅ ✅ 產生 signature（用於判斷資料是否已更新過）
+  private makeHoldingsSignature(list: HoldingDto[] | null | undefined): string {
+    if (!list?.length) return '';
+    // 只抓會影響摘要/未實現的關鍵欄位：id/qty/avgCost/marketPrice/marketValue/unrealized
+    return list
+      .map((h) =>
+        [
+          h.id,
+          h.quantity ?? 0,
+          h.avgCost ?? 0,
+          h.marketPrice ?? 0,
+          h.marketValue ?? 0,
+          h.unrealizedPnl ?? 0,
+        ].join('|')
+      )
+      .join('~');
+  }
+
+  private makeSummarySignature(s: AccountSummaryDto | null): string {
+    if (!s) return '';
+    return [
+      s.totalMarketValue ?? 0,
+      s.totalInvested ?? 0,
+      s.netInvested ?? 0,
+      s.realizedProfit ?? 0,
+      s.unrealizedProfit ?? 0,
+      s.totalProfit ?? 0,
+      s.realizedReturnRate ?? 0,
+    ].join('|');
+  }
+
+  private makeTxsSignature(list: TransactionDto[] | null | undefined): string {
+    if (!list?.length) return '';
+    // 交易列表只需要判斷是否更新過：取 id + totalAmount（即可）
+    return list.map((t) => `${t.id}|${t.totalAmount ?? 0}`).join('~');
+  }
+
+  // ✅ ✅ 啟動 refresh guard（記錄 baseline，然後觸發 load）
+  private beginRefreshGuard(opt: { holdings?: boolean; summary?: boolean; txs?: boolean }) {
+    const need = {
+      holdings: !!opt.holdings,
+      summary: !!opt.summary,
+      txs: !!opt.txs,
+    };
+
+    this.baselineHoldingsSig.set(this.makeHoldingsSignature(this.holdings()));
+    this.baselineSummarySig.set(this.makeSummarySignature(this.accountSummary()));
+    this.baselineTxsSig.set(this.makeTxsSignature(this.transactions()));
+
+    this.isRefreshing.set(true);
+    this.refreshNeed.set(need);
+  }
+
+  // ✅ ✅ 統一刷新：你要等哪幾個，就在這裡指定
+  private refreshAccountData(
+    accountId: string,
+    opt: { holdings?: boolean; summary?: boolean; txs?: boolean }
+  ) {
+    this.beginRefreshGuard(opt);
+
+    if (opt.holdings) this.holdingService.loadHoldings(accountId);
+    if (opt.txs) this.transactionService.loadTransactionsByAccount(accountId);
+    if (opt.summary) this.loadAccountSummary(accountId);
+  }
 
   account = computed<AccountDto | null>(() => {
     const id = this.accountIdSignal();
@@ -377,40 +480,20 @@ export class AccountDetailPage implements OnInit {
 
   // ✅ 這裡你的「總資產 / 投入 / 淨投入」你已經能用交易與 holdings 算出來
   // 但「已實現/未實現/總獲利」我們改成直接吃後端 summary（最乾淨）
-  accountTotalValue = computed(() => {
-    const holdings = this.holdings();
-    if (!holdings.length) return 0;
-    return holdings.reduce((sum, h) => sum + (h.marketValue ?? 0), 0);
-  });
+  //
+  // ✅ ✅ 改：摘要區全部吃 summary（避免 holdings 與 summary 混用打架）
+  accountTotalValue = computed(() => this.accountSummary()?.totalMarketValue ?? 0);
 
   // ✅ 總投入（投資人視角）：把所有「現金流出」加總（totalAmount < 0）
   // 這會包含 BUY / DEPOSIT 等（你後端 totalAmount 已算好最乾淨）
-  accountTotalInvested = computed(() => {
-    const txs = this.transactions();
-    if (!txs.length) return 0;
-
-    return txs.reduce((sum, t) => {
-      const amt = t.totalAmount ?? 0; // totalAmount: 買進/存入為負，賣出/股利/利息為正
-      return amt < 0 ? sum + Math.abs(amt) : sum;
-    }, 0);
-  });
+  //
+  // ✅ ✅ 改：直接吃 summary
+  accountTotalInvested = computed(() => this.accountSummary()?.totalInvested ?? 0);
 
   // ✅ 淨投入：總投入 - 提領（WITHDRAW 為現金流入）
-  accountNetInvested = computed(() => {
-    const txs = this.transactions();
-    if (!txs.length) return 0;
-
-    let investedOut = 0;
-    let withdrawnIn = 0;
-
-    for (const t of txs) {
-      const amt = t.totalAmount ?? 0;
-      if (amt < 0) investedOut += Math.abs(amt);
-      if (t.type === 'WITHDRAW' && amt > 0) withdrawnIn += amt;
-    }
-
-    return investedOut - withdrawnIn;
-  });
+  //
+  // ✅ ✅ 改：直接吃 summary
+  accountNetInvested = computed(() => this.accountSummary()?.netInvested ?? 0);
 
   // ✅ 三段式：已實現 / 未實現 / 總獲利（顯示用，直接讀 Summary）
   accountRealizedProfit = computed(() => this.accountSummary()?.realizedProfit ?? 0);
@@ -421,6 +504,8 @@ export class AccountDetailPage implements OnInit {
   accountTotalProfit = computed(() => this.accountSummary()?.totalProfit ?? 0);
 
   // ✅ 你後端目前 DTO 沒有 totalReturnRate，我們用「總獲利 ÷ 總投入」前端即時計（不會跟後端衝突）
+  //
+  // ✅ ✅ 改：分母也用 summary 的 totalInvested（摘要全套一致）
   accountTotalReturnRate = computed(() => {
     const invested = this.accountTotalInvested();
     if (!invested) return 0;
@@ -631,8 +716,9 @@ export class AccountDetailPage implements OnInit {
       next: () => {
         this.toast.success('已新增持有標的');
         this.displayCreateHoldingDialog = false;
-        this.holdingService.loadHoldings(accountId);
-        this.loadAccountSummary(accountId); // ✅ summary 也刷新
+
+        // ✅ ✅ 小保護：等 holdings + summary 都更新過再穩定渲染
+        this.refreshAccountData(accountId, { holdings: true, summary: true });
       },
       error: (err) => console.error(err),
     });
@@ -669,8 +755,9 @@ export class AccountDetailPage implements OnInit {
       next: () => {
         this.toast.success('已更新持有標的');
         this.displayEditHoldingDialog = false;
-        this.holdingService.loadHoldings(accountId);
-        this.loadAccountSummary(accountId); // ✅ summary 也刷新
+
+        // ✅ ✅ 小保護：等 holdings + summary 都更新過再穩定渲染
+        this.refreshAccountData(accountId, { holdings: true, summary: true });
       },
       error: (err) => console.error(err),
     });
@@ -702,8 +789,9 @@ export class AccountDetailPage implements OnInit {
       next: () => {
         this.toast.success('已更新市價');
         this.displayMarketPriceDialog = false;
-        this.holdingService.loadHoldings(accountId);
-        this.loadAccountSummary(accountId); // ✅ summary 也刷新
+
+        // ✅ ✅ 你指定的：更新市價後，等 holdings + summary 都更新再渲染
+        this.refreshAccountData(accountId, { holdings: true, summary: true });
       },
       error: (err) => console.error(err),
     });
@@ -724,8 +812,9 @@ export class AccountDetailPage implements OnInit {
         this.holdingService.deleteHolding(h.id).subscribe({
           next: () => {
             this.toast.success('已刪除持有標的');
-            this.holdingService.loadHoldings(accountId);
-            this.loadAccountSummary(accountId); // ✅ summary 也刷新
+
+            // ✅ ✅ 小保護：等 holdings + summary 都更新過再穩定渲染
+            this.refreshAccountData(accountId, { holdings: true, summary: true });
           },
           error: (err) => {
             const msg = err?.error?.message ?? '此持有標的仍有交易紀錄，請先刪除交易後再嘗試。';
@@ -817,9 +906,8 @@ export class AccountDetailPage implements OnInit {
         this.toast.success('已新增交易');
         this.displayTransactionDialog = false;
 
-        this.holdingService.loadHoldings(accountId);
-        this.transactionService.loadTransactionsByAccount(accountId);
-        this.loadAccountSummary(accountId); // ✅ summary 也刷新
+        // ✅ ✅ 你指定的：新增交易後，等 holdings + txs + summary 都更新再渲染
+        this.refreshAccountData(accountId, { holdings: true, txs: true, summary: true });
       },
       error: (err) => console.error(err),
     });
@@ -882,9 +970,8 @@ export class AccountDetailPage implements OnInit {
         this.toast.success('已更新交易');
         this.displayEditTransactionDialog = false;
 
-        this.holdingService.loadHoldings(accountId);
-        this.transactionService.loadTransactionsByAccount(accountId);
-        this.loadAccountSummary(accountId); // ✅ summary 也刷新
+        // ✅ ✅ 更新交易後，同樣等 holdings + txs + summary 都更新再渲染
+        this.refreshAccountData(accountId, { holdings: true, txs: true, summary: true });
       },
       error: (err) => console.error(err),
     });
@@ -908,9 +995,9 @@ export class AccountDetailPage implements OnInit {
         this.transactionService.deleteTransaction(t.id).subscribe({
           next: () => {
             this.toast.success('已刪除交易');
-            this.holdingService.loadHoldings(accountId);
-            this.transactionService.loadTransactionsByAccount(accountId);
-            this.loadAccountSummary(accountId); // ✅ summary 也刷新
+
+            // ✅ ✅ 刪除交易後，同樣等 holdings + txs + summary 都更新再渲染
+            this.refreshAccountData(accountId, { holdings: true, txs: true, summary: true });
           },
           error: (err) => {
             const msg = err?.error?.message ?? '刪除失敗，請稍後再試。';
