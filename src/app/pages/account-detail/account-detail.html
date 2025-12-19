@@ -631,6 +631,7 @@
                 <!-- ✅ 交易稅：非 SELL 通常為 0 -->
                 <td class="text-right col-money">{{ t.tax | number : '1.0-0' }}</td>
 
+                <!-- ✅  現金流 -->
                 <td
                   class="text-right col-money"
                   [ngClass]="{ positive: t.totalAmount > 0, negative: t.totalAmount < 0 }"
