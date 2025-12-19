@@ -1064,12 +1064,8 @@ export class AccountDetailPage implements OnInit {
     const labels = usable.map((r) => r.symbol);
     const values = usable.map((r) => r.arr * 100);
 
-    const backgroundColor = usable.map((r) =>
-      r.arr < 0 ? 'rgb(239, 68, 68)' : 'rgb(80, 69, 229)'
-    );
-    const hoverBackgroundColor = usable.map((r) =>
-      r.arr < 0 ? 'rgba(239, 68, 68, 0.85)' : 'rgba(80, 69, 229, 0.85)'
-    );
+    const backgroundColor = usable.map((r) => (r.arr < 0 ? '#e0c2d6' : '#e1edd2'));
+    const hoverBackgroundColor = usable.map((r) => (r.arr < 0 ? '#e0c2d6' : '#e1edd2'));
 
     return {
       labels,

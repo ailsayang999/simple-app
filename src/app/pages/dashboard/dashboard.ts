@@ -164,7 +164,7 @@ export class Dashboard implements OnInit {
       // 避免重複設定（第一次設定後就不再跑）
       if (this.mainAccountId()) return;
 
-      const main = accounts[1]; // 第一個account假設為主帳號
+      const main = accounts[0]; // 第一個account假設為主帳號
       this.mainAccountId.set(main.id);
       this.mainAccountName.set(main.name);
 
