@@ -1,4 +1,4 @@
-import { Component, inject, Signal, computed, OnInit, signal } from '@angular/core';
+import { Component, inject, Signal, computed, OnInit, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CardModule } from 'primeng/card';
 import { ChartModule } from 'primeng/chart';
@@ -15,6 +15,9 @@ import { HoldingService } from '../../core/services/holding.service';
 import { TransactionService } from '../../core/services/transaction.service';
 import { AccountService } from '../../core/services/account.service';
 import { calcArrPerHolding } from '../../core/utils/arr.util';
+
+// ✅ NEW：Summary DTO
+import { AccountSummaryDto } from '../../core/models/account-summary.model';
 
 @Component({
   selector: 'app-dashboard',
@@ -41,11 +44,19 @@ export class Dashboard implements OnInit {
 
   // 主帳戶（這邊簡單用第一個）
   mainAccountName = signal<string>('');
+  private mainAccountId = signal<string | null>(null);
 
-  // 總資產（主帳戶）
-  totalNetWorth = computed(() =>
-    this.holdingService.holdings().reduce((sum, h) => sum + (h.marketValue ?? 0), 0)
-  );
+  // ✅ NEW：主帳戶 Summary（後端算好最乾淨）
+  accountSummary = signal<AccountSummaryDto | null>(null);
+
+  // ✅ 總資產（主帳戶）—— 改成吃 summary（避免 holdings 跟 summary 打架）
+  totalNetWorth = computed(() => this.accountSummary()?.totalMarketValue ?? 0);
+
+  // ✅ NEW：左側卡片要顯示的四個數字（全部吃 summary）
+  totalInvested = computed(() => this.accountSummary()?.totalInvested ?? 0);
+  unrealizedProfit = computed(() => this.accountSummary()?.unrealizedProfit ?? 0);
+  realizedProfit = computed(() => this.accountSummary()?.realizedProfit ?? 0);
+  totalProfit = computed(() => this.accountSummary()?.totalProfit ?? 0);
 
   // 共有的 ARR 計算結果（先算完，再切 top/bottom）
   private arrResults = computed(() => {
@@ -104,26 +115,6 @@ export class Dashboard implements OnInit {
     };
   });
 
-  // 後 5 名（最慘 5 名）ARR – 只看 arr < 0
-  // worstArrChartData = computed(() => {
-  //   const results = [...this.arrResults()]
-  //     .filter((r) => r.arr < 0 && r.years > 0 && r.totalInvested > 0)
-  //     .sort((a, b) => a.arr - b.arr) // 由低到高（最爛在前）
-  //     .slice(0, 5);
-
-  //   if (!results.length) return null;
-
-  //   return {
-  //     labels: results.map((r) => r.symbol),
-  //     datasets: [
-  //       {
-  //         label: 'Worst 5 ARR (%)',
-  //         data: results.map((r) => r.arr * 100),
-  //       },
-  //     ],
-  //   };
-  // });
-
   // ARR 最低 5 名（其實是 XIRR 最低） 不限定一定是負報酬
   worstArrChartData = computed(() => {
     const all = [...this.arrResults()].filter((r) => r.years > 0 && r.totalInvested > 0);
@@ -164,22 +155,31 @@ export class Dashboard implements OnInit {
 
   arrChartOptions: any;
 
-  ngOnInit(): void {
-    // 1. 先把帳戶載入
-    this.accountService.loadAccounts();
-
-    // 2. 用 setTimeout 確保 accounts signal 已更新再讀取
-    setTimeout(() => {
+  constructor() {
+    // ✅ ✅ 取代 setTimeout：等 accounts 真的載到資料後，再決定主帳戶並載入 holdings/txs/summary
+    effect(() => {
       const accounts = this.accountService.accounts();
       if (!accounts.length) return;
 
-      const main = accounts[0];// 第一個account假設為主帳號
+      // 避免重複設定（第一次設定後就不再跑）
+      if (this.mainAccountId()) return;
+
+      const main = accounts[1]; // 第一個account假設為主帳號
+      this.mainAccountId.set(main.id);
       this.mainAccountName.set(main.name);
 
       // 主帳戶的 holdings & transactions
       this.holdingService.loadHoldings(main.id);
       this.transactionService.loadTransactionsByAccount(main.id);
-    }, 1000);
+
+      // ✅ NEW：載入 Summary
+      this.loadAccountSummary(main.id);
+    });
+  }
+
+  ngOnInit(): void {
+    // 1. 先把帳戶載入
+    this.accountService.loadAccounts();
 
     // 3. Chart options（共用給 best / worst）
     this.arrChartOptions = {
@@ -217,6 +217,14 @@ export class Dashboard implements OnInit {
         },
       },
     };
+  }
+
+  // ✅ NEW：載入主帳戶 Summary
+  private loadAccountSummary(accountId: string) {
+    this.accountService.getAccountSummary(accountId).subscribe({
+      next: (res) => this.accountSummary.set(res),
+      error: (err) => console.error(err),
+    });
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -306,35 +314,10 @@ export class Dashboard implements OnInit {
     responsive: true,
     maintainAspectRatio: false,
     plugins: { legend: { display: false } },
-    // plugins: {
-    //   legend: {
-    //     labels: {
-    //       color: 'rgb(4, 167, 196)',
-    //     },
-    //   },
-    // },
     scales: {
       x: { display: false },
       y: { display: false },
     },
-    // scales: {
-    //   x: {
-    //     ticks: {
-    //       color: 'rgba(10, 118, 137, 1)',
-    //     },
-    //     grid: {
-    //       color: 'rgba(8, 201, 235, 1)',
-    //     },
-    //   },
-    //   y: {
-    //     ticks: {
-    //       color: 'rgba(97, 196, 4, 1)',
-    //     },
-    //     grid: {
-    //       color: 'rgba(3, 143, 19, 1)',
-    //     },
-    //   },
-    // },
   };
 
   // 歐元
@@ -481,36 +464,6 @@ export class Dashboard implements OnInit {
     },
   };
 
-  // ③ 近三個月集團資金總額 - 柱狀圖
-  // groupFundByMonthData = {
-  //   labels: ['2025/09', '2025/10', '2025/11'],
-  //   datasets: [
-  //     {
-  //       label: '銀行活存 & 現金',
-  //       data: [153256, 136656, 154576],
-  //       stack: 'a',
-  //       backgroundColor: 'rgb(185, 94, 255)',
-  //       borderRadius: { topLeft: 16, topRight: 16, bottomLeft: 0, bottomRight: 0 },
-  //       maxBarThickness: 20,
-  //     },
-  //     {
-  //       label: '銀行定存',
-  //       data: [80000, 60000, 70000],
-  //       stack: 'b',
-  //       backgroundColor: 'rgb(80, 69, 229)',
-  //       borderRadius: { topLeft: 16, topRight: 16, bottomLeft: 0, bottomRight: 0 },
-  //       maxBarThickness: 20,
-  //     },
-  //     {
-  //       label: '金融資產',
-  //       data: [20000, 15000, 30000],
-  //       stack: 'c',
-  //       backgroundColor: 'rgb(52, 211, 153)',
-  //       borderRadius: { topLeft: 16, topRight: 16, bottomLeft: 0, bottomRight: 0 },
-  //       maxBarThickness: 20,
-  //     },
-  //   ],
-  // };
   groupFundByMonthData = {
     labels: ['2025/09', '2025/10', '2025/11'],
     datasets: [
@@ -554,7 +507,6 @@ export class Dashboard implements OnInit {
         labels: {
           usePointStyle: true,
           pointStyle: 'circle',
-          //boxWidth: 14, // 圓點與文字間距變寬
           padding: 30, // 兩個 legend item 之間距離加大  ⬅ 設定每個 legend item 的間距（預設大約 10）
           font: {
             weight: 600,
@@ -562,14 +514,6 @@ export class Dashboard implements OnInit {
         },
       },
     },
-    // scales: {
-    //   x: {
-    //     stacked: false,
-    //   },
-    //   y: {
-    //     stacked: true,
-    //   },
-    // },
     scales: {
       x: {
         ticks: {
@@ -644,28 +588,18 @@ export class Dashboard implements OnInit {
         labels: {
           usePointStyle: true,
           pointStyle: 'circle',
-          //boxWidth: 14, // 圓點與文字間距變寬
-          padding: 30, // 兩個 legend item 之間距離加大  ⬅ 設定每個 legend item 的間距（預設大約 10）
+          padding: 30,
           font: {
             weight: 600,
           },
         },
       },
     },
-
-    // scales: {
-    //   x: {
-    //     stacked: false,
-    //   },
-    //   y: {
-    //     stacked: true,
-    //   },
-    // },
     scales: {
       x: {
         ticks: {
-          display: true, // 顯示文字
-          color: '#666', // 字體顏色
+          display: true,
+          color: '#666',
           font: {
             weight: 500,
           },
@@ -677,8 +611,8 @@ export class Dashboard implements OnInit {
       },
       y: {
         ticks: {
-          display: true, // 顯示文字
-          color: '#666', // 字體顏色
+          display: true,
+          color: '#666',
           font: {
             weight: 500,
           },
@@ -714,19 +648,11 @@ export class Dashboard implements OnInit {
     maintainAspectRatio: false,
     aspectRatio: 0.8,
     plugins: { legend: { display: false } },
-    // scales: {
-    //   x: {
-    //     stacked: false,
-    //   },
-    //   y: {
-    //     stacked: true,
-    //   },
-    // },
     scales: {
       x: {
         ticks: {
-          display: true, // 顯示文字
-          color: '#666', // 字體顏色
+          display: true,
+          color: '#666',
           font: {
             weight: 500,
           },
@@ -738,8 +664,8 @@ export class Dashboard implements OnInit {
       },
       y: {
         ticks: {
-          display: true, // 顯示文字
-          color: '#666', // 字體顏色
+          display: true,
+          color: '#666',
           font: {
             weight: 500,
           },

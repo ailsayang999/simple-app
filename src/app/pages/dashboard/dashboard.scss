@@ -27,7 +27,6 @@
   }
 }
 
-
 .dashboard-root {
   display: flex;
   flex-direction: column;
@@ -267,9 +266,6 @@
   }
 }
 
-
-
-
 ////////////////////////// ARR ////////////////////////
 :host {
   display: block;
@@ -311,14 +307,12 @@
   }
 }
 
-.networth-body {
-  margin-top: 8px;
-}
-
+/* 主資產（最大） */
 .networth-main {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 2px;
+  margin-bottom: 14px;
 
   .label {
     font-size: 13px;
@@ -326,8 +320,64 @@
   }
 
   .value {
-    font-size: 28px;
+    font-size: 30px;
     font-weight: 700;
+    letter-spacing: 0.2px;
+  }
+}
+
+/* =========================
+   ✅ 新設計：Inline Metrics（你要的那個）
+   ========================= */
+.networth-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 6px;
+}
+
+.networth-metric {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.networth-metric-label {
+  font-size: 12px;
+  color: var(--color-text-subtle);
+  white-space: nowrap;
+}
+
+.networth-metric-value {
+  font-size: 15px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* 正負顏色（你指定的） */
+.num {
+  font-variant-numeric: tabular-nums;
+}
+
+.num.is-pos {
+  color: var(--color-success);
+}
+
+.num.is-neg {
+  color: var(--color-danger);
+}
+
+.num.is-zero {
+  color: var(--color-text-secondary);
+}
+
+/* 小螢幕自動換行，但不變樣 */
+@media (max-width: 720px) {
+  .networth-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    row-gap: 12px;
   }
 }
 

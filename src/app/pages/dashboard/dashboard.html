@@ -222,6 +222,57 @@
           </div>
 
           <p class="networth-hint">以上金額為所有持有標的市值加總（不含未實現稅費）。</p>
+
+          <!-- ✅ NEW：左側卡片下面 4 個摘要（全部吃 summary） -->
+          <div class="networth-metrics">
+            <div class="networth-metric">
+              <span class="networth-metric-label">總投入</span>
+              <span
+                class="networth-metric-value num"
+                [class.is-pos]="totalInvested() > 0"
+                [class.is-neg]="totalInvested() < 0"
+                [class.is-zero]="totalInvested() === 0"
+              >
+                {{ totalInvested() | number : '1.0-0' }}
+              </span>
+            </div>
+
+            <div class="networth-metric">
+              <span class="networth-metric-label">未實現損益</span>
+              <span
+                class="networth-metric-value num"
+                [class.is-pos]="unrealizedProfit() > 0"
+                [class.is-neg]="unrealizedProfit() < 0"
+                [class.is-zero]="unrealizedProfit() === 0"
+              >
+                {{ unrealizedProfit() | number : '1.0-0' }}
+              </span>
+            </div>
+
+            <div class="networth-metric">
+              <span class="networth-metric-label">已實現獲利</span>
+              <span
+                class="networth-metric-value num"
+                [class.is-pos]="realizedProfit() > 0"
+                [class.is-neg]="realizedProfit() < 0"
+                [class.is-zero]="realizedProfit() === 0"
+              >
+                {{ realizedProfit() | number : '1.0-0' }}
+              </span>
+            </div>
+
+            <div class="networth-metric">
+              <span class="networth-metric-label">總獲利</span>
+              <span
+                class="networth-metric-value num"
+                [class.is-pos]="totalProfit() > 0"
+                [class.is-neg]="totalProfit() < 0"
+                [class.is-zero]="totalProfit() === 0"
+              >
+                {{ totalProfit() | number : '1.0-0' }}
+              </span>
+            </div>
+          </div>
         </div>
 
         <div class="networth-empty" *ngIf="totalNetWorth() === 0">
