@@ -522,7 +522,7 @@ export class AccountDetailPage implements OnInit {
       '－ 手續費（fee）',
       '－ 交易稅（tax）',
       '',
-      '📌 已實現報酬率（Realized Return Rate, %）',
+      '✅  已實現報酬率（Realized Return Rate, %）',
       '＝ 已實現獲利 ÷ 總投入 × 100%',
       '(總投入：所有現金流出加總，例如 BUY/DEPOSIT)',
     ].join('\n');
@@ -534,6 +534,7 @@ export class AccountDetailPage implements OnInit {
       '只看「目前還持有的部位」：',
       '＝ 目前市值（市價×數量）－ 持倉成本（均價×數量）',
       '（不含股利/利息，因為那是已實現現金流入）',
+      '📌  (還沒計算賣出時的手續費和交易稅，只是預估，實際會更少)',
     ].join('\n');
   }
 
@@ -542,8 +543,11 @@ export class AccountDetailPage implements OnInit {
       '✅ 總獲利（Total Profit）',
       '＝ 已實現獲利 + 未實現損益',
       '',
-      '📌 總報酬率（Total Return Rate, %）',
+      '✅ 總報酬率（Total Return Rate, %）',
       '＝ 總獲利 ÷ 總投入 × 100%',
+      '📌已實現獲利：你「真的落袋」的損益（含賣出差價、股利、利息，扣 fee/tax）',
+      '📌未實現獲利：你「帳面」的損益（目前市價 - 成本，不含股利/利息，也不含未來賣出成本如手續費和交易稅）',
+      '📌總獲利：上述兩個加總',
     ].join('\n');
   }
 
