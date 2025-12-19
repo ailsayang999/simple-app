@@ -927,7 +927,7 @@
         <label>數量</label>
         <input type="number" pInputText formControlName="quantity" min="0.0001" />
         @if (hasCreateTxError('quantity', 'required') || hasCreateTxError('quantity', 'min')) {
-        <div class="error">quantity 必須 > 0</div>
+        <div class="error">數量 必須 > 0</div>
         }
       </div>
 
@@ -935,7 +935,7 @@
         <label>價格</label>
         <input type="number" pInputText formControlName="price" min="0" />
         @if (hasCreateTxError('price', 'required') || hasCreateTxError('price', 'min')) {
-        <div class="error">price 必須 >= 0</div>
+        <div class="error">價格 必須 >= 0</div>
         }
       </div>
     </div>
@@ -944,7 +944,7 @@
       <label>金額（amount）</label>
       <input type="number" pInputText formControlName="amount" min="0.01" />
       @if (hasCreateTxError('amount', 'required') || hasCreateTxError('amount', 'min')) {
-      <div class="error">amount 必填，且必須 > 0</div>
+      <div class="error">金額 必填，且必須 > 0</div>
       }
     </div>
     }
@@ -964,7 +964,7 @@
       @if (isSell(createTransactionForm.getRawValue().type)) {
       <div class="form-field">
         <label
-          pTooltip="交易稅（正式版）：會納入「真實已實現獲利」與現金流計算（SELL: 扣除）。"
+          pTooltip="交易稅：賣出金額 ×0.3%，會納入「真實已實現獲利」與現金流計算（SELL: 扣除）。"
           tooltipPosition="top"
         >
           交易稅
@@ -1064,7 +1064,7 @@
         <label>數量</label>
         <input type="number" pInputText formControlName="quantity" min="0.0001" />
         @if (hasEditTxError('quantity', 'required') || hasEditTxError('quantity', 'min')) {
-        <div class="error">quantity 必須 > 0</div>
+        <div class="error">數量 必須 > 0</div>
         }
       </div>
 
@@ -1072,7 +1072,7 @@
         <label>價格</label>
         <input type="number" pInputText formControlName="price" min="0" />
         @if (hasEditTxError('price', 'required') || hasEditTxError('price', 'min')) {
-        <div class="error">price 必須 >= 0</div>
+        <div class="error">價格 必須 >= 0</div>
         }
       </div>
     </div>
@@ -1081,7 +1081,7 @@
       <label>金額（amount）</label>
       <input type="number" pInputText formControlName="amount" min="0.01" />
       @if (hasEditTxError('amount', 'required') || hasEditTxError('amount', 'min')) {
-      <div class="error">amount 必填，且必須 > 0</div>
+      <div class="error">金額 必填，且必須 > 0</div>
       }
     </div>
     }
