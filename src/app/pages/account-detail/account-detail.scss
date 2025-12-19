@@ -417,15 +417,26 @@
 }
 
 // 未實現損益（不含股利）	累積股利（已實現）	總損益（含股利）
-:host ::ng-deep .holdings-table .p-datatable-thead > tr > th.realized-dividend,
-:host ::ng-deep .holdings-table .p-datatable-tbody > tr > td.realized-dividend,
+
 :host ::ng-deep .holdings-table .p-datatable-thead > tr > th.total-pnl,
 :host ::ng-deep .holdings-table .p-datatable-tbody > tr > td.total-pnl,
+:host ::ng-deep .holdings-table .p-datatable-thead > tr > th.realized-pnl,
+:host ::ng-deep .holdings-table .p-datatable-tbody > tr > td.realized-pnl,
 :host ::ng-deep .holdings-table .p-datatable-thead > tr > th.unrealized-pnl,
 :host ::ng-deep .holdings-table .p-datatable-tbody > tr > td.unrealized-pnl {
   background: #e1edd2;
   font-weight: bold;
 }
+
+//累積股利（已實現）
+:host ::ng-deep .holdings-table .p-datatable-thead > tr > th.realized-dividend,
+:host ::ng-deep .holdings-table .p-datatable-tbody > tr > td.realized-dividend {
+  background: #d2eced;
+  font-weight: bold;
+}
+
+
+
 
 /* 手機：縮小 padding，避免卡片內太擠 */
 @media (max-width: 768px) {

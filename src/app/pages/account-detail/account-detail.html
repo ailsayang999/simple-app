@@ -51,7 +51,7 @@
           class="label"
           pTooltip="把所有現金流出（例如買進/存入，股票買進金額+買進手續費）加總，為投資人視角的累計投入"
           tooltipPosition="top"
-          style="color: rgb(129, 71, 71);"
+          style="color: rgb(129, 71, 71)"
         >
           總投入
         </span>
@@ -87,7 +87,12 @@
       </div>
 
       <div class="info-item">
-        <span class="label" pTooltip="{{ getRealizedTooltip() }}" tooltipPosition="top" style="color: rgb(129, 71, 71);">
+        <span
+          class="label"
+          pTooltip="{{ getRealizedTooltip() }}"
+          tooltipPosition="top"
+          style="color: rgb(129, 71, 71)"
+        >
           已實現獲利
         </span>
 
@@ -181,6 +186,9 @@
                 <col style="width: 130px" />
 
                 <col style="width: 170px" />
+
+                <col style="width: 170px" />
+                <!-- ✅ 已實現獲利 -->
                 <col style="width: 160px" />
                 <col style="width: 160px" />
 
@@ -221,14 +229,67 @@
                 <th class="col-currency">幣別</th>
 
                 <th class="text-right col-num">數量</th>
-                <th class="text-right col-price avg-cost">均價</th>
+                <th
+                  class="text-right col-price avg-cost"
+                  pTooltip="此標的目前持有部位的「平均成本」：
+                            ＝ 累計買進總成本 ÷ 目前持有數量
+
+                            📌 說明：
+                            • 買進總成本包含買進金額 + 手續費 + 交易稅
+                            • 每次買進 / 賣出後，均價都會重新計算
+                            • 股利 / 利息不會影響均價（屬於已實現現金流）
+                            • 只針對「尚未賣出的部位」計算"
+                  tooltipPosition="top"
+                >
+                  均價
+                </th>
                 <th class="text-right col-price market-price">市價</th>
                 <th class="text-right col-money">市值</th>
 
                 <!-- ✅ 你要的 UI 標示：清楚拆出股利 -->
-                <th class="text-right col-money unrealized-pnl">未實現損益（不含股利）</th>
-                <th class="text-right col-money realized-dividend">累積股利（已實現）</th>
-                <th class="text-right col-money total-pnl">總損益（含股利）</th>
+                <th
+                  class="text-right col-money unrealized-pnl"
+                  pTooltip="此標的目前「帳面上的價差」：
+                            ＝ 目前市值（市價 × 數量）
+                            － 持倉成本（均價 × 數量）
+
+                            📌 說明：
+                            • 僅反映價格漲跌，尚未賣出
+                            • 不包含股利 / 利息（那些屬於已實現現金流）
+                            • 尚未扣除賣出時的手續費與交易稅
+                            • 實際賣出後，金額可能會不同"
+                  tooltipPosition="top"
+                >
+                  未實現損益（不含股利）
+                </th>
+
+                <th
+                  class="text-right col-money realized-pnl"
+                  pTooltip="已實現獲利＝已實現差價（SELL 落袋）＋已實現收入（股利/利息），並扣除手續費與交易稅。"
+                  tooltipPosition="top"
+                >
+                  已實現獲利
+                </th>
+                <th
+                  class="text-right col-money total-pnl"
+                  pTooltip=" 總損益（含股利） ＝ 
+                               未實現損益 ＋ 已實現交易損益（賣出差價）＋ 已領取的股利 / 利息
+
+                            📌 說明：
+                            • 未實現損益：目前市價 − 持倉成本(未包含「假設賣出時」的未來費用與稅金)
+                            • 已實現項目（賣出、股利、利息）皆已扣除手續費與交易稅"
+                  tooltipPosition="top"
+                >
+                  總損益（含股利）
+                </th>
+                <th
+                  class="text-right col-money realized-dividend"
+                  pTooltip="(已扣掉手續費二代健保)"
+                  tooltipPosition="top"
+                  tooltipPosition="top"
+                >
+                  累積股利（已實現）
+                </th>
 
                 <!-- ✅ 報酬率也拆兩個：不含股利 vs 含股利 -->
                 <th class="text-right col-rate">報酬率（不含股利）</th>
@@ -284,6 +345,7 @@
                 <th></th>
                 <th></th>
                 <th></th>
+                <th></th>
 
                 <th></th>
                 <th></th>
@@ -318,12 +380,12 @@
                   {{ h.unrealizedPnl | number : '1.0-0' }}
                 </td>
 
-                <!-- ✅ 累積股利（已實現） -->
+                <!-- ✅ 已實現獲利 -->
                 <td
-                  class="text-right col-money realized-dividend"
-                  [ngClass]="{ positive: h.realizedDividend > 0, negative: h.realizedDividend < 0 }"
+                  class="text-right col-money realized-pnl"
+                  [ngClass]="{ positive: h.realizedPnl > 0, negative: h.realizedPnl < 0 }"
                 >
-                  {{ h.realizedDividend | number : '1.0-0' }}
+                  {{ h.realizedPnl | number : '1.0-0' }}
                 </td>
 
                 <!-- ✅ 總損益（含股利） -->
@@ -332,6 +394,14 @@
                   [ngClass]="{ positive: h.totalPnl > 0, negative: h.totalPnl < 0 }"
                 >
                   {{ h.totalPnl | number : '1.0-0' }}
+                </td>
+
+                <!-- ✅ 累積股利（已實現） -->
+                <td
+                  class="text-right col-money realized-dividend"
+                  [ngClass]="{ positive: h.realizedDividend > 0, negative: h.realizedDividend < 0 }"
+                >
+                  {{ h.realizedDividend | number : '1.0-0' }}
                 </td>
 
                 <!-- ✅ 報酬率（不含股利） -->
@@ -386,7 +456,6 @@
           }
         </p-tabpanel>
 
-        <!-- Transactions Panel -->
         <!-- Transactions Panel -->
         <p-tabpanel value="transactions">
           <div class="panel-header">
