@@ -148,14 +148,41 @@
               <p>持有部位由交易自動重建（產品級正式版）</p>
             </div>
 
-            <button
-              pButton
-              type="button"
-              label="新增持有標的"
-              icon="pi pi-plus"
-              class="add-btn"
-              (click)="openCreateHoldingDialog()"
-            ></button>
+            <div class="panel-actions">
+              <button
+                pButton
+                type="button"
+                label="刷新市價"
+                icon="pi pi-refresh"
+                class="p-button-outlined"
+                [disabled]="isRefreshing()"
+                (click)="refreshPrices(false)"
+                pTooltip="只在資料過舊（stale）時更新"
+                tooltipPosition="top"
+              ></button>
+
+              <button
+                pButton
+                type="button"
+                label="強制刷新"
+                icon="pi pi-bolt"
+                class="p-button-warning"
+                [loading]="isRefreshing()"
+                [disabled]="!accountIdSignal()"
+                (click)="confirmForceRefresh()"
+                pTooltip="忽略 stale 規則，直接重抓市價（可能較耗資源）"
+                tooltipPosition="top"
+              ></button>
+
+              <button
+                pButton
+                type="button"
+                label="新增持有標的"
+                icon="pi pi-plus"
+                class="add-btn"
+                (click)="openCreateHoldingDialog()"
+              ></button>
+            </div>
           </div>
 
           @if (holdings().length > 0) {

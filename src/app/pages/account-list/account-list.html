@@ -1,10 +1,8 @@
-<!-- ⭐ Toast -->
-<!-- <p-toast position="top-right"></p-toast> -->
-
 <!-- ⭐ 新增帳戶 Dialog -->
 <p-dialog
   header="新增帳戶"
   [(visible)]="displayCreateDialog"
+  (visibleChange)="displayCreateDialog.set($event)"
   [modal]="true"
   [style]="{ width: '440px' }"
   [draggable]="false"

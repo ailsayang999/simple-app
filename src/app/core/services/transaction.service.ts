@@ -13,10 +13,14 @@ export class TransactionService {
   private baseUrl = `${environment.apiUrl}/transactions`;
 
   transactions = signal<TransactionDto[]>([]);
+  txsLoadedAt = signal<number>(0);
 
   loadTransactionsByAccount(accountId: string) {
     this.http.get<TransactionDto[]>(`${this.baseUrl}?accountId=${accountId}`).subscribe({
-      next: (res) => this.transactions.set(res),
+      next: (res) => {
+        this.transactions.set(res);
+        this.txsLoadedAt.set(Date.now());
+      },
       error: (err) => console.error('loadTransactions error', err),
     });
   }

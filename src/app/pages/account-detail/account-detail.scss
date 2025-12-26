@@ -197,6 +197,71 @@
   border-radius: var(--radius-full);
 }
 
+/* ==============================
+   ✅ 視覺提升：Holdings Panel Header（你新增的三顆按鈕）
+   - 讓它像產品的 toolbar
+   ============================== */
+
+.panel-header {
+  /* 你原本有 display:flex 這裡只補強 */
+  padding: 6px 6px;
+}
+
+.panel-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap; /* 小螢幕不擠爆 */
+  justify-content: flex-end;
+}
+
+/* ✅ 讓「刷新市價 / 強制刷新 / 新增」視覺更有層級：前兩顆是一組工具、最後一顆是主操作 */
+.panel-actions > button {
+  border-radius: var(--radius-full);
+}
+
+/* ✅ PrimeNG button：統一高度、字重、icon spacing */
+:host ::ng-deep .panel-actions .p-button {
+  height: 38px;
+  padding: 0 14px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+}
+
+/* ✅ 讓 refresh 兩顆更像同一組（不會散開很醜） */
+:host ::ng-deep .panel-actions .p-button-outlined,
+:host ::ng-deep .panel-actions .p-button-warning {
+  box-shadow: none;
+}
+
+/* ✅ warning 按鈕不要太刺眼：保留「警示」但更像產品 */
+:host ::ng-deep .panel-actions .p-button-warning {
+  filter: saturate(0.85);
+}
+
+/* ✅ disabled 狀態不要灰得難看 */
+:host ::ng-deep .panel-actions .p-button:disabled,
+:host ::ng-deep .panel-actions .p-button.p-disabled {
+  opacity: 0.55;
+}
+
+/* ✅ 小螢幕：按鈕改成自動換行、靠左比較自然 */
+@media (max-width: 768px) {
+  .panel-header {
+    padding: 10px 10px;
+  }
+
+  .panel-actions {
+    justify-content: flex-start;
+    gap: 8px;
+  }
+
+  :host ::ng-deep .panel-actions .p-button {
+    height: 36px;
+    padding: 0 12px;
+  }
+}
+
 /* 表格 */
 :host ::ng-deep .holdings-table .p-datatable-wrapper,
 :host ::ng-deep .transactions-table .p-datatable-wrapper {

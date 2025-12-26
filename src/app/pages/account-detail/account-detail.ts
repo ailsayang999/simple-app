@@ -44,6 +44,10 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
 
 import { AccountSummaryDto } from '../../core/models/account-summary.model';
 
+// ✅ ✅ NEW：SignalR + Prices service
+import { SignalrService } from '../../core/services/signalr.service';
+import { PricesService } from '../../core/services/prices.service';
+
 // 定義 PrimeNG 標籤可接受的 severity 類型
 type SeverityType = 'success' | 'secondary' | 'info' | 'warn' | 'danger' | 'contrast';
 
@@ -88,7 +92,11 @@ export class AccountDetailPage implements OnInit {
   private toast = inject(ToastService);
   private confirmService = inject(ConfirmationService);
 
-  private accountIdSignal = signal<string | null>(null);
+  // ✅ ✅ NEW
+  private signalr = inject(SignalrService);
+  private pricesService = inject(PricesService);
+
+  accountIdSignal = signal<string | null>(null);
 
   // ✅ Summary（後端算好最乾淨）
   accountSummary = signal<AccountSummaryDto | null>(null);
@@ -104,30 +112,50 @@ export class AccountDetailPage implements OnInit {
   private baselineSummarySig = signal<string>('');
   private baselineTxsSig = signal<string>('');
 
+  // ✅ ✅ NEW：用「載入時間戳」當 guard 完成條件（避免資料值一樣卡死）
+  private baselineHoldingsLoadedAt = signal<number>(0);
+  private baselineTxsLoadedAt = signal<number>(0);
+  private baselineSummaryLoadedAt = signal<number>(0);
+
+  // ✅ ✅ NEW：Summary 的 loadedAt 由 page 自己記（因為 summary load 在 page）
+  private summaryLoadedAt = signal<number>(0);
+
+  // ✅ ✅ NEW：避免「同一波 server 推播」造成你連續 refresh 多次
+  private lastAutoRefreshAt = 0;
+
+  // ✅ ✅ NEW：紀錄 SignalR 是否準備好（用於 on-demand fallback）
+  private signalrReady = signal(false);
+
+  // ✅ ✅ NEW：紀錄「本分頁手動觸發刷新」的時間（用來判斷 push 是否自己造成）
+  private lastManualRefreshAt = 0;
+
   constructor() {
     // ✅ ✅ 監聽：當 refreshNeed 存在時，等所需資料都「變更」才解除刷新狀態
     effect(() => {
       const need = this.refreshNeed();
       if (!need) return;
 
-      const holdingsNow = this.holdings();
-      const summaryNow = this.accountSummary();
-      const txsNow = this.transactions();
+      // ✅ ✅ NEW：用 loadedAt 來判斷「是否完成一次 load」
+      const holdingsLoadedAtNow = this.holdingService.holdingsLoadedAt();
+      const txsLoadedAtNow = this.transactionService.txsLoadedAt();
+      const summaryLoadedAtNow = this.summaryLoadedAt();
 
-      const holdingsSigNow = this.makeHoldingsSignature(holdingsNow);
-      const summarySigNow = this.makeSummarySignature(summaryNow);
-      const txsSigNow = this.makeTxsSignature(txsNow);
+      const holdingsOk = !need.holdings || holdingsLoadedAtNow > this.baselineHoldingsLoadedAt();
 
-      const holdingsOk =
-        !need.holdings || (holdingsSigNow && holdingsSigNow !== this.baselineHoldingsSig());
-      const summaryOk =
-        !need.summary || (summarySigNow && summarySigNow !== this.baselineSummarySig());
-      const txsOk = !need.txs || (txsSigNow && txsSigNow !== this.baselineTxsSig());
+      const txsOk = !need.txs || txsLoadedAtNow > this.baselineTxsLoadedAt();
+
+      const summaryOk = !need.summary || summaryLoadedAtNow > this.baselineSummaryLoadedAt();
 
       if (holdingsOk && summaryOk && txsOk) {
         this.isRefreshing.set(false);
         this.refreshNeed.set(null);
       }
+    });
+
+    // ✅ ✅ NEW：離開頁面自動 stop（乾淨，避免 memory leak）
+    this.destroyRef.onDestroy(() => {
+      // 不要 await（onDestroy 不能 async），但仍然會停掉連線
+      this.signalr.stop();
     });
   }
 
@@ -176,6 +204,11 @@ export class AccountDetailPage implements OnInit {
       txs: !!opt.txs,
     };
 
+    // ✅ ✅ NEW：baseline 用 loadedAt（更可靠）
+    this.baselineHoldingsLoadedAt.set(this.holdingService.holdingsLoadedAt());
+    this.baselineTxsLoadedAt.set(this.transactionService.txsLoadedAt());
+    this.baselineSummaryLoadedAt.set(this.summaryLoadedAt());
+
     this.baselineHoldingsSig.set(this.makeHoldingsSignature(this.holdings()));
     this.baselineSummarySig.set(this.makeSummarySignature(this.accountSummary()));
     this.baselineTxsSig.set(this.makeTxsSignature(this.transactions()));
@@ -189,12 +222,189 @@ export class AccountDetailPage implements OnInit {
     accountId: string,
     opt: { holdings?: boolean; summary?: boolean; txs?: boolean }
   ) {
+    console.log('Refreshing data for account:', accountId);
     this.beginRefreshGuard(opt);
-
-    if (opt.holdings) this.holdingService.loadHoldings(accountId);
-    if (opt.txs) this.transactionService.loadTransactionsByAccount(accountId);
-    if (opt.summary) this.loadAccountSummary(accountId);
+    if (opt.holdings) {
+      console.log('Refreshing holdings...');
+      this.holdingService.loadHoldings(accountId);
+    }
+    if (opt.txs) {
+      console.log('Refreshing transactions...');
+      this.transactionService.loadTransactionsByAccount(accountId);
+    }
+    if (opt.summary) {
+      console.log('Refreshing summary...');
+      this.loadAccountSummary(accountId);
+    }
   }
+
+  // ==============================
+  // ✅ ✅ NEW：Realtime（SignalR）+ On-demand refresh
+  // ==============================
+  private getAccessToken(): string | null {
+    // ✅ 這裡請改成你真正存 token 的 key（若不是 'token'）
+    // 常見：localStorage.getItem('access_token') / 'jwt' / AuthService.getToken()
+    return localStorage.getItem('demo_token');
+  }
+
+  private async setupRealtime(accountId: string) {
+    try {
+      console.log('Setting up SignalR connection...');
+      await this.signalr.ensureConnected(() => this.getAccessToken()); // 有成功
+
+      // ✅ 註冊推播事件（只註冊一次 handler，service 會自動 off 舊 handler）
+      this.signalr.onAccountUpdated((updatedAccountId) => {
+        console.log(`Received SignalR update for account: ${updatedAccountId}`);
+        // 只處理目前頁面的 account
+        if (updatedAccountId !== accountId) return;
+
+        // ✅ ✅ 簡單去抖（避免短時間連續推播造成多次 refresh）
+        const now = Date.now();
+        if (now - this.lastAutoRefreshAt < 800) return;
+        this.lastAutoRefreshAt = now;
+
+        console.log('SignalR: Account updated, refreshing data...');
+
+        // ✅ ✅ NEW：成功收到 SignalR 推播 → 提示使用者
+
+        // ✅ ✅ NEW：判斷這個 push 是不是「自己手動刷新」造成的
+        const fromSelf = now - this.lastManualRefreshAt < 1500; // 1.5 秒你可調
+        if (!fromSelf) {
+          this.toast.success('成功收到 SignalR 推播，市價已更新（即時同步）');
+        } else {
+          // ✅ 可選：你也可以不要顯示任何 toast（最安靜）
+          // this.toast.success('市價已更新 ✅');
+        }
+
+        // ✅ 收到「更新完成」→ 自動刷新（你既有 refresh guard）
+        this.refreshAccountData(accountId, { holdings: true, txs: false, summary: true });
+      });
+
+      // ✅ Join group：讓 server 用 group 推播更新完成
+      await this.signalr.joinAccount(accountId);
+      console.log(`SignalR: Successfully joined account group for account ID: ${accountId}`);
+
+      // ✅ ✅ 設定為 ready（讓 on-demand fallback 有判斷依據）
+      this.signalrReady.set(true);
+
+      // ✅ ✅ NEW：On-demand refresh（stale 才更新，成本最低）
+      // ✅ 放在 SignalR ready + join group 後，避免 fallback 先刷造成你誤判「沒收到 push」
+      this.triggerOnDemandRefresh(accountId);
+    } catch (err) {
+      console.error('setupRealtime error', err);
+      this.signalrReady.set(false);
+      // ✅ ✅ NEW：On-demand refresh（stale 才更新，成本最低）
+      // ✅ 放在 SignalR ready + join group 後，避免 fallback 先刷造成你誤判「沒收到 push」
+      this.triggerOnDemandRefresh(accountId);
+    }
+  }
+
+  // 進頁面自動 stale-only 更新
+  private triggerOnDemandRefresh(accountId: string) {
+    // ✅ On-demand：讓後端判斷 stale 才更新（成本最低）
+    this.pricesService
+      .refreshAccountPrices(accountId, false)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (res) => {
+          console.log(
+            'refresh result',
+            res.didUpdate,
+            res.reason,
+            res.updatedHoldingsCount,
+            res.message
+          );
+          // res.didUpdate=true 表示後端真的更新了
+          // 正常情況：server 會推播 accountUpdated → 由 push 觸發 refreshAccountData
+          // ✅ fallback：若 SignalR 沒 ready（或掛了），則在 didUpdate=true 時自己 refresh 一次
+          if (res?.didUpdate && !this.signalrReady()) {
+            this.refreshAccountData(accountId, { holdings: true, txs: true, summary: true });
+          }
+        },
+        error: (err) => console.error('refreshAccountPrices error', err),
+      });
+  }
+
+
+  // ✅ 手動按鈕入口：stale-only 或 force
+  refreshPrices(force: boolean) {
+    const accountId = this.accountIdSignal();
+    if (!accountId) return;
+
+    // ✅ ✅ NEW：標記「這是本分頁手動按下去的刷新」
+    this.lastManualRefreshAt = Date.now();
+
+    // ✅ ✅ NEW：force=true 一定會更新 → 直接開 guard（讓 loading 完全交給 guard 收掉）
+    // ✅ ✅ NEW：force=false 不一定更新 → 不要先開 guard，等 didUpdate=true 再開
+    if (force) {
+      // ⭐ 市價刷新：只需要 holdings + summary（交易不會變）
+      this.refreshAccountData(accountId, { holdings: true, txs: false, summary: true });
+    }
+
+    this.pricesService
+      .refreshAccountPrices(accountId, force)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (res) => {
+          console.log(
+            'refresh result',
+            res.didUpdate,
+            res.reason,
+            res.updatedHoldingsCount,
+            res.message
+          );
+
+          // ✅ ✅ NEW：force=false 且 didUpdate=false → 不開 guard，也不會卡 loading（因為根本沒開）
+          if (!force && !res.didUpdate) {
+            // 你想提示就提示，不想就保持安靜
+            if (res.reason === 'NOT_STALE') this.toast.info('目前市價仍新，不需更新');
+            if (res.reason === 'NO_HOLDINGS') this.toast.info('此帳戶目前沒有持倉，不需要更新市價');
+            return;
+          }
+
+          // ✅ ✅ NEW：force=false 但 didUpdate=true → 這時才開 guard（產品級：只在真的更新時轉圈圈）
+          if (!force && res.didUpdate) {
+            this.refreshAccountData(accountId, { holdings: true, txs: false, summary: true });
+          }
+
+          // ✅ ✅ 注意：正常情況 server 會推播 accountUpdated
+          // 但如果 SignalR 沒 ready，就 fallback 自己刷一次
+          if (res.didUpdate && !this.signalrReady()) {
+            // ⭐ fallback 也只要 holdings + summary
+            this.refreshAccountData(accountId, { holdings: true, txs: false, summary: true });
+          }
+
+          if (res.didUpdate) this.toast.success('市價已更新 ✅');
+        },
+        error: (err) => {
+          console.error('refreshAccountPrices error', err);
+
+          // ✅ ✅ NEW：如果你是 force=true，你一開始就開了 guard → 失敗要把 guard 收掉避免卡住
+          // ✅ ✅ NEW：如果 force=false，你可能根本沒開 guard → 這段也安全
+          this.isRefreshing.set(false);
+          this.refreshNeed.set(null);
+
+          this.toast.error('更新市價失敗，請稍後再試');
+        },
+        // ✅ ✅ NEW：不再在 complete 裡收 isRefreshing（完全交給 guard）
+        // complete: () => {}
+      });
+  }
+
+  // ✅ 強制刷新：先 confirm（避免誤按）
+  confirmForceRefresh() {
+    this.confirmService.confirm({
+      header: '強制刷新市價',
+      icon: 'pi pi-exclamation-triangle',
+      message: '將忽略 stale 規則直接重抓市價（可能較耗資源）。確定要執行嗎？',
+      acceptLabel: '強制刷新',
+      rejectLabel: '取消',
+      acceptButtonStyleClass: 'p-button-warning',
+      accept: () => this.refreshPrices(true),
+    });
+  }
+
+  // ==============================
 
   account = computed<AccountDto | null>(() => {
     const id = this.accountIdSignal();
@@ -312,7 +522,7 @@ export class AccountDetailPage implements OnInit {
       if (!(type === 'BUY' || type === 'SELL')) return;
 
       const h = this.getHoldingById(raw.holdingId);
-      const currency = h?.currency ?? raw.currency ?? 'TWD';
+      const currency = h?.currency ?? (raw as any).currency ?? 'TWD';
 
       const qty = Number(raw.quantity ?? 0);
       const price = Number(raw.price ?? 0);
@@ -552,7 +762,7 @@ export class AccountDetailPage implements OnInit {
   }
 
   ngOnInit(): void {
-    const id = this.route.snapshot.paramMap.get('id');
+    const id = this.route.snapshot.paramMap.get('id'); // 帳戶 account id 
     if (!id) return;
 
     this.accountIdSignal.set(id);
@@ -566,6 +776,14 @@ export class AccountDetailPage implements OnInit {
 
     // ✅ 初始化：載入 Summary（後端算好最乾淨）
     this.loadAccountSummary(id);
+
+    // ✅ ✅ NEW：先建立 SignalR（更新完成自動刷新）
+    // 不要擋 UI，所以不 await；錯誤在 setupRealtime 裡處理
+    this.setupRealtime(id);
+
+    // ✅ ✅ NEW：On-demand refresh（stale 才更新，成本最低）
+    // 若更新成功，server 會推播 accountUpdated
+    //this.triggerOnDemandRefresh(id);
 
     // ✅ 初始化：先依預設 type 套 validator（避免第一次開 dialog 就亂）
     this.applyTxValidators(
@@ -616,7 +834,11 @@ export class AccountDetailPage implements OnInit {
 
   private loadAccountSummary(accountId: string) {
     this.accountService.getAccountSummary(accountId).subscribe({
-      next: (res) => this.accountSummary.set(res),
+      next: (res) => {
+        this.accountSummary.set(res);
+        // ✅ ✅ NEW：就算內容一樣，也代表「summary load 完成」
+        this.summaryLoadedAt.set(Date.now());
+      },
       error: (err) => console.error(err),
     });
   }

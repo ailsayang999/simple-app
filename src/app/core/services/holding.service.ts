@@ -9,10 +9,16 @@ export class HoldingService {
   private baseUrl = `${environment.apiUrl}/holdings`;
 
   holdings = signal<HoldingDto[]>([]);
+  // ✅ NEW：用來判斷「loadHoldings 這次有沒有完成」
+  holdingsLoadedAt = signal<number>(0);
 
   loadHoldings(accountId: string) {
     this.http.get<HoldingDto[]>(`${this.baseUrl}?accountId=${accountId}`).subscribe({
-      next: (res) => this.holdings.set(res),
+      next: (res) => {
+        this.holdings.set(res);
+        // ✅ NEW：每次成功回來都更新（就算 res 一模一樣也會變）
+        this.holdingsLoadedAt.set(Date.now());
+      },
       error: (err) => console.error('loadHoldings error', err),
     });
   }
