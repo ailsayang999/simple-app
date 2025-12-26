@@ -140,7 +140,7 @@
       </p-tablist>
 
       <p-tabpanels>
-        <!-- Holdings Panel -->
+        <!-- Holdings Panel 持有標的 -->
         <p-tabpanel value="holdings">
           <div class="panel-header">
             <div class="panel-title">
@@ -483,7 +483,7 @@
           }
         </p-tabpanel>
 
-        <!-- Transactions Panel -->
+        <!-- Transactions Panel交易紀錄 -->
         <p-tabpanel value="transactions">
           <div class="panel-header">
             <div class="panel-title">
@@ -517,26 +517,26 @@
             <!-- ⭐⭐⭐ Transactions 欄寬也用 colgroup（不然 header/filter/body 會不同步） -->
             <ng-template pTemplate="colgroup">
               <colgroup>
+                <!-- 交易紀錄 日期 -->
                 <col style="width: 120px" />
-                <!-- 日期 -->
+                <!-- 交易紀錄 類型 -->
                 <col style="width: 140px" />
-                <!-- 類型 -->
+                <!-- 交易紀錄 標的 -->
                 <col style="width: 140px" />
-                <!-- 標的 -->
+                <!-- 交易紀錄 幣別 -->
                 <col style="width: 90px" />
-                <!-- 幣別 -->
+                <!-- 交易紀錄 數量 -->
                 <col style="width: 110px" />
-                <!-- 數量 -->
+                <!-- 交易紀錄 價格 -->
                 <col style="width: 120px" />
-                <!-- 價格 -->
+                <!-- 交易紀錄 手續費 -->
                 <col style="width: 110px" />
-                <!-- 手續費 -->
+                <!-- 交易紀錄 交易稅 -->
                 <col style="width: 110px" />
-                <!-- ✅ 交易稅 -->
+                <!-- 交易紀錄 現金流 -->
                 <col style="width: 140px" />
-                <!-- 現金流 -->
+                <!-- 交易紀錄 操作 -->
                 <col style="width: 128px" />
-                <!-- 操作 -->
               </colgroup>
             </ng-template>
 
@@ -565,23 +565,34 @@
 
             <ng-template pTemplate="header">
               <tr>
+                <!-- 交易紀錄 日期 header -->
                 <th pFrozenColumn class="col-date">日期</th>
+                <!-- 交易紀錄 類型 header -->
                 <th pFrozenColumn class="col-txtype">類型</th>
+                <!-- 交易紀錄 標的 header -->
                 <th class="col-symbol">標的</th>
+                <!-- 交易紀錄 幣別 header -->
                 <th class="col-currency">幣別</th>
+                <!-- 交易紀錄 數量 header -->
                 <th class="text-right col-num">數量</th>
+                <!-- 交易紀錄 價格 header -->
                 <th class="text-right col-price">價格</th>
+                <!-- 交易紀錄 手續費 header -->
                 <th class="text-right col-money">手續費</th>
+                <!-- 交易紀錄 交易稅 header -->
                 <th class="text-right col-money">交易稅</th>
+                <!-- 交易紀錄 現金流 header -->
                 <th class="text-right col-money">現金流</th>
+                <!-- 交易紀錄 操作 header -->
                 <th class="actions-cell">操作</th>
               </tr>
 
               <tr class="filter-row">
+                <!-- 交易紀錄 日期 Filter -->
                 <th pFrozenColumn>
                   <p-columnFilter type="date" field="tradeDate" [showMenu]="false"></p-columnFilter>
                 </th>
-
+                <!-- 交易紀錄 類型 Filter -->
                 <th pFrozenColumn>
                   <p-columnFilter field="type" matchMode="equals" [showMenu]="false">
                     <ng-template pTemplate="filter" let-value let-filter="filterCallback">
@@ -600,7 +611,7 @@
                     </ng-template>
                   </p-columnFilter>
                 </th>
-
+                <!-- 交易紀錄 標的 Filter -->
                 <th>
                   <p-columnFilter
                     type="text"
@@ -609,7 +620,7 @@
                     filterOn="input"
                   ></p-columnFilter>
                 </th>
-
+                <!-- 交易紀錄 幣別 Filter -->
                 <th>
                   <p-columnFilter field="currency" matchMode="equals" [showMenu]="false">
                     <ng-template pTemplate="filter" let-value let-filter="filterCallback">
@@ -624,20 +635,27 @@
                     </ng-template>
                   </p-columnFilter>
                 </th>
-
+                <!-- 交易紀錄 數量 Filter -->
                 <th></th>
+                <!-- 交易紀錄 價格 Filter -->
                 <th></th>
+                <!-- 交易紀錄 手續費 Filter -->
                 <th></th>
+                <!-- 交易紀錄 交易稅 Filter -->
                 <th></th>
+                <!-- 交易紀錄 現金流 Filter -->
                 <th></th>
+                <!-- 交易紀錄 操作 Filter -->
                 <th class="actions-cell"></th>
               </tr>
             </ng-template>
 
             <ng-template pTemplate="body" let-t>
               <tr>
+                <!-- 交易紀錄 日期 table data -->
                 <td pFrozenColumn class="col-date">{{ t.tradeDate | date : 'yyyy/MM/dd' }}</td>
 
+                <!-- 交易紀錄 類型 table data -->
                 <!-- <td>{{ t.type }}</td> -->
                 <td pFrozenColumn class="col-txtype">
                   <p-tag
@@ -648,17 +666,26 @@
                   />
                 </td>
 
+                <!-- 交易紀錄 標的 table data -->
                 <td class="col-symbol">{{ t.symbol }}</td>
+
+                <!-- 交易紀錄 幣別 table data -->
                 <td class="col-currency">{{ t.currency }}</td>
 
+                <!-- 交易紀錄 數量 table data -->
                 <td class="text-right col-num">{{ t.quantity | number : '1.0-4' }}</td>
+
+                <!-- 交易紀錄 價格 table data -->
                 <td class="text-right col-price">{{ t.price | number : '1.0-4' }}</td>
+
+                <!-- 交易紀錄 手續費 table data -->
                 <td class="text-right col-money">{{ t.fee | number : '1.0-0' }}</td>
 
-                <!-- ✅ 交易稅：非 SELL 通常為 0 -->
+                <!-- 交易紀錄 交易稅 table data -->
+                <!-- 交易稅：非 SELL 通常為 0 -->
                 <td class="text-right col-money">{{ t.tax | number : '1.0-0' }}</td>
 
-                <!-- ✅  現金流 -->
+                <!-- 交易紀錄 現金流 table data -->
                 <td
                   class="text-right col-money"
                   [ngClass]="{ positive: t.totalAmount > 0, negative: t.totalAmount < 0 }"
@@ -666,6 +693,7 @@
                   {{ t.totalAmount | number : '1.0-0' }}
                 </td>
 
+                <!-- 交易紀錄 操作 table data -->
                 <td class="actions-cell">
                   <button
                     class="icon-btn row-icon-btn"
