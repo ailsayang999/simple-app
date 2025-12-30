@@ -1,0 +1,70 @@
+<!-- src/app/shared/copilot-chat/copilot-chat.component.html -->
+
+<button
+  type="button"
+  pButton
+  class="copilot-fab"
+  icon="pi pi-comments"
+  pTooltip="Copilot"
+  tooltipPosition="left"
+  (click)="open()"
+></button>
+
+<p-dialog
+  header="Copilot"
+  styleClass="copilot-dialog"
+  [visible]="opened()"
+  (visibleChange)="opened.set($event)"
+  [modal]="false"
+  [draggable]="true"
+  [resizable]="true"
+  [dismissableMask]="false"
+  [style]="{ width: '420px', height: '75vh' }"
+  (onHide)="close()"
+>
+  <div class="chat-root">
+    <div class="chat-messages">
+      <div
+        class="msg-row"
+        *ngFor="let m of messages()"
+        [class.is-system]="m.role === 'system'"
+        [class.is-user]="m.role === 'user'"
+        [class.is-assistant]="m.role === 'assistant'"
+      >
+        <!-- ✅ Bubble -->
+        <div class="msg-bubble">
+          <div class="msg-meta">
+            <span class="msg-badge" *ngIf="m.role === 'system'">SYSTEM</span>
+            <span class="msg-badge" *ngIf="m.role === 'user'">YOU</span>
+            <span class="msg-badge" *ngIf="m.role === 'assistant'">AI</span>
+            <span class="msg-time">{{ m.createdAt | date : 'MM/dd HH:mm' }}</span>
+          </div>
+          <div class="msg-text">{{ m.text }}</div>
+        </div>
+      </div>
+
+      <div #scrollAnchor></div>
+    </div>
+
+    <div class="chat-input">
+      <div class="chat-input-surface">
+        <textarea
+          class="chat-textarea p-inputtext"
+          [rows]="2"
+          placeholder="輸入訊息…（Phase 3 會接 AI 分析 / tool calling）"
+          [ngModel]="input()"
+          (ngModelChange)="input.set($event)"
+          (keydown.enter)="onEnter($event)"
+        ></textarea>
+
+        <button type="button" pButton class="send-btn" icon="pi pi-send" (click)="send()"></button>
+      </div>
+
+      <div class="chat-hint">
+        <span>Enter 送出</span>
+        <span class="dot">•</span>
+        <span>Shift + Enter 換行</span>
+      </div>
+    </div>
+  </div>
+</p-dialog>

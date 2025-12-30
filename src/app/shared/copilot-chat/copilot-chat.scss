@@ -1,0 +1,211 @@
+/* src/app/shared/copilot-chat/copilot-chat.component.scss */
+
+.copilot-fab {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 2000; /* 要比 sidebar/topbar 高 */
+  border-radius: 999px;
+  width: 52px;
+  height: 52px;
+
+  /* ✅ 讓按鈕更像產品：陰影 + 立體感 */
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.18);
+}
+
+/* ✅ 讓 PrimeNG Dialog 更像「右下角 Copilot 抽屜」 */
+:host ::ng-deep .copilot-dialog {
+  overflow: hidden;
+  border-radius: 18px;
+  border: 1px solid var(--color-border-subtle);
+  box-shadow: 0 18px 60px rgba(0, 0, 0, 0.26);
+  backdrop-filter: blur(10px);
+}
+
+/* ✅ Dialog header 更乾淨 */
+:host ::ng-deep .copilot-dialog .p-dialog-header {
+  padding: 14px 14px 10px 14px;
+  border-bottom: 1px solid var(--color-border-subtle);
+  background: var(--color-bg-header);
+}
+
+/* ✅ Dialog content padding 更像產品 */
+:host ::ng-deep .copilot-dialog .p-dialog-content {
+  padding: 12px;
+  background: var(--color-bg-page);
+}
+
+.chat-root {
+  height: calc(70vh - 80px);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ✅ 訊息區：柔和背景 + 內嵌陰影 */
+.chat-messages {
+  flex: 1 1 auto;
+  overflow: auto;
+  padding: 12px;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 16px;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.03),
+    rgba(255, 255, 255, 0.01)
+  );
+}
+
+/* ✅ 每則訊息 row：用來做左右對齊 */
+.msg-row {
+  display: flex;
+  margin-bottom: 12px;
+}
+
+/* system：置中（像通知） */
+.msg-row.is-system {
+  justify-content: center;
+}
+
+/* user：靠右 */
+.msg-row.is-user {
+  justify-content: flex-end;
+}
+
+/* assistant：靠左 */
+.msg-row.is-assistant {
+  justify-content: flex-start;
+}
+
+/* ✅ bubble 本體 */
+.msg-bubble {
+  max-width: 86%;
+  padding: 10px 12px;
+  border-radius: 16px;
+  border: 1px solid var(--color-border-subtle);
+  background: var(--color-bg-card, rgba(255, 255, 255, 0.02));
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+}
+
+/* system bubble：更淡、更像提示 */
+.msg-row.is-system .msg-bubble {
+  max-width: 94%;
+  border-style: dashed;
+  background: rgba(255, 255, 255, 0.03);
+  opacity: 0.95;
+}
+
+/* user bubble：做出「我方訊息」感 */
+.msg-row.is-user .msg-bubble {
+  border-top-right-radius: 10px;
+  background: rgba(99, 102, 241, 0.14); /* indigo 柔和感，不指定主題色也OK */
+}
+
+/* assistant bubble：做出「AI 回覆」感 */
+.msg-row.is-assistant .msg-bubble {
+  border-top-left-radius: 10px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.msg-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 6px;
+  opacity: 0.85;
+}
+
+.msg-badge {
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--color-border-subtle);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.msg-time {
+  font-size: 12px;
+  opacity: 0.75;
+}
+
+.msg-text {
+  white-space: pre-wrap;
+  word-break: break-word;
+  line-height: 1.55;
+  font-size: 14px;
+}
+
+/* ✅ 輸入區：做成「訊息欄」 */
+.chat-input {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.chat-input-surface {
+  display: flex;
+  gap: 10px;
+  align-items: flex-end;
+  padding: 10px;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.03);
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.08);
+}
+
+.chat-input textarea {
+  flex: 1 1 auto;
+}
+
+/* 你原本的 textarea 設計：保留並加強 */
+.chat-textarea {
+  width: 100%;
+  resize: none;
+  border-radius: 12px;
+  padding: 10px 12px;
+  outline: none;
+
+  /* ✅ 更像產品：去掉邊框、用內陰影 */
+  border: 1px solid var(--color-border-subtle);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+/* ✅ 送出按鈕：圓、立體 */
+.send-btn {
+  border-radius: 999px !important;
+  width: 44px;
+  height: 44px;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.16);
+}
+
+/* ✅ 提示文字：更精緻 */
+.chat-hint {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  opacity: 0.75;
+  padding: 0 6px;
+}
+
+.chat-hint .dot {
+  opacity: 0.6;
+}
+
+/* ✅ 滾動條看起來更乾淨（WebKit） */
+.chat-messages::-webkit-scrollbar {
+  width: 10px;
+}
+.chat-messages::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.10);
+  border-radius: 999px;
+  border: 2px solid rgba(0, 0, 0, 0);
+  background-clip: padding-box;
+}
+.chat-messages::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.16);
+  border: 2px solid rgba(0, 0, 0, 0);
+  background-clip: padding-box;
+}

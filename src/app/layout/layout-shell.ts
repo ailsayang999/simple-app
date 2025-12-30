@@ -1,10 +1,13 @@
-import { Component, inject,signal, computed } from '@angular/core';
+import { Component, inject, signal, computed } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { Sidebar } from './sidebar/sidebar';
 import { Topbar } from './topbar/topbar';
 import { AppBreadcrumb } from '../shared/breadcrumb/app-breadcrumb';
 // ⭐ 新增：載入 AuthService + AuthUser 型別
 import { AuthService, AuthUser } from '../core/services/auth.service';
+
+// ✅ 新增：全站共用 Copilot Chat（浮動按鈕 + Dialog）
+import { CopilotChatComponent } from '../shared/copilot-chat/copilot-chat';
 
 // ⭐ 新增：專門定義「layout 給頁面用的 context」
 export interface ShellContext {
@@ -13,11 +16,11 @@ export interface ShellContext {
   toggleSidebar: () => void; // ⭐ 新增：操作方法
 }
 
-
 @Component({
   standalone: true,
   selector: 'app-layout-shell',
-  imports: [RouterOutlet, Sidebar, Topbar, AppBreadcrumb],
+  // ✅ 新增：CopilotChatComponent（其餘保留）
+  imports: [RouterOutlet, Sidebar, Topbar, AppBreadcrumb, CopilotChatComponent],
   templateUrl: './layout-shell.html',
   styleUrl: './layout-shell.scss',
 })

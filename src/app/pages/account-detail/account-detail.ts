@@ -287,14 +287,14 @@ export class AccountDetailPage implements OnInit {
         // ✅ ✅ NEW：判斷這個 push 是不是「自己手動刷新」造成的
         const fromSelf = now - this.lastManualRefreshAt < 1500; // 1.5 秒你可調
         if (!fromSelf) {
-          this.toast.success('成功收到 SignalR 推播，市價已更新（即時同步）');
+          this.toast.success('成功收到 SignalR 推播，已更新（即時同步）');
         } else {
           // ✅ 可選：你也可以不要顯示任何 toast（最安靜）
           // this.toast.success('市價已更新 ✅');
         }
 
         // ✅ 收到「更新完成」→ 自動刷新（你既有 refresh guard）
-        this.refreshAccountData(accountId, { holdings: true, txs: false, summary: true });
+        this.refreshAccountData(accountId, { holdings: true, txs: true, summary: true });
       });
       // // ✅ 註冊推播事件（只註冊一次 handler，service 會自動 off 舊 handler）
       // this.signalr.onAccountUpdated((updatedAccountId) => {});
