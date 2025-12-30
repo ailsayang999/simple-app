@@ -19,6 +19,8 @@ import { calcArrPerHolding } from '../../core/utils/arr.util';
 import { SignalrService } from '../../core/services/signalr.service';
 import { FxRateService } from '../../core/services/fx-rate.service';
 
+import { DestroyRef } from '@angular/core';
+
 // ✅ NEW：Summary DTO
 import { AccountSummaryDto } from '../../core/models/account-summary.model';
 
@@ -287,6 +289,7 @@ export class Dashboard implements OnInit {
 
   arrChartOptions: any;
 
+  private destroyRef = inject(DestroyRef);
   constructor() {
     // ✅ ✅ 取代 setTimeout：等 accounts 真的載到資料後，再決定主帳戶並載入 holdings/txs/summary
     effect(() => {
@@ -306,6 +309,12 @@ export class Dashboard implements OnInit {
 
       // ✅ NEW：載入 Summary
       this.loadAccountSummary(main.id);
+    });
+
+    this.destroyRef.onDestroy(() => {
+      this.offFxUpdated?.();
+      this.offFxUpdated = undefined;
+      void this.signalr.leaveDashboard();
     });
   }
 
@@ -439,9 +448,13 @@ export class Dashboard implements OnInit {
 
   // SignalR
   // 註冊 Signal R
+  private offFxUpdated?: () => void;
   private async setupFxRealtime() {
     await this.signalr.ensureConnected(() => this.getAccessToken());
-    this.signalr.onFxUpdated((rates) => {
+
+    // ✅ 防止重複註冊（dashboard 重建、hot reload 會發生）
+    this.offFxUpdated?.();
+    this.offFxUpdated = this.signalr.onFxUpdated((rates) => {
       const now = Date.now();
       if (now - this.lastFxPushAt < 800) return; // ✅ 防爆
       this.lastFxPushAt = now;

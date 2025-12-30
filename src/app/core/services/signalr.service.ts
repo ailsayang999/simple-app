@@ -9,14 +9,19 @@ import * as signalR from '@microsoft/signalr';
 export class SignalrService {
   private connection: signalR.HubConnection | null = null;
 
+  // 你其實同時可能想 join：Dashboard（fxUpdated）、Account A（accountUpdated）
+  private joinedGroups = new Set<string>();
+  // 例： "account:xxxx", "dashboard"
+
   // ✅ 用來避免重複 start
   private starting: Promise<void> | null = null;
 
-  // ✅ 目前 join 的 account group（方便 cleanup）
-  private joinedAccountId: string | null = null;
+  //讓事件 handler 支援「多個 listener」: service 內部只對 connection 註冊一次，然後自己 fan-out 給 listeners。
+  private accountUpdatedListeners = new Set<(accountId: string) => void>();
+  private fxUpdatedListeners = new Set<(rates: any[]) => void>();
 
-  // ✅ 事件 handler 參考（避免重複註冊）
-  private accountUpdatedHandler: ((accountId: string) => void) | null = null;
+  private accountUpdatedBound?: (accountId: string) => void;
+  private fxUpdatedBound?: (rates: any[]) => void;
 
   // ✅ Hub URL：API base + /hubs/market
   // private hubUrl = `${environment.apiUrl}/hubs/market`;
@@ -53,7 +58,8 @@ export class SignalrService {
 
       this.connection.onclose(() => {
         console.log('SignalR connection closed.');
-        this.joinedAccountId = null;
+        // ✅ 用 set 清掉
+        this.joinedGroups.clear();
       });
     }
 
@@ -72,115 +78,139 @@ export class SignalrService {
     await this.starting;
   }
 
-  /**
-   * ✅ 監聽 server 推播（accountUpdated）
-   * 只會註冊一次 handler
-   */
-  onAccountUpdated(handler: (accountId: string) => void) {
-    if (!this.connection) return;
-
-    // ✅ 若之前有 handler，先移除（避免重複觸發）
-    if (this.accountUpdatedHandler) {
-      this.connection.off('accountUpdated', this.accountUpdatedHandler);
-      console.log('Previous handler removed.');
+  // ✅ 監聽 server 推播（accountUpdated、fxUpdated）
+  onAccountUpdated(handler: (accountId: string) => void): () => void {
+    if (!this.connection) {
+      // 連線還沒建立：先加入 listeners，等 ensureConnected 後再 bind
+      this.accountUpdatedListeners.add(handler);
+      return () => this.accountUpdatedListeners.delete(handler);
     }
 
-    // ✅ 註冊新的事件處理器
-    this.accountUpdatedHandler = (accountId: string) => handler(accountId);
+    this.accountUpdatedListeners.add(handler);
 
-    this.connection.on('accountUpdated', this.accountUpdatedHandler);
-    console.log('SignalR: onAccountUpdated handler registered successfully');
+    // ✅ 確保 connection 只綁一次
+    if (!this.accountUpdatedBound) {
+      this.accountUpdatedBound = (accountId: string) => {
+        for (const fn of this.accountUpdatedListeners) fn(accountId);
+      };
+      this.connection.on('accountUpdated', this.accountUpdatedBound);
+    }
+
+    return () => this.accountUpdatedListeners.delete(handler);
   }
 
-  /**
-   * ✅ Join account group（server 會用 group 推播更新完成）
-   */
+  // ✅ Join account group（server 會用 group 推播更新完成）
   async joinAccount(accountId: string): Promise<void> {
     if (!this.connection) return;
+    if (this.connection.state !== signalR.HubConnectionState.Connected) return;
 
-    // 已 join 就不重複 invoke
-    if (this.joinedAccountId === accountId) return;
-
-    // 如果之前 join 另一個 account，先 leave
-    if (this.joinedAccountId && this.joinedAccountId !== accountId) {
-      await this.leaveAccount(this.joinedAccountId);
-    }
+    const key = `account:${accountId}`;
+    if (this.joinedGroups.has(key)) return;
 
     try {
       await this.connection.invoke('JoinAccount', accountId);
-      this.joinedAccountId = accountId;
-      console.log(`Successfully joined account group: ${accountId}`);
-    } catch (error) {
-      console.error('Error joining account group:', error);
+      this.joinedGroups.add(key);
+    } catch (e) {
+      console.debug('JoinAccount ignored error', e);
     }
   }
 
-  /**
-   * ✅ Leave account group
-   */
+  // ✅ Leave account group
   async leaveAccount(accountId: string): Promise<void> {
     if (!this.connection) return;
 
+    const key = `account:${accountId}`;
+    if (!this.joinedGroups.has(key)) return;
+
+    if (this.connection.state !== signalR.HubConnectionState.Connected) {
+      this.joinedGroups.delete(key);
+      return;
+    }
+
     try {
       await this.connection.invoke('LeaveAccount', accountId);
+    } catch (e) {
+      console.debug('LeaveAccount ignored error', e);
     } finally {
-      if (this.joinedAccountId === accountId) {
-        this.joinedAccountId = null;
-      }
-    }
-  }
-
-  /**
-   * ✅ 停止連線（離開頁面用）
-   */
-  async stop(): Promise<void> {
-    if (!this.connection) return;
-
-    // ✅ 清掉 handler
-    if (this.accountUpdatedHandler) {
-      this.connection.off('accountUpdated', this.accountUpdatedHandler);
-      this.accountUpdatedHandler = null;
-    }
-
-    // ✅ 如果有 join 過 group，先 leave（乾淨）
-    if (this.joinedAccountId) {
-      try {
-        await this.leaveAccount(this.joinedAccountId);
-      } catch {
-        // ignore
-      }
-    }
-
-    try {
-      await this.connection.stop();
-    } finally {
-      this.connection = null;
-      this.starting = null;
-      this.joinedAccountId = null;
+      this.joinedGroups.delete(key);
     }
   }
 
   // 匯率 SignalR
-  private fxUpdatedHandler: ((payload: any) => void) | null = null;
-  
-  onFxUpdated(handler: (rates: any[]) => void) {
-    if (!this.connection) return;
 
-    if (this.fxUpdatedHandler) {
-      this.connection.off('fxUpdated', this.fxUpdatedHandler);
+  onFxUpdated(handler: (rates: any[]) => void): () => void {
+    if (!this.connection) {
+      this.fxUpdatedListeners.add(handler);
+      return () => this.fxUpdatedListeners.delete(handler);
     }
 
-    this.fxUpdatedHandler = (rates: any[]) => handler(rates);
-    this.connection.on('fxUpdated', this.fxUpdatedHandler);
+    this.fxUpdatedListeners.add(handler);
+
+    if (!this.fxUpdatedBound) {
+      this.fxUpdatedBound = (rates: any[]) => {
+        for (const fn of this.fxUpdatedListeners) fn(rates);
+      };
+      this.connection.on('fxUpdated', this.fxUpdatedBound);
+    }
+
+    return () => this.fxUpdatedListeners.delete(handler);
   }
 
   async joinDashboard(): Promise<void> {
     if (!this.connection) return;
-    await this.connection.invoke('JoinDashboard');
+    if (this.connection.state !== signalR.HubConnectionState.Connected) return;
+
+    const key = 'dashboard';
+    if (this.joinedGroups.has(key)) return;
+
+    try {
+      await this.connection.invoke('JoinDashboard');
+      this.joinedGroups.add(key);
+    } catch (e) {
+      console.debug('JoinDashboard ignored error', e);
+    }
   }
 
   async leaveDashboard(): Promise<void> {
     if (!this.connection) return;
-    await this.connection.invoke('LeaveDashboard');
+
+    const key = 'dashboard';
+    if (!this.joinedGroups.has(key)) return;
+
+    // ✅ 非 Connected 就別 invoke（避免 canceled）
+    if (this.connection.state !== signalR.HubConnectionState.Connected) {
+      this.joinedGroups.delete(key);
+      return;
+    }
+
+    try {
+      await this.connection.invoke('LeaveDashboard');
+    } catch (e) {
+      console.debug('LeaveDashboard ignored error', e);
+    } finally {
+      this.joinedGroups.delete(key);
+    }
+  }
+
+  async stop(): Promise<void> {
+    if (!this.connection) return;
+
+    // ✅ 不用 invoke Leave：斷線 server 會自動清 group
+    this.joinedGroups.clear();
+
+    try {
+      await this.connection.stop();
+    } catch (e) {
+      console.debug('SignalR stop ignored error', e);
+    } finally {
+      // 清理全部
+      this.connection = null;
+      this.starting = null;
+
+      this.accountUpdatedListeners.clear();
+      this.fxUpdatedListeners.clear();
+      this.accountUpdatedBound = undefined;
+      this.fxUpdatedBound = undefined;
+    }
   }
 }

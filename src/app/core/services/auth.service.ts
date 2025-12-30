@@ -115,6 +115,7 @@ import { HttpClient } from '@angular/common/http';
 import { map, tap } from 'rxjs';
 import { Role, Permission, ROLE_PERMISSIONS } from '../../auth/rbac';
 import { environment } from '../../../environments/environment';
+import { SignalrService } from './signalr.service';
 
 export interface AuthUser {
   id: string;
@@ -164,7 +165,7 @@ export class AuthService {
 
   readonly userSignal = signal<AuthUser | null>(this.loadUser());
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private signalr: SignalrService) {}
 
   private loadUser(): AuthUser | null {
     const json = localStorage.getItem(this.USER_KEY);
@@ -197,6 +198,18 @@ export class AuthService {
     return localStorage.getItem(this.REFRESH_TOKEN_KEY);
   }
 
+  private async restartSignalrWithNewToken() {
+    // ✅ 先停掉舊連線（舊 token / 舊 identity）
+    await this.signalr.stop(); // stop 舊 SignalR（如果有）
+
+    /*
+      → stop 舊 SignalR（如果有）
+      → Dashboard / AccountDetail ngOnInit
+      → ensureConnected（用新 token）
+      → join groups
+    */
+  }
+
   private saveAuth(res: LoginResponse | RefreshResponse) {
     const rawUser = res.user;
 
@@ -216,6 +229,9 @@ export class AuthService {
     localStorage.setItem(this.REFRESH_TOKEN_KEY, res.refreshToken);
     localStorage.setItem(this.USER_KEY, JSON.stringify(user));
     this.userSignal.set(user);
+
+    // ✅ token/user 已寫入 localStorage 後，再處理 SignalR
+    void this.restartSignalrWithNewToken(); // saveAuth() 是 sync function，我們不想讓 login / refresh 被 SignalR stop block，stop() 本身已經有 try/catch，很安全
   }
 
   // ========================
@@ -256,7 +272,9 @@ export class AuthService {
       );
   }
 
-  logout(): void {
+  async logout(): Promise<void> {
+    await this.signalr.stop();
+
     localStorage.removeItem(this.TOKEN_KEY);
     localStorage.removeItem(this.REFRESH_TOKEN_KEY);
     localStorage.removeItem(this.USER_KEY);

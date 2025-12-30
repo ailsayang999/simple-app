@@ -152,10 +152,19 @@ export class AccountDetailPage implements OnInit {
       }
     });
 
-    // ✅ ✅ NEW：離開頁面自動 stop（乾淨，避免 memory leak）
     this.destroyRef.onDestroy(() => {
-      // 不要 await（onDestroy 不能 async），但仍然會停掉連線
-      this.signalr.stop();
+      // ✅ 解除本頁 listener（不影響其他頁）
+      this.offAccountUpdated?.();
+      this.offAccountUpdated = undefined;
+
+      // ✅ 離開 account group（不斷線）
+      const id = this.joinedAccountId;
+      if (id) {
+        void this.signalr.leaveAccount(id); // 不 await，避免 onDestroy async
+        this.joinedAccountId = undefined;
+      }
+
+      // ❌ 不要 stop()
     });
   }
 
@@ -247,13 +256,21 @@ export class AccountDetailPage implements OnInit {
     return localStorage.getItem('demo_token');
   }
 
+  // （記住 unsubscribe function）
+  private offAccountUpdated?: () => void;
+  private joinedAccountId?: string;
+
   private async setupRealtime(accountId: string) {
     try {
       console.log('Setting up SignalR connection...');
       await this.signalr.ensureConnected(() => this.getAccessToken()); // 有成功
 
-      // ✅ 註冊推播事件（只註冊一次 handler，service 會自動 off 舊 handler）
-      this.signalr.onAccountUpdated((updatedAccountId) => {
+      // ✅ 記住這次 join 的 accountId（供 onDestroy leave 用）
+      this.joinedAccountId = accountId;
+      // ✅ 先註冊 listener，並保留 off function
+      this.offAccountUpdated?.(); // 防止 setupRealtime 被重跑造成累積
+
+      this.offAccountUpdated = this.signalr.onAccountUpdated((updatedAccountId) => {
         console.log(`Received SignalR update for account: ${updatedAccountId}`);
         // 只處理目前頁面的 account
         if (updatedAccountId !== accountId) return;
@@ -279,6 +296,8 @@ export class AccountDetailPage implements OnInit {
         // ✅ 收到「更新完成」→ 自動刷新（你既有 refresh guard）
         this.refreshAccountData(accountId, { holdings: true, txs: false, summary: true });
       });
+      // // ✅ 註冊推播事件（只註冊一次 handler，service 會自動 off 舊 handler）
+      // this.signalr.onAccountUpdated((updatedAccountId) => {});
 
       // ✅ Join group：讓 server 用 group 推播更新完成
       await this.signalr.joinAccount(accountId);
