@@ -16,8 +16,25 @@ import { TransactionService } from '../../core/services/transaction.service';
 import { AccountService } from '../../core/services/account.service';
 import { calcArrPerHolding } from '../../core/utils/arr.util';
 
+import { SignalrService } from '../../core/services/signalr.service';
+import { FxRateService } from '../../core/services/fx-rate.service';
+
 // ✅ NEW：Summary DTO
 import { AccountSummaryDto } from '../../core/models/account-summary.model';
+
+type FxCcy = 'USD' | 'EUR' | 'JPY' | 'CNY';
+
+type FxRatePoint = {
+  quoteCurrency?: string;
+  baseCurrency?: string;
+  rate: number;
+  capturedAt?: string;
+};
+
+type FxHistoryPoint = {
+  rate: number;
+  capturedAt: string;
+};
 
 @Component({
   selector: 'app-dashboard',
@@ -41,6 +58,121 @@ export class Dashboard implements OnInit {
   private accountService = inject(AccountService);
   private holdingService = inject(HoldingService);
   private transactionService = inject(TransactionService);
+
+  // Signal R
+  private signalr = inject(SignalrService);
+  private fxRateService = inject(FxRateService);
+  // 各幣別的 fx rate  匯率（最新數字）
+  usdRate = signal<number>(0);
+  eurRate = signal<number>(0);
+  jpyRate = signal<number>(0);
+  cnyRate = signal<number>(0);
+  private lastFxPushAt = 0;
+
+  // ✅ 匯率圖表 data / options（用 signal 存 data：推播來就更新）
+  usdRateData = signal<any>(null);
+  eurRateData = signal<any>(null);
+  jpyRateData = signal<any>(null);
+  cnyRateData = signal<any>(null);
+
+  //先定義幣別 enum/常數 + 集中管理 config
+  FX_CCY = ['USD', 'EUR', 'JPY', 'CNY'] as const;
+
+  fxMaxPointsByCcy = {
+    USD: 10,
+    EUR: 5,
+    JPY: 20,
+    CNY: 20,
+  };
+
+  // 做一個「幣別 → 對應 chart signal」的 getter（關鍵）
+  private fxChartSignal(ccy: FxCcy) {
+    switch (ccy) {
+      case 'USD':
+        return this.usdRateData;
+      case 'EUR':
+        return this.eurRateData;
+      case 'JPY':
+        return this.jpyRateData;
+      case 'CNY':
+        return this.cnyRateData;
+    }
+  }
+
+  private applyFxHistory(ccy: FxCcy, rows: FxHistoryPoint[]) {
+    const maxPoints = this.fxMaxPointsByCcy[ccy];
+    const labelMap: Record<FxCcy, string> = {
+      USD: '美元匯率',
+      EUR: '歐元匯率',
+      JPY: '日幣匯率',
+      CNY: '人民幣匯率',
+    };
+
+    const chart = this.buildLineChartData(labelMap[ccy], rows, maxPoints);
+    this.fxChartSignal(ccy).set(chart);
+
+    const last = rows.at(-1);
+    if (last) this.setLatestFxRate(ccy, last.rate);
+  }
+
+  private applyFxPush(list: FxRatePoint[]) {
+    for (const item of list) {
+      const ccy = (item.quoteCurrency ?? '').toUpperCase() as FxCcy;
+      if (!this.FX_CCY.includes(ccy)) continue;
+
+      const t = item.capturedAt ? new Date(item.capturedAt) : new Date();
+      this.setLatestFxRate(ccy, item.rate);
+
+      const maxPoints = this.fxMaxPointsByCcy[ccy];
+      const sig = this.fxChartSignal(ccy);
+      sig.set(this.appendPoint(sig(), item.rate, t, maxPoints));
+    }
+  }
+
+  private setLatestFxRate(ccy: FxCcy, rate: number) {
+    switch (ccy) {
+      case 'USD':
+        this.usdRate.set(rate);
+        break;
+      case 'EUR':
+        this.eurRate.set(rate);
+        break;
+      case 'JPY':
+        this.jpyRate.set(rate);
+        break;
+      case 'CNY':
+        this.cnyRate.set(rate);
+        break;
+    }
+  }
+
+  usdRateOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: { x: { display: false }, y: { display: false } },
+  };
+
+  eurRateOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: { x: { display: false }, y: { display: false } },
+  };
+
+  jpyRateOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: { x: { display: false }, y: { display: false } },
+  };
+
+  cnyRateOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: { x: { display: false }, y: { display: false } },
+  };
 
   // 主帳戶（這邊簡單用第一個）
   mainAccountName = signal<string>('');
@@ -217,6 +349,10 @@ export class Dashboard implements OnInit {
         },
       },
     };
+
+    // Signal R
+    this.setupFxRealtime();
+    this.loadFxInitial();
   }
 
   // ✅ NEW：載入主帳戶 Summary
@@ -225,6 +361,110 @@ export class Dashboard implements OnInit {
       next: (res) => this.accountSummary.set(res),
       error: (err) => console.error(err),
     });
+  }
+
+  private getAccessToken(): string | null {
+    // ✅ 這裡請改成你真正存 token 的 key（若不是 'token'）
+    // 常見：localStorage.getItem('access_token') / 'jwt' / AuthService.getToken()
+    return localStorage.getItem('demo_token');
+  }
+
+  /** ✅ 小工具：建折線圖資料（PrimeNG/Chart.js data 物件） */
+  private buildLineChartData(
+    label: string,
+    rows: Array<{ rate: number; capturedAt: string }>,
+    maxPoints: number
+  ) {
+    const latestRows = rows.slice(-maxPoints); // ✅ 取最新 maxPoints 筆
+
+    const labels = latestRows.map((r) => this.formatFxLabel(r.capturedAt));
+    const data = latestRows.map((r) => r.rate);
+
+    // ⚠️ 不指定顏色也能跑；但你原本有品牌色，我保留你原本顏色更一致
+    const styleByLabel: Record<string, { borderColor: string; backgroundColor: string }> = {
+      美元匯率: { borderColor: 'rgb(4, 167, 196)', backgroundColor: 'rgba(4, 167, 196, 0.18)' },
+      歐元匯率: { borderColor: 'rgb(132, 204, 23)', backgroundColor: 'rgba(132, 204, 23, 0.18)' },
+      日幣匯率: { borderColor: 'rgb(244, 62, 94)', backgroundColor: 'rgba(244, 62, 95, 0.18)' },
+      人民幣匯率: { borderColor: 'rgb(249, 115, 21)', backgroundColor: 'rgba(249, 116, 21, 0.18)' },
+    };
+
+    const style = styleByLabel[label] ?? {
+      borderColor: 'rgb(80, 69, 229)',
+      backgroundColor: 'rgba(80, 69, 229, 0.18)',
+    };
+
+
+
+    return {
+      labels,
+      datasets: [
+        {
+          label,
+          data,
+          fill: true,
+          tension: 0.4,
+          borderColor: style.borderColor,
+          backgroundColor: style.backgroundColor,
+        },
+      ],
+    };
+  }
+
+  /** ✅ 小工具：把新點 append 到 chart data（回傳「新物件」，讓 PrimeNG 觸發重畫） */
+  private appendPoint(chartData: any, rate: number, capturedAt: Date, maxPoints: number) {
+    if (!chartData) return chartData;
+
+    const next = structuredClone(chartData); // ✅ 乾淨：避免 mutate 原物件造成 PrimeNG 不重繪
+    const label = this.formatFxLabel(capturedAt.toISOString());
+
+    next.labels = [...(next.labels ?? []), label].slice(-maxPoints);
+
+    if (next.datasets?.length) {
+      const ds = next.datasets[0];
+      ds.data = [...(ds.data ?? []), rate].slice(-maxPoints);
+    }
+
+    return next;
+  }
+
+  /** ✅ 小工具：顯示成 HH:mm 或 MM/dd（你可以依喜好調） */
+  private formatFxLabel(iso: string) {
+    const d = new Date(iso);
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    const hh = String(d.getHours()).padStart(2, '0');
+    const mi = String(d.getMinutes()).padStart(2, '0');
+    return `${mm}/${dd} ${hh}:${mi}`;
+  }
+
+  // SignalR
+  // 註冊 Signal R
+  private async setupFxRealtime() {
+    await this.signalr.ensureConnected(() => this.getAccessToken());
+    this.signalr.onFxUpdated((rates) => {
+      const now = Date.now();
+      if (now - this.lastFxPushAt < 800) return; // ✅ 防爆
+      this.lastFxPushAt = now;
+
+      this.applyFxPush(rates); // ✅ 一行搞定：更新數字 + append chart
+    });
+
+    await this.signalr.joinDashboard();
+  }
+  private loadFxInitial() {
+    // ✅ 最新數字：其實可省略，因為 history 的最後一筆會 setLatestFxRate
+    this.fxRateService.getLatest().subscribe({
+      next: (list) => this.applyFxPush(list), // 直接重用 push 處理器
+      error: console.error,
+    });
+
+    // ✅ 初始 history：統一走 applyFxHistory
+    for (const ccy of this.FX_CCY) {
+      this.fxRateService.getHistory(ccy, 30).subscribe({
+        next: (rows) => this.applyFxHistory(ccy, rows),
+        error: console.error,
+      });
+    }
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -286,147 +526,147 @@ export class Dashboard implements OnInit {
 
   // ② 匯率折線圖（示意）
   // 美元
-  usdRateData = {
-    labels: [
-      '10/01',
-      '10/05',
-      '10/10',
-      '10/15',
-      '10/20',
-      '11/01',
-      '11/05',
-      '11/10',
-      '11/15',
-      '11/20',
-    ],
-    datasets: [
-      {
-        label: '美元匯率',
-        data: [30.2, 30.4, 30.3, 30.4, 30.47, 30.5, 30.6, 30.4, 30.3, 30.34],
-        fill: true,
-        tension: 0.4,
-        borderColor: 'rgb(4, 167, 196)',
-        backgroundColor: 'rgba(4, 167, 196, 0.18)', // 👈 透明填滿
-      },
-    ],
-  };
-  usdRateOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: { legend: { display: false } },
-    scales: {
-      x: { display: false },
-      y: { display: false },
-    },
-  };
+  // usdRateData = {
+  //   labels: [
+  //     '10/01',
+  //     '10/05',
+  //     '10/10',
+  //     '10/15',
+  //     '10/20',
+  //     '11/01',
+  //     '11/05',
+  //     '11/10',
+  //     '11/15',
+  //     '11/20',
+  //   ],
+  //   datasets: [
+  //     {
+  //       label: '美元匯率',
+  //       data: [30.2, 30.4, 30.3, 30.4, 30.47, 30.5, 30.6, 30.4, 30.3, 30.34],
+  //       fill: true,
+  //       tension: 0.4,
+  //       borderColor: 'rgb(4, 167, 196)',
+  //       backgroundColor: 'rgba(4, 167, 196, 0.18)', // 👈 透明填滿
+  //     },
+  //   ],
+  // };
+  // usdRateOptions = {
+  //   responsive: true,
+  //   maintainAspectRatio: false,
+  //   plugins: { legend: { display: false } },
+  //   scales: {
+  //     x: { display: false },
+  //     y: { display: false },
+  //   },
+  // };
 
   // 歐元
-  eurRateData = {
-    labels: [
-      '10/01',
-      '10/05',
-      '10/10',
-      '10/15',
-      '10/20',
-      '11/01',
-      '11/05',
-      '11/10',
-      '11/15',
-      '11/20',
-    ],
-    datasets: [
-      {
-        label: '歐元匯率',
-        data: [30.3, 30.35, 30.32, 30.4, 30.34, 30.4, 30.5, 30.43, 30.34, 30.34],
-        fill: true,
-        tension: 0.4,
-        borderColor: 'rgb(132, 204, 23)',
-        backgroundColor: 'rgba(132, 204, 23, 0.18)', // 👈 透明填滿
-      },
-    ],
-  };
+  // eurRateData = {
+  //   labels: [
+  //     '10/01',
+  //     '10/05',
+  //     '10/10',
+  //     '10/15',
+  //     '10/20',
+  //     '11/01',
+  //     '11/05',
+  //     '11/10',
+  //     '11/15',
+  //     '11/20',
+  //   ],
+  //   datasets: [
+  //     {
+  //       label: '歐元匯率',
+  //       data: [30.3, 30.35, 30.32, 30.4, 30.34, 30.4, 30.5, 30.43, 30.34, 30.34],
+  //       fill: true,
+  //       tension: 0.4,
+  //       borderColor: 'rgb(132, 204, 23)',
+  //       backgroundColor: 'rgba(132, 204, 23, 0.18)', // 👈 透明填滿
+  //     },
+  //   ],
+  // };
 
-  eurRateOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: { legend: { display: false } },
-    scales: {
-      x: { display: false },
-      y: { display: false },
-    },
-  };
+  // eurRateOptions = {
+  //   responsive: true,
+  //   maintainAspectRatio: false,
+  //   plugins: { legend: { display: false } },
+  //   scales: {
+  //     x: { display: false },
+  //     y: { display: false },
+  //   },
+  // };
 
   // 日幣
-  jpyRateData = {
-    labels: [
-      '10/01',
-      '10/05',
-      '10/10',
-      '10/15',
-      '10/20',
-      '11/01',
-      '11/05',
-      '11/10',
-      '11/15',
-      '11/20',
-    ],
-    datasets: [
-      {
-        label: '日幣匯率',
-        data: [0.2046, 0.2043, 0.2044, 0.2042, 0.2043, 0.2045, 0.2043, 0.2044, 0.2043, 0.2045],
-        fill: true,
-        tension: 0.4,
-        borderColor: 'rgb(244, 62, 94)',
-        backgroundColor: 'rgba(244, 62, 95, 0.18)', // 👈 透明填滿
-      },
-    ],
-  };
+  // jpyRateData = {
+  //   labels: [
+  //     '10/01',
+  //     '10/05',
+  //     '10/10',
+  //     '10/15',
+  //     '10/20',
+  //     '11/01',
+  //     '11/05',
+  //     '11/10',
+  //     '11/15',
+  //     '11/20',
+  //   ],
+  //   datasets: [
+  //     {
+  //       label: '日幣匯率',
+  //       data: [0.2046, 0.2043, 0.2044, 0.2042, 0.2043, 0.2045, 0.2043, 0.2044, 0.2043, 0.2045],
+  //       fill: true,
+  //       tension: 0.4,
+  //       borderColor: 'rgb(244, 62, 94)',
+  //       backgroundColor: 'rgba(244, 62, 95, 0.18)', // 👈 透明填滿
+  //     },
+  //   ],
+  // };
 
-  jpyRateOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: { legend: { display: false } },
-    scales: {
-      x: { display: false },
-      y: { display: false },
-    },
-  };
+  // jpyRateOptions = {
+  //   responsive: true,
+  //   maintainAspectRatio: false,
+  //   plugins: { legend: { display: false } },
+  //   scales: {
+  //     x: { display: false },
+  //     y: { display: false },
+  //   },
+  // };
 
   // 人民幣
-  cnyRateData = {
-    labels: [
-      '10/01',
-      '10/05',
-      '10/10',
-      '10/15',
-      '10/20',
-      '11/01',
-      '11/05',
-      '11/10',
-      '11/15',
-      '11/20',
-    ],
-    datasets: [
-      {
-        label: '人民幣匯率',
-        data: [4.264, 4.265, 4.264, 4.267, 4.263, 4.264, 4.263, 4.264, 4.264, 4.263],
-        fill: true,
-        tension: 0.4,
-        borderColor: 'rgb(249, 115, 21)',
-        backgroundColor: 'rgba(249, 116, 21, 0.18)', // 👈 透明填滿
-      },
-    ],
-  };
+  // cnyRateData = {
+  //   labels: [
+  //     '10/01',
+  //     '10/05',
+  //     '10/10',
+  //     '10/15',
+  //     '10/20',
+  //     '11/01',
+  //     '11/05',
+  //     '11/10',
+  //     '11/15',
+  //     '11/20',
+  //   ],
+  //   datasets: [
+  //     {
+  //       label: '人民幣匯率',
+  //       data: [4.264, 4.265, 4.264, 4.267, 4.263, 4.264, 4.263, 4.264, 4.264, 4.263],
+  //       fill: true,
+  //       tension: 0.4,
+  //       borderColor: 'rgb(249, 115, 21)',
+  //       backgroundColor: 'rgba(249, 116, 21, 0.18)', // 👈 透明填滿
+  //     },
+  //   ],
+  // };
 
-  cnyRateOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: { legend: { display: false } },
-    scales: {
-      x: { display: false },
-      y: { display: false },
-    },
-  };
+  // cnyRateOptions = {
+  //   responsive: true,
+  //   maintainAspectRatio: false,
+  //   plugins: { legend: { display: false } },
+  //   scales: {
+  //     x: { display: false },
+  //     y: { display: false },
+  //   },
+  // };
 
   // 集團資金總額
   totalGroupFundsData = {

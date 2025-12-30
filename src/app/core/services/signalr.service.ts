@@ -88,7 +88,6 @@ export class SignalrService {
     // ✅ 註冊新的事件處理器
     this.accountUpdatedHandler = (accountId: string) => handler(accountId);
 
-    
     this.connection.on('accountUpdated', this.accountUpdatedHandler);
     console.log('SignalR: onAccountUpdated handler registered successfully');
   }
@@ -106,7 +105,6 @@ export class SignalrService {
     if (this.joinedAccountId && this.joinedAccountId !== accountId) {
       await this.leaveAccount(this.joinedAccountId);
     }
-
 
     try {
       await this.connection.invoke('JoinAccount', accountId);
@@ -160,5 +158,29 @@ export class SignalrService {
       this.starting = null;
       this.joinedAccountId = null;
     }
+  }
+
+  // 匯率 SignalR
+  private fxUpdatedHandler: ((payload: any) => void) | null = null;
+  
+  onFxUpdated(handler: (rates: any[]) => void) {
+    if (!this.connection) return;
+
+    if (this.fxUpdatedHandler) {
+      this.connection.off('fxUpdated', this.fxUpdatedHandler);
+    }
+
+    this.fxUpdatedHandler = (rates: any[]) => handler(rates);
+    this.connection.on('fxUpdated', this.fxUpdatedHandler);
+  }
+
+  async joinDashboard(): Promise<void> {
+    if (!this.connection) return;
+    await this.connection.invoke('JoinDashboard');
+  }
+
+  async leaveDashboard(): Promise<void> {
+    if (!this.connection) return;
+    await this.connection.invoke('LeaveDashboard');
   }
 }

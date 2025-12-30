@@ -71,10 +71,10 @@
         <p-card class="card rate-card">
           <div class="rate-header">
             <span>美元匯率</span>
-            <span class="rate-number">30.47</span>
+            <span class="rate-number">{{ usdRate() | number : '1.2-4' }}</span>
           </div>
           <div class="rate-chart">
-            <p-chart type="line" [data]="usdRateData" [options]="usdRateOptions"></p-chart>
+            <p-chart type="line" [data]="usdRateData()" [options]="usdRateOptions"></p-chart>
           </div>
         </p-card>
 
@@ -82,10 +82,10 @@
         <p-card class="card rate-card">
           <div class="rate-header">
             <span>歐元匯率</span>
-            <span class="rate-number">35.673</span>
+            <span class="rate-number">{{ eurRate() | number : '1.2-4' }}</span>
           </div>
           <div class="rate-chart">
-            <p-chart type="line" [data]="eurRateData" [options]="eurRateOptions"></p-chart>
+            <p-chart type="line" [data]="eurRateData()" [options]="eurRateOptions"></p-chart>
           </div>
         </p-card>
 
@@ -93,10 +93,10 @@
         <p-card class="card rate-card">
           <div class="rate-header">
             <span>日幣匯率</span>
-            <span class="rate-number">0.2046</span>
+            <span class="rate-number">{{ jpyRate() | number : '1.2-4' }}</span>
           </div>
           <div class="rate-chart">
-            <p-chart type="line" [data]="jpyRateData" [options]="jpyRateOptions"></p-chart>
+            <p-chart type="line" [data]="jpyRateData()" [options]="jpyRateOptions"></p-chart>
           </div>
         </p-card>
 
@@ -104,10 +104,10 @@
         <p-card class="card rate-card">
           <div class="rate-header">
             <span>人民幣匯率</span>
-            <span class="rate-number">4.265</span>
+            <span class="rate-number">{{ cnyRate() | number : '1.2-4' }}</span>
           </div>
           <div class="rate-chart">
-            <p-chart type="line" [data]="cnyRateData" [options]="cnyRateOptions"></p-chart>
+            <p-chart type="line" [data]="cnyRateData()" [options]="cnyRateOptions"></p-chart>
           </div>
         </p-card>
       </div>
