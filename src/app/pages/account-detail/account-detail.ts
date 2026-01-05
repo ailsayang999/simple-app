@@ -5,6 +5,7 @@ import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { FormsModule } from '@angular/forms';
 import { ViewChild } from '@angular/core';
 import { Table } from 'primeng/table';
+import { finalize } from 'rxjs/operators';
 
 import { DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -19,11 +20,19 @@ import { ToastModule } from 'primeng/toast';
 import { ChartModule } from 'primeng/chart';
 import { TagModule } from 'primeng/tag';
 import { TooltipModule } from 'primeng/tooltip';
+import { FileUploadModule } from 'primeng/fileupload';
+
 
 import { AccountService } from '../../core/services/account.service';
 import { HoldingService } from '../../core/services/holding.service';
 import { TransactionService } from '../../core/services/transaction.service';
 import { ToastService } from '../../core/services/toast.service';
+import {
+  DataExchangeService,
+  ExportFormat,
+  ImportTarget,
+} from '../../core/services/data-exchange.service';
+
 
 import { AccountDto } from '../../core/models/account.model';
 import { HoldingDto, CreateHoldingDto, UpdateHoldingDto } from '../../core/models/holding.model';
@@ -80,6 +89,7 @@ type TxSigInput = { id: string; totalAmount: number; tradeDate: Date };
     TagModule,
     TooltipModule, // ✅ 讓 p-tag 的 tooltip 正式可用
     ConfirmDialogModule,
+    FileUploadModule,
   ],
   providers: [ConfirmationService],
 })
@@ -94,6 +104,9 @@ export class AccountDetailPage implements OnInit {
   private fb = inject(FormBuilder);
   private toast = inject(ToastService);
   private confirmService = inject(ConfirmationService);
+
+  // ✅ NEW：匯入/匯出 service
+  private dataExchange = inject(DataExchangeService);
 
   // ✅ ✅ NEW
   private signalr = inject(SignalrService);
@@ -423,6 +436,216 @@ export class AccountDetailPage implements OnInit {
       acceptButtonStyleClass: 'p-button-warning',
       accept: () => this.refreshPrices(true),
     });
+  }
+
+  // ==============================
+  // ✅ ✅ NEW：CSV / Excel 匯入匯出（產品級）
+  // ==============================
+
+  // 匯入 dialog
+  displayImportDialog = false;
+
+  // 匯入目標：holdings / transactions
+  importTarget = signal<ImportTarget>('transactions');
+
+  // 目前選到的檔案
+  importFile = signal<File | null>(null);
+
+  // 上傳中
+  isImporting = signal(false);
+
+  // 你要限制副檔名（CSV/Excel）
+  readonly importAccept = '.csv,.xlsx,.xls';
+
+  openImportDialog(target: ImportTarget) {
+    this.importTarget.set(target);
+    this.importFile.set(null);
+    this.displayImportDialog = true;
+  }
+
+  cancelImportDialog() {
+    this.displayImportDialog = false;
+    this.importFile.set(null);
+    this.isImporting.set(false);
+  }
+
+  onPickImportFile(file: File | null) {
+    this.importFile.set(file);
+  }
+
+  // ✅ 下載 Blob
+  private downloadBlob(blob: Blob, filename: string) {
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    window.URL.revokeObjectURL(url);
+  }
+
+  // ✅ 匯出：holdings
+  exportHoldings(format: ExportFormat) {
+    const accountId = this.accountIdSignal();
+    if (!accountId) return;
+
+    const ts = new Date();
+    const y = ts.getFullYear();
+    const m = String(ts.getMonth() + 1).padStart(2, '0');
+    const d = String(ts.getDate()).padStart(2, '0');
+
+    const ext = format === 'csv' ? 'csv' : 'xlsx';
+    const filename = `holdings_${accountId}_${y}${m}${d}.${ext}`;
+
+    this.dataExchange.exportHoldings(accountId, format).subscribe({
+      next: (blob) => {
+        this.downloadBlob(blob, filename);
+        this.toast.success(`已匯出持有標的（${format.toUpperCase()}）`);
+      },
+      error: (err) => {
+        console.error(err);
+        this.toast.error('匯出持有標的失敗');
+      },
+    });
+  }
+
+  // ✅ 匯出：transactions
+  exportTransactions(format: ExportFormat) {
+    const accountId = this.accountIdSignal();
+    if (!accountId) return;
+
+    const ts = new Date();
+    const y = ts.getFullYear();
+    const m = String(ts.getMonth() + 1).padStart(2, '0');
+    const d = String(ts.getDate()).padStart(2, '0');
+
+    const ext = format === 'csv' ? 'csv' : 'xlsx';
+    const filename = `transactions_${accountId}_${y}${m}${d}.${ext}`;
+
+    this.dataExchange.exportTransactions(accountId, format).subscribe({
+      next: (blob) => {
+        this.downloadBlob(blob, filename);
+        this.toast.success(`已匯出交易紀錄（${format.toUpperCase()}）`);
+      },
+      error: (err) => {
+        console.error(err);
+        this.toast.error('匯出交易紀錄失敗');
+      },
+    });
+  }
+
+  // ✅ 匯入（依 target 呼叫不同 API）
+  submitImport2() {
+    const accountId = this.accountIdSignal();
+    if (!accountId) return;
+
+    const file = this.importFile();
+    if (!file) {
+      this.toast.error('請先選擇要匯入的檔案（CSV 或 Excel）');
+      return;
+    }
+
+    this.isImporting.set(true);
+
+    const target = this.importTarget();
+
+    const req$ =
+      target === 'holdings'
+        ? this.dataExchange.importHoldings(accountId, file)
+        : this.dataExchange.importTransactions(accountId, file);
+
+    req$.subscribe({
+      next: (res) => {
+        // 後端回傳格式你可微調；這裡先用通用欄位
+        if (res?.ok) {
+          const inserted = res.inserted ?? 0;
+          const updated = res.updated ?? 0;
+          const skipped = res.skipped ?? 0;
+          const failed = res.failed ?? 0;
+
+          this.toast.success(
+            `匯入成功 ✅ inserted:${inserted}, updated:${updated}, skipped:${skipped}, failed:${failed}`
+          );
+
+          this.displayImportDialog = false;
+
+          // ✅ 匯入後刷新
+          // 匯入 holdings：通常會影響 holdings + summary（若你匯入含 marketPrice，也會影響）
+          // 匯入 transactions：一定影響 holdings + txs + summary
+          if (target === 'holdings') {
+            this.refreshAccountData(accountId, { holdings: true, summary: true });
+          } else {
+            this.refreshAccountData(accountId, { holdings: true, txs: true, summary: true });
+          }
+
+          // 若後端有 errors，想顯示也可以：
+          if (res.errors?.length) {
+            console.warn('Import errors:', res.errors);
+            // 你也可以另外做一個 dialog 顯示錯誤清單（產品級）
+          }
+        } else {
+          this.toast.error(res?.message ?? '匯入失敗（後端回傳 ok=false）');
+        }
+      },
+      error: (err) => {
+        console.error(err);
+        const msg = err?.error?.message ?? '匯入失敗，請檢查檔案格式';
+        this.toast.error(msg);
+      },
+      complete: () => {
+        this.isImporting.set(false);
+      },
+    });
+  }
+  submitImport() {
+    const accountId = this.accountIdSignal();
+    if (!accountId) return;
+
+    const file = this.importFile();
+    if (!file) {
+      this.toast.error('請先選擇要匯入的檔案（CSV 或 Excel）');
+      return;
+    }
+
+    this.isImporting.set(true);
+
+    const target = this.importTarget();
+    const req$ =
+      target === 'holdings'
+        ? this.dataExchange.importHoldings(accountId, file)
+        : this.dataExchange.importTransactions(accountId, file);
+
+    req$
+      .pipe(finalize(() => this.isImporting.set(false))) // ✅ 保證收掉 loading
+      .subscribe({
+        next: (res) => {
+          if (res?.ok) {
+            this.toast.success(
+              `匯入成功 ✅ inserted:${res.inserted ?? 0}, updated:${res.updated ?? 0}, skipped:${
+                res.skipped ?? 0
+              }, failed:${res.failed ?? 0}`
+            );
+
+            this.displayImportDialog = false;
+
+            if (target === 'holdings') {
+              this.refreshAccountData(accountId, { holdings: true, summary: true });
+            } else {
+              this.refreshAccountData(accountId, { holdings: true, txs: true, summary: true });
+            }
+          } else {
+            this.toast.error(res?.message ?? '匯入失敗（ok=false）');
+          }
+        },
+        error: (err) => {
+          console.error(err);
+          const msg =
+            err?.error?.message ??
+            (target === 'holdings'
+              ? '匯入持倉失敗，請確認檔案有 Holdings 工作表與正確欄位'
+              : '匯入交易失敗，請確認檔案格式');
+          this.toast.error(msg);
+        },
+      });
   }
 
   // ==============================

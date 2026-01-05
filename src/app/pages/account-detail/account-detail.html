@@ -149,6 +149,36 @@
             </div>
 
             <div class="panel-actions">
+              <!-- ======================
+              ✅ NEW：持有標的 匯入 / 匯出（CSV / Excel）
+              ====================== -->
+              <button
+                pButton
+                type="button"
+                label="匯出CSV"
+                icon="pi pi-download"
+                class="p-button-outlined"
+                (click)="exportHoldings('csv')"
+              ></button>
+
+              <button
+                pButton
+                type="button"
+                label="匯出Excel"
+                icon="pi pi-file-excel"
+                class="p-button-outlined"
+                (click)="exportHoldings('xlsx')"
+              ></button>
+
+              <button
+                pButton
+                type="button"
+                label="匯入（CSV/Excel）"
+                icon="pi pi-upload"
+                class="p-button-help"
+                (click)="openImportDialog('holdings')"
+              ></button>
+
               <button
                 pButton
                 type="button"
@@ -490,6 +520,36 @@
               <h3>交易紀錄</h3>
               <p>正式版：交易新增/編輯/刪除都會自動重建持有部位</p>
             </div>
+            <!-- ======================
+            ✅ NEW：交易紀錄 匯入 / 匯出（CSV / Excel）
+            ====================== -->
+            <button
+              pButton
+              type="button"
+              label="匯出CSV"
+              icon="pi pi-download"
+              class="p-button-outlined"
+              (click)="exportTransactions('csv')"
+            ></button>
+
+            <button
+              pButton
+              type="button"
+              label="匯出Excel"
+              icon="pi pi-file-excel"
+              class="p-button-outlined"
+              (click)="exportTransactions('xlsx')"
+            ></button>
+
+            <button
+              pButton
+              type="button"
+              label="匯入（CSV/Excel）"
+              icon="pi pi-upload"
+              class="p-button-help"
+              (click)="openImportDialog('transactions')"
+            ></button>
+
             <button
               pButton
               type="button"
@@ -1193,6 +1253,73 @@
       icon="pi pi-check"
       (click)="submitEditTransaction()"
       [disabled]="editTransactionForm.invalid"
+    ></button>
+  </ng-template>
+</p-dialog>
+
+
+<!-- ======================
+✅ ✅ NEW：匯入（CSV / Excel）Dialog
+（不刪你原本註解）
+====================== -->
+<p-dialog
+  header="匯入資料（CSV / Excel）"
+  [(visible)]="displayImportDialog"
+  [modal]="true"
+  [style]="{ width: '620px' }"
+  [draggable]="false"
+  [resizable]="false"
+  [contentStyle]="{ padding: '16px 18px 8px' }"
+>
+  <div style="margin-bottom: 12px; line-height: 1.6">
+    <div>
+      目標：<b>{{ importTarget() === 'holdings' ? '持有標的' : '交易紀錄' }}</b>
+    </div>
+    <div style="color: #666">
+      支援副檔名：CSV（.csv）、Excel（.xlsx/.xls）
+    </div>
+  </div>
+
+  <!-- ✅ PrimeNG FileUpload：用 customUpload，我們只要拿檔案，不讓它自己發 request -->
+  <p-fileupload
+    mode="advanced"
+    [customUpload]="true"
+    [auto]="false"
+    [multiple]="false"
+    [accept]="importAccept"
+    chooseLabel="選擇檔案"
+    uploadLabel="不使用"
+    cancelLabel="清除"
+    (onSelect)="onPickImportFile($event.files?.[0] ?? null)"
+    (onClear)="onPickImportFile(null)"
+  >
+  </p-fileupload>
+
+  <div style="margin-top: 12px">
+    <div *ngIf="importFile() as f" style="color: #444">
+      已選擇：<b>{{ f.name }}</b>（{{ (f.size / 1024).toFixed(1) }} KB）
+    </div>
+    <div *ngIf="!importFile()" style="color: #999">尚未選擇檔案</div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <button
+      pButton
+      type="button"
+      label="取消"
+      class="p-button-text"
+      (click)="cancelImportDialog()"
+      [disabled]="isImporting()"
+    ></button>
+
+    <button
+      pButton
+      type="button"
+      label="開始匯入"
+      icon="pi pi-check"
+      (click)="submitImport()"
+      [loading]="isImporting()"
+      [disabled]="!importFile()"
     ></button>
   </ng-template>
 </p-dialog>
