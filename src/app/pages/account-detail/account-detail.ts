@@ -31,6 +31,7 @@ import {
   TransactionDto,
   CreateTransactionDto,
   UpdateTransactionDto,
+  TransactionVm,
 } from '../../core/models/transaction.model';
 
 import { InputTextModule } from 'primeng/inputtext';
@@ -53,6 +54,8 @@ type SeverityType = 'success' | 'secondary' | 'info' | 'warn' | 'danger' | 'cont
 
 // ✅ 交易類型（前端用）
 type TxType = 'BUY' | 'SELL' | 'DEPOSIT' | 'WITHDRAW' | 'DIVIDEND' | 'INTEREST';
+
+type TxSigInput = { id: string; totalAmount: number; tradeDate: Date };
 
 @Component({
   selector: 'app-account-detail-page',
@@ -199,10 +202,10 @@ export class AccountDetailPage implements OnInit {
     ].join('|');
   }
 
-  private makeTxsSignature(list: TransactionDto[] | null | undefined): string {
+  private makeTxsSignature(list: TxSigInput[] | null | undefined): string {
     if (!list?.length) return '';
     // 交易列表只需要判斷是否更新過：取 id + totalAmount（即可）
-    return list.map((t) => `${t.id}|${t.totalAmount ?? 0}`).join('~');
+    return list.map((t) => `${t.id}|${t.totalAmount ?? 0}|${t.tradeDate.getTime()}`).join('~');
   }
 
   // ✅ ✅ 啟動 refresh guard（記錄 baseline，然後觸發 load）
@@ -344,7 +347,6 @@ export class AccountDetailPage implements OnInit {
       });
   }
 
-
   // ✅ 手動按鈕入口：stale-only 或 force
   refreshPrices(force: boolean) {
     const accountId = this.accountIdSignal();
@@ -434,7 +436,7 @@ export class AccountDetailPage implements OnInit {
   activeTab = signal<'holdings' | 'transactions'>('holdings');
 
   holdings = this.holdingService.holdings;
-  transactions = this.transactionService.transactions;
+  transactions = this.transactionService.transactions; // 本來就會是 TransactionVm[]
 
   // dialogs
   displayCreateHoldingDialog = false;
@@ -445,7 +447,7 @@ export class AccountDetailPage implements OnInit {
 
   // selected
   selectedHolding = signal<HoldingDto | null>(null);
-  selectedTx = signal<TransactionDto | null>(null);
+  selectedTx = signal<TransactionVm | null>(null);
 
   assetTypeOptions = [
     { label: 'ETF / 指數型', value: 'ETF' },
@@ -781,7 +783,7 @@ export class AccountDetailPage implements OnInit {
   }
 
   ngOnInit(): void {
-    const id = this.route.snapshot.paramMap.get('id'); // 帳戶 account id 
+    const id = this.route.snapshot.paramMap.get('id'); // 帳戶 account id
     if (!id) return;
 
     this.accountIdSignal.set(id);
@@ -1136,7 +1138,7 @@ export class AccountDetailPage implements OnInit {
     const dto: CreateTransactionDto = {
       accountId,
       holdingId: raw.holdingId,
-      tradeDate: new Date(raw.tradeDate).toISOString(),
+      tradeDate: this.localDateStringToIso(raw.tradeDate),
       type,
       quantity: this.isBuySell(type) ? raw.quantity : 0,
       price: this.isBuySell(type) ? raw.price : 0,
@@ -1158,9 +1160,24 @@ export class AccountDetailPage implements OnInit {
     });
   }
 
-  openTransactionEdit(t: TransactionDto) {
+  private toYyyyMmDd(d: Date): string {
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`;
+  }
+
+  private localDateStringToIso(dateStr: string): string {
+    // dateStr: 'YYYY-MM-DD' → 當地 00:00 → ISO（固定到 UTC，不會跑一天）
+    const [y, m, d] = dateStr.split('-').map(Number);
+    const dt = new Date(y, (m ?? 1) - 1, d ?? 1, 0, 0, 0, 0);
+    return dt.toISOString();
+  }
+
+  openTransactionEdit(t: TransactionVm) {
     this.selectedTx.set(t);
-    const yyyyMmDd = new Date(t.tradeDate).toISOString().slice(0, 10);
+
+    const yyyyMmDd = this.toYyyyMmDd(t.tradeDate); // ✅ 用統一 helper
 
     this.editTransactionForm.reset({
       holdingId: t.holdingId,
@@ -1170,9 +1187,9 @@ export class AccountDetailPage implements OnInit {
       currency: t.currency,
       quantity: t.quantity ?? 0,
       price: t.price ?? 0,
-      amount: (t as any).amount ?? 0,
+      amount: t.amount ?? 0,
       fee: t.fee,
-      tax: (t as any).tax ?? 0, // ✅
+      tax: t.tax,
       note: t.note ?? '',
     });
 
@@ -1200,7 +1217,7 @@ export class AccountDetailPage implements OnInit {
     const dto: UpdateTransactionDto = {
       accountId,
       holdingId: raw.holdingId,
-      tradeDate: new Date(raw.tradeDate).toISOString(),
+      tradeDate: this.localDateStringToIso(raw.tradeDate),
       type,
       quantity: this.isBuySell(type) ? raw.quantity : 0,
       price: this.isBuySell(type) ? raw.price : 0,
@@ -1222,7 +1239,7 @@ export class AccountDetailPage implements OnInit {
     });
   }
 
-  deleteTransaction(t: TransactionDto) {
+  deleteTransaction(t: TransactionVm) {
     const accountId = this.accountIdSignal();
     if (!accountId) return;
 
@@ -1276,7 +1293,7 @@ export class AccountDetailPage implements OnInit {
   // ✅ 修法 #1：先把原始 ARR 計算抽成「純 computed」，讓 chartData / meta 都共用同一份結果
   private arrResults = computed(() => {
     const holdings = this.holdings();
-    const txs = this.transactions();
+    const txs = this.transactions(); // ✅ 這裡會是 TransactionVm[]
     if (!holdings.length || !txs.length) return [];
 
     const arrResults = calcArrPerHolding(
@@ -1285,7 +1302,7 @@ export class AccountDetailPage implements OnInit {
         currency: h.currency,
         marketValue: h.marketValue,
       })),
-      txs
+      txs // ✅ 直接丟（tradeDate: Date）
     );
 
     const usable = arrResults.filter((r) => r.years > 0 && r.totalInvested > 0);

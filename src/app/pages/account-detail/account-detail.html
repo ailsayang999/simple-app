@@ -599,6 +599,8 @@
                       <p-select
                         [ngModel]="value"
                         [options]="transactionTypeOptions"
+                        optionLabel="label"
+                        optionValue="value"
                         (onChange)="filter($event.value)"
                         placeholder="選擇類型"
                         [showClear]="true"
@@ -627,6 +629,8 @@
                       <p-select
                         [ngModel]="value"
                         [options]="currencyOptions"
+                        optionLabel="label"
+                        optionValue="value"
                         (onChange)="filter($event.value)"
                         placeholder="選擇幣別"
                         [showClear]="true"

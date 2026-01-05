@@ -1,5 +1,13 @@
 // src/app/core/utils/arr.util.ts
-import { TransactionDto } from '../models/transaction.model';
+//import { TransactionDto } from '../models/transaction.model';
+
+export type ArrTxInput = {
+  tradeDate: Date | string;
+  totalAmount: number;
+  type: string;
+  symbol: string;
+  currency: string;
+};
 
 export interface ArrResult {
   symbol: string;
@@ -104,9 +112,20 @@ function solveXirr(cashflows: CashFlow[]): number {
   return (low + high) / 2;
 }
 
+// -- helper --
+function parseToDate(d: Date | string): Date | null {
+  const dt = d instanceof Date ? d : new Date(d);
+  return Number.isFinite(dt.getTime()) ? dt : null;
+}
+
+function toDateOnlySafe(d: Date | null): Date | null {
+  if (!d) return null;
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+}
+
 export function calcArrPerHolding(
   holdingsMarket: HoldingMarketSnapshot[],
-  allTransactions: TransactionDto[],
+  allTransactions: ArrTxInput[], // 日期轉換改成「同時支援 Date/string + 防呆」
   now = new Date()
 ): ArrResult[] {
   const today = toDateOnly(now);
@@ -136,10 +155,17 @@ export function calcArrPerHolding(
       };
     }
 
-    const rawFlows = related.map((t) => ({
-      date: toDateOnly(new Date(t.tradeDate)),
-      amount: Number(t.totalAmount), // ✅ 正式版：後端已經是投資人現金流方向
-    }));
+    const rawFlows = related
+      .map((t) => {
+        const dt = toDateOnlySafe(parseToDate(t.tradeDate));
+        if (!dt) return null;
+
+        return {
+          date: dt,
+          amount: Number(t.totalAmount), // ✅ 投資人現金流方向
+        };
+      })
+      .filter((x): x is { date: Date; amount: number } => !!x);
 
     // ✅ 期末：把目前市值當作「如果今天全部賣出會拿回來的錢」→ 流入
     if (h.marketValue !== 0) rawFlows.push({ date: today, amount: h.marketValue });

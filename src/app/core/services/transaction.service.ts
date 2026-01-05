@@ -4,6 +4,7 @@ import {
   TransactionDto,
   CreateTransactionDto,
   UpdateTransactionDto,
+  TransactionVm,
 } from '../models/transaction.model';
 import { environment } from '../../../environments/environment';
 
@@ -12,13 +13,20 @@ export class TransactionService {
   private http = inject(HttpClient);
   private baseUrl = `${environment.apiUrl}/transactions`;
 
-  transactions = signal<TransactionDto[]>([]);
+  transactions = signal<TransactionVm[]>([]);
   txsLoadedAt = signal<number>(0);
 
   loadTransactionsByAccount(accountId: string) {
     this.http.get<TransactionDto[]>(`${this.baseUrl}?accountId=${accountId}`).subscribe({
       next: (res) => {
-        this.transactions.set(res);
+        const vms: TransactionVm[] = res
+          .map((t) => ({
+            ...t,
+            tradeDate: new Date(t.tradeDate), // ✅ PrimeNG date filter 必須 Date
+          }))
+          .filter((t) => Number.isFinite(t.tradeDate.getTime())); // ✅ 防呆：無效日期丟掉
+
+        this.transactions.set(vms);
         this.txsLoadedAt.set(Date.now());
       },
       error: (err) => console.error('loadTransactions error', err),

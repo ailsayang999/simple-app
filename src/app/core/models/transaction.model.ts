@@ -22,6 +22,13 @@ export interface TransactionDto {
   note?: string | null;
 }
 
+// ✅ ✅ UI 專用：把 tradeDate 轉成 Date（PrimeNG date filter 需要）
+// ✅ UI/PrimeNG/計算用：tradeDate 變成 Date
+export type TransactionVm = Omit<TransactionDto, 'tradeDate'> & {
+  tradeDate: Date;
+};
+
+
 export interface CreateTransactionDto {
   accountId: string;
   holdingId: string;
