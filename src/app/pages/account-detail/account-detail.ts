@@ -1392,9 +1392,12 @@ export class AccountDetailPage implements OnInit {
 
   private localDateStringToIso(dateStr: string): string {
     // dateStr: 'YYYY-MM-DD' → 當地 00:00 → ISO（固定到 UTC，不會跑一天）
-    const [y, m, d] = dateStr.split('-').map(Number);
-    const dt = new Date(y, (m ?? 1) - 1, d ?? 1, 0, 0, 0, 0);
-    return dt.toISOString();
+    // const [y, m, d] = dateStr.split('-').map(Number);
+    // const dt = new Date(y, (m ?? 1) - 1, d ?? 1, 0, 0, 0, 0);
+    // return dt.toISOString();
+    // ⭐ 交易日是「純日期」，不要轉 Date，不要轉 UTC
+    // ⭐ 直接傳給後端 yyyy-MM-dd
+    return dateStr;
   }
 
   openTransactionEdit(t: TransactionVm) {
