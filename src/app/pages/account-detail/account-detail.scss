@@ -209,10 +209,9 @@
 
 .panel-actions {
   display: flex;
+  gap: 8px;
+  flex-wrap: wrap;  /* 小螢幕不擠爆 */
   align-items: center;
-  gap: 10px;
-  flex-wrap: wrap; /* 小螢幕不擠爆 */
-  justify-content: flex-end;
 }
 
 /* ✅ 讓「刷新市價 / 強制刷新 / 新增」視覺更有層級：前兩顆是一組工具、最後一顆是主操作 */
@@ -499,9 +498,6 @@
   background: #d2eced;
   font-weight: bold;
 }
-
-
-
 
 /* 手機：縮小 padding，避免卡片內太擠 */
 @media (max-width: 768px) {
