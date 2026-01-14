@@ -157,8 +157,6 @@
       <span class="sidebar-item-text">Account Setting</span>
     </a>
 
-
-
     <!-- 只有Manager可以看 -->
     <div class="sidebar-section-title" *appHasRole="Role.Manager">E-Commerce</div>
     <a
@@ -183,12 +181,14 @@
       <span class="sidebar-item-text">Sample Page</span>
     </a>
 
+    <div class="sidebar-section-title">Portal</div>
+    <a routerLink="/portal" routerLinkActive="active" class="sidebar-item">
+      <span class="sidebar-item-icon theme-icon pi pi-wallet"></span>
+      <span class="sidebar-item-text">Portal Page</span>
+    </a>
+
     <div class="sidebar-section-title">Accounts</div>
-    <a
-      routerLink="/accounts"
-      routerLinkActive="active"
-      class="sidebar-item"
-    >
+    <a routerLink="/accounts" routerLinkActive="active" class="sidebar-item">
       <span class="sidebar-item-icon theme-icon pi pi-wallet"></span>
       <span class="sidebar-item-text">Account List Page</span>
     </a>

@@ -36,6 +36,16 @@ export const routes: Routes = [
         loadComponent: () => import('./app/pages/dashboard/dashboard').then((m) => m.Dashboard),
       },
       {
+        path: 'portal',
+        data: {
+          breadcrumb: {
+            label: 'Portal',
+            icon: 'pi pi-gauge',
+          },
+        },
+        loadComponent: () => import('./app/pages/portal/portal').then((m) => m.Portal),
+      },
+      {
         path: 'admin/user-roles',
         //canActivate: [authGuard, roleGuard], // 如果要獨立出來自己一頁的話就可以加authGuard
         canActivate: [roleGuard],
