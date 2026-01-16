@@ -40,10 +40,20 @@ export const routes: Routes = [
         data: {
           breadcrumb: {
             label: 'Portal',
-            icon: 'pi pi-gauge',
+            icon: 'pi pi-table',
           },
         },
         loadComponent: () => import('./app/pages/portal/portal').then((m) => m.Portal),
+      },
+      {
+        path: 'portal-new',
+        data: {
+          breadcrumb: {
+            label: 'Portal New',
+            icon: 'pi pi-qrcode',
+          },
+        },
+        loadComponent: () => import('./app/pages/portal/portal-new').then((m) => m.PortalNew),
       },
       {
         path: 'admin/user-roles',
