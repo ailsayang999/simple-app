@@ -56,6 +56,16 @@ export const routes: Routes = [
         loadComponent: () => import('./app/pages/portal/portal-new').then((m) => m.PortalNew),
       },
       {
+        path: 'portal-gridstack',
+        data: {
+          breadcrumb: {
+            label: 'Portal GridStack',
+            icon: 'pi pi-qrcode',
+          },
+        },
+        loadComponent: () => import('./app/pages/portal/portal-gridstack').then((m) => m.PortalGridstack),
+      },
+      {
         path: 'admin/user-roles',
         //canActivate: [authGuard, roleGuard], // 如果要獨立出來自己一頁的話就可以加authGuard
         canActivate: [roleGuard],
