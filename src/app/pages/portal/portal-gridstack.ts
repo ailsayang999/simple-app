@@ -1,14 +1,12 @@
 import { Component, AfterViewInit, ViewChild, ElementRef, OnDestroy } from '@angular/core';
-
 import { GridStackOptions, GridStackWidget } from 'gridstack';
-
 import { GridstackComponent, GridstackItemComponent, elementCB } from 'gridstack/dist/angular';
 
 // portal-gridstack.ts
 import { ViewEncapsulation } from '@angular/core';
 
 import { nodesCB } from 'gridstack/dist/angular';
-let ids = 1;
+let ids = 4;
 interface GridItem {
   id: string;
   x: number;
@@ -41,9 +39,9 @@ export class PortalGridstack {
   };
 
   public items: GridStackWidget[] = [
-    { x: 0, y: 0, minW: 2 },
-    { x: 1, y: 1 },
-    { x: 2, y: 2 },
+    { x: 0, y: 0, minW: 2, content: 'Item 1', id: '1' },
+    { x: 1, y: 1, content: 'Item 2', id: '2' },
+    { x: 2, y: 2, content: 'Item 3', id: '3' },
   ];
 
   // called whenever items change size/position/etc..
@@ -56,7 +54,7 @@ export class PortalGridstack {
   public addNgFor() {
     // new array isn't required as Angular detects changes to content with trackBy:identify()
     // this.items = [...this.items, { x:3, y:0, w:3, content:`item ${ids}`, id:String(ids++) }];
-    this.items.push({ w: 2, content: `item ${ids}`, id: String(ids++) });
+    this.items.push({ w: 2, content: `Item ${ids}`, id: String(ids++) });
   }
   public deleteNgFor() {
     this.items.pop();

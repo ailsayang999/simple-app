@@ -10,6 +10,6 @@
   (resizeStopCB)="onResizeStop($event)"
 >
   @for (n of items; track n.id) {
-  <gridstack-item [options]="n">Item {{ n.content }}</gridstack-item>
+  <gridstack-item [options]="n"></gridstack-item>
   }
 </gridstack>
