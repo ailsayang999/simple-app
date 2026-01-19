@@ -1,8 +1,15 @@
-<gridstack [options]="gridOptions" (changeCB)="onChange($event)">
-  <!-- Angular 17+ -->
-   @for (n of items; track n.id) {
-    <gridstack-item [options]="n">Item {{n.id}}</gridstack-item>
+<p>
+  <b>COMPONENT ngFor</b>: Most complete example that uses Component wrapper for grid and gridItem
+</p>
+<button (click)="addNgFor()">add item</button>
+<button (click)="deleteNgFor()">remove item</button>
+<button (click)="modifyNgFor()">modify item</button>
+<gridstack
+  [options]="gridOptions"
+  (changeCB)="onChange($event)"
+  (resizeStopCB)="onResizeStop($event)"
+>
+  @for (n of items; track n.id) {
+  <gridstack-item [options]="n">Item {{ n.content }}</gridstack-item>
   }
-  <!-- Angular 16 -->
-  <gridstack-item *ngFor="let n of items; trackBy: identify" [options]="n"> Item {{n.id}} </gridstack-item>
 </gridstack>
