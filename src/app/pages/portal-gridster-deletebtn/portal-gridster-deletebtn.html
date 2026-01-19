@@ -1,0 +1,125 @@
+<div class="portal-layout" [class.edit-active]="isEditMode()">
+  <div class="portal-bg-accent"></div>
+
+  <header class="portal-header">
+    <div class="welcome-msg">
+      <span class="date">2026年1月15日 星期四</span>
+      <h1>核心監控入口 <span>Global Operations Portal</span></h1>
+    </div>
+  </header>
+
+  <div class="admin-controls">
+    <button class="glass-btn" (click)="toggleEditMode()">
+      <i [class]="isEditMode() ? 'pi pi-check' : 'pi pi-pencil'"></i>
+      {{ isEditMode() ? '完成配置' : '自定義佈局' }}
+    </button>
+    @if (isEditMode()) {
+    <div class="add-item-wrapper">
+      <button
+        class="glass-btn add-main-btn"
+        (click)="toggleAddMenu()"
+        type="button"
+        aria-haspopup="true"
+        [aria-expanded]="showAddMenu()"
+      >
+        <i
+          class="pi pi-plus"
+          [style.transform]="showAddMenu() ? 'rotate(45deg)' : 'rotate(0)'"
+          style="transition: transform 0.3s"
+        ></i>
+        新增監控組件
+      </button>
+
+      @if (showAddMenu()) {
+      <div class="add-menu-panel" role="menu">
+        @for (menuItem of availableItems; track menuItem.type) {
+        <button
+          class="menu-option"
+          role="menuitem"
+          type="button"
+          (click)="addItem(menuItem.type); showAddMenu.set(false)"
+          (keydown.enter)="addItem(menuItem.type); showAddMenu.set(false)"
+        >
+          <i [class]="menuItem.icon" aria-hidden="true"></i>
+          <span>{{ menuItem.label }}</span>
+        </button>
+        }
+      </div>
+      }
+    </div>
+    }
+  </div>
+
+  <gridster [options]="options()" class="bento-grid-container">
+    @for (item of dashboard(); track item.type) {
+
+    <gridster-item [item]="item">
+      @if (isEditMode()) {
+      <button class="delete-badge" (click)="removeItem(item)">
+        <i class="pi pi-times"></i>
+      </button>
+      }
+
+      <div class="item-inner-container" [class.shaking]="isEditMode()">
+        @switch (item.type) { @case ('flight') {
+        <div class="bento-item flight-item">
+          <div class="radar-container">
+            <div class="radar-sweep"></div>
+            <div class="radar-point p1"></div>
+            <div class="radar-point p2"></div>
+          </div>
+          <div class="bento-content">
+            <div class="category">Aviation</div>
+            <h3>飛航管制系統</h3>
+            <span class="flight-count">12 架次監控中</span>
+          </div>
+        </div>
+        } @case ('cert') {
+        <div class="bento-item cert-item">
+          <div class="bento-icon-sm"><i class="pi pi-shield"></i></div>
+          <div class="bento-content">
+            <h3>CERT 應變系統</h3>
+            <p-tag severity="danger" value="High Threat" [rounded]="true"></p-tag>
+          </div>
+          <div class="emergency-pulse"></div>
+        </div>
+        } @case ('repair') {
+        <div class="bento-item repair-hero">
+          <div class="bento-content">
+            <div class="category">Maintenance</div>
+            <h3>資訊設備報修</h3>
+            <span class="link-text" role="button">
+              進入管理後台
+              <i class="pi pi-external-link"></i>
+            </span>
+          </div>
+          <div class="bento-icon"><i class="pi pi-wrench"></i></div>
+        </div>
+        } @case ('edu') {
+        <div class="bento-item edu-item">
+          <div class="bento-icon-sm"><i class="pi pi-graduation-cap"></i></div>
+          <div class="bento-content">
+            <h3>教務行政系統</h3>
+            <span class="link-text" role="button">
+              進入管理後台
+              <i class="pi pi-external-link"></i>
+            </span>
+          </div>
+        </div>
+        } @case ('permission') {
+        <div class="bento-item permission-item">
+          <div class="gear-abstract"><i class="pi pi-cog gear-large"></i></div>
+          <div class="bento-content">
+            <div class="category">System Control</div>
+            <h3>權限設定</h3>
+            <div class="access-info">
+              <span class="active-users">24 位管理員在線</span>
+            </div>
+          </div>
+        </div>
+        } }
+      </div>
+    </gridster-item>
+    }
+  </gridster>
+</div>

@@ -46,14 +46,28 @@ export const routes: Routes = [
         loadComponent: () => import('./app/pages/portal/portal').then((m) => m.Portal),
       },
       {
-        path: 'portal-new',
+        path: 'portal-gridster',
         data: {
           breadcrumb: {
-            label: 'Portal New',
+            label: 'Portal Gridster',
             icon: 'pi pi-qrcode',
           },
         },
-        loadComponent: () => import('./app/pages/portal/portal-new').then((m) => m.PortalNew),
+        loadComponent: () =>
+          import('./app/pages/portal-gridster/portal-gridster').then((m) => m.PortalGridster),
+      },
+      {
+        path: 'portal-gridster-deletebtn',
+        data: {
+          breadcrumb: {
+            label: 'Portal Gridster deletbtn',
+            icon: 'pi pi-qrcode',
+          },
+        },
+        loadComponent: () =>
+          import('./app/pages/portal-gridster-deletebtn/portal-gridster-deletebtn').then(
+            (m) => m.PortalGridsterDeleteBtn
+          ),
       },
       {
         path: 'portal-gridstack',
@@ -63,7 +77,8 @@ export const routes: Routes = [
             icon: 'pi pi-qrcode',
           },
         },
-        loadComponent: () => import('./app/pages/portal/portal-gridstack').then((m) => m.PortalGridstack),
+        loadComponent: () =>
+          import('./app/pages/portal-gridstack/portal-gridstack').then((m) => m.PortalGridstack),
       },
       {
         path: 'admin/user-roles',

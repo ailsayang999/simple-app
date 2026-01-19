@@ -1,0 +1,471 @@
+.portal-layout {
+  position: relative;
+  height: 100vh; // 💡 強制鎖定在一屏
+  padding: 4rem 10%;
+  background-color: #0f172a;
+  color: #f8fafc;
+  display: flex;
+  flex-direction: column; // 讓 header 和 grid 垂直排列
+  //overflow: hidden; // 💡 layout 本身不捲動，讓 grid 內部捲動
+
+  .portal-bg-accent {
+    position: absolute;
+    top: -10%;
+    right: -5%;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+}
+
+.portal-header {
+  position: relative;
+  z-index: 10;
+  flex: 0 0 auto; // 不伸縮
+  margin-bottom: 2rem;
+  .welcome-msg h1 {
+    font-size: 2.5rem;
+    font-weight: 800;
+    span {
+      font-weight: 200;
+      opacity: 0.6;
+    }
+  }
+}
+
+// 💡 修正 Gridster 引擎定位，確保它不爆出邊界
+.bento-grid-engine {
+  flex: 1 1 auto; // 佔滿剩餘高度
+  background: transparent !important;
+  position: relative;
+  z-index: 1;
+  // 💡 如果內容超過高度，就在這裡產生捲軸，而不是爆出 layout
+  overflow: auto !important;
+}
+
+:host ::ng-deep {
+  gridster {
+    background: transparent !important;
+
+    gridster-item {
+      background: transparent !important;
+      border-radius: 24px;
+
+      .item-inner-container {
+        width: 100%;
+        height: 100%;
+      }
+    }
+  }
+}
+
+.bento-item {
+  background: rgba(30, 41, 59, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 24px;
+  padding: 2rem;
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  height: 100%;
+  box-sizing: border-box;
+
+  &:hover {
+    background: rgba(51, 65, 85, 0.8);
+    border-color: rgba(99, 102, 241, 0.5);
+    transform: translateY(-5px);
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px #0f172a, 0 0 0 6px rgba(99, 102, 241, 0.8);
+    transform: scale(1.02);
+  }
+}
+
+// 飛航雷達特效 (Radar)
+.flight-item {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  border-color: #334155;
+  position: relative;
+  overflow: hidden;
+
+  &:hover {
+    border-color: #22d3ee;
+    .radar-sweep {
+      border-left-color: rgba(34, 211, 238, 0.4);
+    }
+  }
+
+  .bento-content {
+    position: relative;
+    z-index: 2;
+  }
+
+  h3 {
+    color: #22d3ee;
+  }
+  .flight-count {
+    font-size: 0.85rem;
+    color: #94a3b8;
+  }
+
+  // 雷達掃描特效
+  .radar-container {
+    position: absolute;
+    right: -20px;
+    top: -20px;
+    width: 200px;
+    height: 200px;
+    border: 1px solid rgba(34, 211, 238, 0.1);
+    border-radius: 50%;
+    pointer-events: none;
+
+    .radar-sweep {
+      position: absolute;
+      width: 50%;
+      height: 50%;
+      top: 50%;
+      left: 50%;
+      background: conic-gradient(from 0deg at 0% 0%, rgba(34, 211, 238, 0.2) 0%, transparent 25%);
+      transform-origin: 0% 0%;
+      animation: radar-rotate 4s linear infinite;
+    }
+
+    .radar-point {
+      position: absolute;
+      width: 4px;
+      height: 4px;
+      background: #22d3ee;
+      border-radius: 50%;
+      box-shadow: 0 0 10px #22d3ee;
+      &.p1 {
+        top: 40%;
+        left: 30%;
+        animation: blink 2s infinite;
+      }
+      &.p2 {
+        top: 70%;
+        left: 60%;
+        animation: blink 3s infinite;
+      }
+    }
+  }
+}
+
+// 權限齒輪特效 (Gears)
+.permission-item {
+  background: linear-gradient(135deg, #2e1065 0%, #4c1d95 100%);
+  border-color: #5b21b6;
+  position: relative;
+
+  &:hover {
+    border-color: #a78bfa;
+    .gear-large {
+      transform: rotate(90deg);
+    }
+    .gear-small {
+      transform: rotate(-90deg);
+    }
+  }
+
+  .gear-abstract {
+    position: absolute;
+    right: 15px;
+    top: 15px;
+    opacity: 0.2;
+
+    i {
+      position: absolute;
+      transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .gear-large {
+      font-size: 6rem;
+      right: -20px;
+      top: -20px;
+    }
+
+    .gear-small {
+      font-size: 3rem;
+      right: 40px;
+      top: 50px;
+    }
+  }
+
+  h3 {
+    color: #ddd6fe;
+  }
+  .active-users {
+    font-size: 0.85rem;
+    color: #a78bfa;
+    padding: 2px 8px;
+    background: rgba(167, 139, 250, 0.1);
+    border-radius: 4px;
+    border: 1px solid rgba(167, 139, 250, 0.2);
+  }
+}
+/* 鍵盤焦點加強 */
+.permission-item:focus-visible {
+  box-shadow: 0 0 0 4px #0f172a, 0 0 0 8px #a78bfa;
+}
+
+// 報修 Hero
+.repair-hero {
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  h2 {
+    font-size: 2.2rem;
+    margin: 0;
+    font-weight: 800;
+  }
+  .bento-icon {
+    font-size: 8rem;
+    opacity: 0.1;
+    position: absolute;
+    right: -20px;
+    top: -20px;
+  }
+}
+
+// 教務系統 (Edu)
+.edu-item {
+  .bento-icon-sm {
+    color: #38bdf8;
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+  }
+  .link-text {
+    color: #38bdf8;
+    font-size: 0.9rem;
+    margin-top: 1rem;
+    display: block;
+  }
+}
+
+// CERT
+.cert-item {
+  background: #450a0a;
+  border: 1px solid #991b1b;
+  .bento-icon-sm {
+    color: #ef4444;
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+  }
+  .emergency-pulse {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    width: 10px;
+    height: 10px;
+    background: #ef4444;
+    border-radius: 50%;
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 1);
+    animation: pulse 2s infinite;
+  }
+}
+
+@keyframes radar-rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes blink {
+  0%,
+  100% {
+    opacity: 0.2;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+@keyframes pulse {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+  }
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+  }
+}
+
+
+// ✨ 時尚化的管理控制列
+.admin-controls {
+  position: absolute; // 💡 改為絕對定位
+  top: 4rem; // 💡 對應 portal-layout 的 padding
+  right: 5%; 
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px;
+  background: rgba(30, 41, 59, 0.4);
+  backdrop-filter: blur(20px);
+  border-radius: 16px; 
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  z-index: 2000;
+}
+
+// ✨ 統一的玻璃按鈕
+.glass-btn {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid transparent; // 平時不顯示邊框，減少層次感
+  color: #f8fafc;
+  padding: 10px 20px;
+  border-radius: 12px; // 💡 與外層容器形狀呼應
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  font-weight: 500;
+  font-family: inherit;
+
+  &:hover {
+    background: rgba(99, 102, 241, 0.15);
+    border-color: rgba(99, 102, 241, 0.3);
+    color: #fff;
+  }
+
+  i {
+    font-size: 1rem;
+    opacity: 0.8;
+  }
+}
+
+.add-item-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+// ✨ 時尚彈出選單（已修改為向下彈出）
+.add-menu-panel {
+  position: absolute;
+  top: calc(100% + 12px); // 💡 從原本的 bottom 改為 top，使其向下彈開
+  right: 0;
+  width: 240px;
+  background: rgba(15, 23, 42, 0.9);
+  backdrop-filter: blur(30px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 6px;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6);
+  z-index: 2100;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  
+  transform-origin: top right; // 💡 動畫起點改為上方
+  animation: slideDownPopup 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+
+  .menu-option {
+    background: transparent;
+    border: none;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    border-radius: 10px;
+    color: #94a3b8;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: left;
+    font-family: inherit;
+
+    i {
+      font-size: 1.1rem;
+      color: #6366f1; 
+      transition: transform 0.3s ease;
+    }
+
+    span {
+      font-size: 0.9rem;
+    }
+
+    &:hover, &:focus-visible {
+      background: rgba(255, 255, 255, 0.05);
+      color: #ffffff;
+      outline: none;
+      
+      i {
+        color: #818cf8;
+        transform: scale(1.1);
+      }
+    }
+
+    &:active {
+      transform: scale(0.97);
+    }
+  }
+}
+
+// ✨ 向下彈出動畫
+@keyframes slideDownPopup {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95); // 💡 從上方負值滑入
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+// 💡 編輯模式下的抖動效果 (iOS 風格)
+@keyframes shake {
+  0% { transform: rotate(0deg); }
+  25% { transform: rotate(0.4deg); }
+  75% { transform: rotate(-0.4deg); }
+  100% { transform: rotate(0deg); }
+}
+
+.shaking {
+  animation: shake 0.4s infinite;
+  opacity: 0.8;
+}
+
+// ✨ 刪除按鈕 (內縮至安全區域)
+.delete-badge {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px; // 💡 改為方圓形，符合整體的 Bento 語言
+  background: rgba(239, 68, 68, 0.9);
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  z-index: 50; 
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+  &:hover {
+    background: #f43f5e;
+    transform: scale(1.1);
+    box-shadow: 0 4px 20px rgba(239, 68, 68, 0.5);
+  }
+
+  i {
+    font-size: 0.8rem;
+  }
+}

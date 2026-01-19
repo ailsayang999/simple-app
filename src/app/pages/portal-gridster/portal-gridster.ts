@@ -18,12 +18,12 @@ interface CustomGridsterItem extends GridsterItem {
 
 @Component({
   standalone: true,
-  selector: 'app-portal-new',
+  selector: 'app-portal-gridster',
   imports: [CommonModule, TagModule, AvatarModule, TooltipModule, GridsterModule],
-  styleUrl: './portal-new.scss',
-  templateUrl: './portal-new.html',
+  styleUrl: './portal-gridster.scss',
+  templateUrl: './portal-gridster.html',
 })
-export class PortalNew {
+export class PortalGridster {
   private readonly router = inject(Router);
 
   // 使用 Signal 定義配置與數據
