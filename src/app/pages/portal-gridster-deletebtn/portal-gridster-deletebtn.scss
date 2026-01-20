@@ -1,7 +1,7 @@
 .portal-layout {
   position: relative;
   height: 100vh; // 💡 強制鎖定在一屏 for gridType: 'fit'
-  height: 170vh; // 💡 這樣就不會出現scroll bar, for gridType: 'scrollVertical'
+  height: 500vh; // 💡 這樣就不會出現scroll bar, for gridType: 'scrollVertical'
   padding: 4rem 10%;
   background-color: #0f172a;
   color: #f8fafc;
@@ -26,12 +26,22 @@
   z-index: 10;
   flex: 0 0 auto; // 不伸縮
   margin-bottom: 2rem;
-  .welcome-msg h1 {
-    font-size: 2.5rem;
-    font-weight: 800;
-    span {
-      font-weight: 200;
-      opacity: 0.6;
+
+  .welcome-msg {
+    .date {
+      color: #94a3b8;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+    h1 {
+      font-size: 2.5rem;
+      margin: 0.5rem 0;
+      font-weight: 800;
+      span {
+        font-weight: 200;
+        opacity: 0.6;
+      }
     }
   }
 }

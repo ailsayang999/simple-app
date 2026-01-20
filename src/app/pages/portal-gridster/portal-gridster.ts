@@ -21,6 +21,23 @@ interface CustomGridsterItem extends GridsterItem {
 })
 export class PortalGridster {
   private readonly router = inject(Router);
+  // 定義當前時間
+  public now = new Date();
+  constructor() {
+    // 如果你希望時間會隨著鐘擺跳動（例如每一分鐘更新一次），可以加上定時器
+    setInterval(() => {
+      this.now = new Date();
+    }, 60000); // 每 60 秒更新一次
+  }
+
+  get formattedDate(): string {
+    return new Intl.DateTimeFormat('zh-TW', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      weekday: 'long',
+    }).format(this.now);
+  }
 
   // // 使用 Signal 定義配置與數據
   // options = signal<GridsterConfig>({

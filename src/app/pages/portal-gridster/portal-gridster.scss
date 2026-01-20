@@ -26,12 +26,22 @@
   z-index: 10;
   flex: 0 0 auto; // 不伸縮
   margin-bottom: 2rem;
-  .welcome-msg h1 {
-    font-size: 2.5rem;
-    font-weight: 800;
-    span {
-      font-weight: 200;
-      opacity: 0.6;
+
+  .welcome-msg {
+    .date {
+      color: #94a3b8;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+    h1 {
+      font-size: 2.5rem;
+      margin: 0.5rem 0;
+      font-weight: 800;
+      span {
+        font-weight: 200;
+        opacity: 0.6;
+      }
     }
   }
 }
@@ -82,7 +92,9 @@
 
   &:focus-visible {
     outline: none;
-    box-shadow: 0 0 0 3px #0f172a, 0 0 0 6px rgba(99, 102, 241, 0.8);
+    box-shadow:
+      0 0 0 3px #0f172a,
+      0 0 0 6px rgba(99, 102, 241, 0.8);
     transform: scale(1.02);
   }
 }
@@ -211,7 +223,9 @@
 }
 /* 鍵盤焦點加強 */
 .permission-item:focus-visible {
-  box-shadow: 0 0 0 4px #0f172a, 0 0 0 8px #a78bfa;
+  box-shadow:
+    0 0 0 4px #0f172a,
+    0 0 0 8px #a78bfa;
 }
 
 // 報修 Hero

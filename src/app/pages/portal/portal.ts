@@ -13,6 +13,23 @@ import { TooltipModule } from 'primeng/tooltip';
   templateUrl: './portal.html',
 })
 export class Portal {
+  // 定義當前時間
+  public now = new Date();
+  constructor() {
+    // 如果你希望時間會隨著鐘擺跳動（例如每一分鐘更新一次），可以加上定時器
+    setInterval(() => {
+      this.now = new Date();
+    }, 60000); // 每 60 秒更新一次
+  }
+
+  get formattedDate(): string {
+    return new Intl.DateTimeFormat('zh-TW', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      weekday: 'long',
+    }).format(this.now);
+  }
   private router = inject(Router);
 
   /**
