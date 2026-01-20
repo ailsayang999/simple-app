@@ -75,88 +75,89 @@
 
       <!-- 關起icon -->
       @if (!collapsed) {
-      <svg
-        (click)="onToggle()"
-        class="svg"
-        viewBox="0 0 18 19"
-        version="1.1"
-        xmlns="http://www.w3.org/2000/svg"
-        xmlns:xlink="http://www.w3.org/1999/xlink"
-      >
-        <g
-          id="系統基本設定-功能介面"
-          stroke="none"
-          stroke-width="1"
-          fill="none"
-          fill-rule="evenodd"
+        <svg
+          (click)="onToggle()"
+          class="svg"
+          viewBox="0 0 18 19"
+          version="1.1"
+          xmlns="http://www.w3.org/2000/svg"
+          xmlns:xlink="http://www.w3.org/1999/xlink"
         >
           <g
-            id="系統畫面-功能列表-展開"
-            transform="translate(-298.000000, -530.000000)"
-            fill="currentColor"
+            id="系統基本設定-功能介面"
+            stroke="none"
+            stroke-width="1"
+            fill="none"
+            fill-rule="evenodd"
           >
-            <g id="icon-outdent-1" transform="translate(298.000000, 530.000000)">
-              <g id="Group" transform="translate(0.329665, 0.800000)">
-                <rect
-                  id="Rectangle"
-                  x="0.350110711"
-                  y="2.42028619e-14"
-                  width="16.6153846"
-                  height="2.21538462"
-                  rx="1.10769231"
-                ></rect>
-                <rect
-                  id="Rectangle"
-                  x="0.350110711"
-                  y="15.5076923"
-                  width="16.6153846"
-                  height="2.21538462"
-                  rx="1.10769231"
-                ></rect>
-                <rect
-                  id="Rectangle-Copy"
-                  x="9.04549533"
-                  y="5.16923077"
-                  width="7.2"
-                  height="2.21538462"
-                  rx="1.10769231"
-                ></rect>
-                <rect
-                  id="Rectangle-Copy"
-                  x="9.04549533"
-                  y="10.3384615"
-                  width="7.2"
-                  height="2.21538462"
-                  rx="1.10769231"
-                ></rect>
-                <path
-                  d="M4.5164799,6.28179414 L7.50097101,10.5696358 C7.81647838,11.0229277 7.70478195,11.6461627 7.25149005,11.96167 C7.08383993,12.0783605 6.88447607,12.1409124 6.68021342,12.1409124 L0.711231195,12.1409124 C0.158946445,12.1409124 -0.288768805,11.6931972 -0.288768805,11.1409124 C-0.288768805,10.9366498 -0.22621687,10.7372859 -0.109526393,10.5696358 L2.87496472,6.28179414 C3.19047209,5.82850224 3.81370704,5.71680581 4.26699893,6.03231318 C4.36428822,6.10003 4.44876307,6.18450485 4.5164799,6.28179414 Z"
-                  id="Triangle"
-                  transform="translate(3.695766, 8.996948) rotate(-90.000000) translate(-3.695766, -8.996948) "
-                ></path>
+            <g
+              id="系統畫面-功能列表-展開"
+              transform="translate(-298.000000, -530.000000)"
+              fill="currentColor"
+            >
+              <g id="icon-outdent-1" transform="translate(298.000000, 530.000000)">
+                <g id="Group" transform="translate(0.329665, 0.800000)">
+                  <rect
+                    id="Rectangle"
+                    x="0.350110711"
+                    y="2.42028619e-14"
+                    width="16.6153846"
+                    height="2.21538462"
+                    rx="1.10769231"
+                  ></rect>
+                  <rect
+                    id="Rectangle"
+                    x="0.350110711"
+                    y="15.5076923"
+                    width="16.6153846"
+                    height="2.21538462"
+                    rx="1.10769231"
+                  ></rect>
+                  <rect
+                    id="Rectangle-Copy"
+                    x="9.04549533"
+                    y="5.16923077"
+                    width="7.2"
+                    height="2.21538462"
+                    rx="1.10769231"
+                  ></rect>
+                  <rect
+                    id="Rectangle-Copy"
+                    x="9.04549533"
+                    y="10.3384615"
+                    width="7.2"
+                    height="2.21538462"
+                    rx="1.10769231"
+                  ></rect>
+                  <path
+                    d="M4.5164799,6.28179414 L7.50097101,10.5696358 C7.81647838,11.0229277 7.70478195,11.6461627 7.25149005,11.96167 C7.08383993,12.0783605 6.88447607,12.1409124 6.68021342,12.1409124 L0.711231195,12.1409124 C0.158946445,12.1409124 -0.288768805,11.6931972 -0.288768805,11.1409124 C-0.288768805,10.9366498 -0.22621687,10.7372859 -0.109526393,10.5696358 L2.87496472,6.28179414 C3.19047209,5.82850224 3.81370704,5.71680581 4.26699893,6.03231318 C4.36428822,6.10003 4.44876307,6.18450485 4.5164799,6.28179414 Z"
+                    id="Triangle"
+                    transform="translate(3.695766, 8.996948) rotate(-90.000000) translate(-3.695766, -8.996948) "
+                  ></path>
+                </g>
               </g>
             </g>
           </g>
-        </g></svg
-      >}
+        </svg>
+      }
     </div>
   </div>
 
   <nav class="sidebar-nav">
-    <!-- <div class="sidebar-section-title">Dashboard</div>
+    <div class="sidebar-section-title">Dashboard</div>
     <a routerLink="/dashboard" routerLinkActive="active" class="sidebar-item">
       <span class="sidebar-item-icon theme-icon pi pi-gauge"></span>
       <span class="sidebar-item-text">Default</span>
-    </a> -->
+    </a>
 
-    <!-- <div class="sidebar-section-title">Account</div>
+    <div class="sidebar-section-title">Account</div>
     <a routerLink="/account/setting" routerLinkActive="active" class="sidebar-item">
       <span class="sidebar-item-icon theme-icon pi pi-user"></span>
       <span class="sidebar-item-text">Account Setting</span>
-    </a> -->
+    </a>
 
     <!-- 只有Manager可以看 -->
-    <!-- <div class="sidebar-section-title" *appHasRole="Role.Manager">E-Commerce</div>
+    <div class="sidebar-section-title" *appHasRole="Role.Manager">E-Commerce</div>
     <a
       routerLink="/products"
       routerLinkActive="active"
@@ -165,10 +166,10 @@
     >
       <span class="sidebar-item-icon theme-icon pi pi-cart-minus"></span>
       <span class="sidebar-item-text">Products</span>
-    </a> -->
+    </a>
 
     <!-- Permission.ReportView 可以看 -->
-    <!-- <div class="sidebar-section-title" *appHasPermission="Permission.ReportView">Other</div>
+    <div class="sidebar-section-title" *appHasPermission="Permission.ReportView">Other</div>
     <a
       routerLink="/samples"
       routerLinkActive="active"
@@ -177,13 +178,13 @@
     >
       <span class="sidebar-item-icon theme-icon pi pi-list"></span>
       <span class="sidebar-item-text">Sample Page</span>
-    </a> -->
+    </a>
 
-    <!-- <div class="sidebar-section-title">Portal</div>
+    <div class="sidebar-section-title">Portal</div>
     <a routerLink="/portal" routerLinkActive="active" class="sidebar-item">
       <span class="sidebar-item-icon theme-icon pi pi-table"></span>
       <span class="sidebar-item-text">Portal Page</span>
-    </a> -->
+    </a>
 
     <div class="sidebar-section-title">Portal Gridster</div>
     <a routerLink="/portal-gridster" routerLinkActive="active" class="sidebar-item">
@@ -203,14 +204,14 @@
       <span class="sidebar-item-text">Portal Page Gridstack</span>
     </a>
 
-    <!-- <div class="sidebar-section-title">Accounts</div>
+    <div class="sidebar-section-title">Accounts</div>
     <a routerLink="/accounts" routerLinkActive="active" class="sidebar-item">
       <span class="sidebar-item-icon theme-icon pi pi-wallet"></span>
       <span class="sidebar-item-text">Account List Page</span>
-    </a> -->
+    </a>
 
     <!-- Admin和Manager可以看 -->
-    <!-- <div class="sidebar-section-title" *appHasRole="[Role.Admin, Role.Manager]">Authorization</div>
+    <div class="sidebar-section-title" *appHasRole="[Role.Admin, Role.Manager]">Authorization</div>
     <a
       routerLink="/admin/user-roles"
       routerLinkActive="active"
@@ -219,6 +220,6 @@
     >
       <span class="sidebar-item-icon theme-icon pi pi-id-card"></span>
       <span class="sidebar-item-text">Admin Page</span>
-    </a> -->
+    </a>
   </nav>
 </div>
