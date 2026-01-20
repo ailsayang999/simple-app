@@ -66,7 +66,7 @@ export const routes: Routes = [
         },
         loadComponent: () =>
           import('./app/pages/portal-gridster-deletebtn/portal-gridster-deletebtn').then(
-            (m) => m.PortalGridsterDeleteBtn
+            (m) => m.PortalGridsterDeleteBtn,
           ),
       },
       {
@@ -87,7 +87,7 @@ export const routes: Routes = [
         data: { roles: [Role.Admin, Role.Manager] },
         loadComponent: () =>
           import('./app/pages/admin-user-roles/user-role-management').then(
-            (m) => m.UserRoleManagementComponent
+            (m) => m.UserRoleManagementComponent,
           ),
       },
       // {
@@ -172,7 +172,7 @@ export const routes: Routes = [
       //   loadComponent: () =>
       //     import('./app/pages/account-detail/account-detail').then((m) => m.AccountDetailPage),
       // },
-      { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
+      { path: '', pathMatch: 'full', redirectTo: 'portal-gridster' },
     ],
   },
   {
