@@ -35,16 +35,16 @@ export const routes: Routes = [
       //   },
       //   loadComponent: () => import('./app/pages/dashboard/dashboard').then((m) => m.Dashboard),
       // },
-      {
-        path: 'portal',
-        data: {
-          breadcrumb: {
-            label: 'Portal',
-            icon: 'pi pi-table',
-          },
-        },
-        loadComponent: () => import('./app/pages/portal/portal').then((m) => m.Portal),
-      },
+      // {
+      //   path: 'portal',
+      //   data: {
+      //     breadcrumb: {
+      //       label: 'Portal',
+      //       icon: 'pi pi-table',
+      //     },
+      //   },
+      //   loadComponent: () => import('./app/pages/portal/portal').then((m) => m.Portal),
+      // },
       {
         path: 'portal-gridster',
         data: {
