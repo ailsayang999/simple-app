@@ -1,6 +1,7 @@
 .portal-layout {
   position: relative;
-  height: 100vh; // 💡 強制鎖定在一屏
+  height: 100vh; // 💡 強制鎖定在一屏 for gridType: 'fit'
+  height: 170vh; // 💡 這樣就不會出現scroll bar, for gridType: 'scrollVertical',
   padding: 4rem 10%;
   background-color: #0f172a;
   color: #f8fafc;

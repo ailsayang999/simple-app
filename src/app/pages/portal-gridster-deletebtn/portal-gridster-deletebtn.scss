@@ -1,6 +1,7 @@
 .portal-layout {
   position: relative;
-  height: 100vh; // 💡 強制鎖定在一屏
+  height: 100vh; // 💡 強制鎖定在一屏 for gridType: 'fit'
+  height: 170vh; // 💡 這樣就不會出現scroll bar, for gridType: 'scrollVertical'
   padding: 4rem 10%;
   background-color: #0f172a;
   color: #f8fafc;
@@ -81,7 +82,9 @@
 
   &:focus-visible {
     outline: none;
-    box-shadow: 0 0 0 3px #0f172a, 0 0 0 6px rgba(99, 102, 241, 0.8);
+    box-shadow:
+      0 0 0 3px #0f172a,
+      0 0 0 6px rgba(99, 102, 241, 0.8);
     transform: scale(1.02);
   }
 }
@@ -210,7 +213,9 @@
 }
 /* 鍵盤焦點加強 */
 .permission-item:focus-visible {
-  box-shadow: 0 0 0 4px #0f172a, 0 0 0 8px #a78bfa;
+  box-shadow:
+    0 0 0 4px #0f172a,
+    0 0 0 8px #a78bfa;
 }
 
 // 報修 Hero
@@ -302,19 +307,18 @@
   }
 }
 
-
 // ✨ 時尚化的管理控制列
 .admin-controls {
   position: absolute; // 💡 改為絕對定位
   top: 4rem; // 💡 對應 portal-layout 的 padding
-  right: 5%; 
+  right: 5%;
   display: flex;
   align-items: center;
   gap: 8px;
   padding: 6px;
   background: rgba(30, 41, 59, 0.4);
   backdrop-filter: blur(20px);
-  border-radius: 16px; 
+  border-radius: 16px;
   border: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
   z-index: 2000;
@@ -368,7 +372,7 @@
   display: flex;
   flex-direction: column;
   gap: 2px;
-  
+
   transform-origin: top right; // 💡 動畫起點改為上方
   animation: slideDownPopup 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28);
 
@@ -389,7 +393,7 @@
 
     i {
       font-size: 1.1rem;
-      color: #6366f1; 
+      color: #6366f1;
       transition: transform 0.3s ease;
     }
 
@@ -397,11 +401,12 @@
       font-size: 0.9rem;
     }
 
-    &:hover, &:focus-visible {
+    &:hover,
+    &:focus-visible {
       background: rgba(255, 255, 255, 0.05);
       color: #ffffff;
       outline: none;
-      
+
       i {
         color: #818cf8;
         transform: scale(1.1);
@@ -428,10 +433,18 @@
 
 // 💡 編輯模式下的抖動效果 (iOS 風格)
 @keyframes shake {
-  0% { transform: rotate(0deg); }
-  25% { transform: rotate(0.4deg); }
-  75% { transform: rotate(-0.4deg); }
-  100% { transform: rotate(0deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(0.4deg);
+  }
+  75% {
+    transform: rotate(-0.4deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
 }
 
 .shaking {
@@ -451,7 +464,7 @@
   backdrop-filter: blur(4px);
   border: 1px solid rgba(255, 255, 255, 0.2);
   color: white;
-  z-index: 50; 
+  z-index: 50;
   display: flex;
   justify-content: center;
   align-items: center;
