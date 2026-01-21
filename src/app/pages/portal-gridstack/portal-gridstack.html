@@ -53,10 +53,16 @@
     }
   </div>
 
+  <div id="trash" class="trash-zone" [class.show]="isEditMode()">
+    <i class="pi pi-trash"></i>
+    <span>拖拽至此處刪除</span>
+  </div>
+
   <gridstack
     [options]="gridOptions"
     (changeCB)="onChange($event)"
     (resizeStopCB)="onResizeStop($event)"
+    (removedCB)="onRemoved($event)"
   >
     @for (n of items; track n.id) {
       <gridstack-item [options]="n">

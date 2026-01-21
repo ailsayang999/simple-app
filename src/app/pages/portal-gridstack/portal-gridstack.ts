@@ -7,7 +7,7 @@ import { GridstackComponent, GridstackItemComponent, elementCB } from 'gridstack
 import { ViewEncapsulation } from '@angular/core';
 
 import { nodesCB } from 'gridstack/dist/angular';
-let ids = 4;
+
 interface GridItem {
   id: string;
   x: number;
@@ -61,6 +61,8 @@ export class PortalGridstack {
     cellHeight: 70,
     columnOpts: { breakpoints: [{ w: 768, c: 1 }] },
     staticGrid: true, // 預設初始化為靜態（非編輯模式）
+
+    removable: '#trash', // 指定垃圾桶的選擇器
   };
 
   public items: CustomGridstackItem[] = [
@@ -70,6 +72,21 @@ export class PortalGridstack {
     { x: 0, y: 1, minW: 3, minH: 3, id: '4', type: 'edu' },
     { x: 3, y: 1, minW: 3, minH: 3, id: '5', type: 'permission' },
   ];
+
+  // for drag remove to trash
+  public onRemoved(data: nodesCB) {
+    console.log('removedCB', data.nodes);
+    const removedIds = data.nodes.map((n) => n.id).filter(Boolean);
+    this.items = this.items.filter((item) => !removedIds.includes(item.id));
+  }
+
+  // for X icon remove
+  removeItem(n: CustomGridstackItem) {
+    // 過濾掉被點擊的 item id
+    this.items = this.items.filter((item) => item.id !== n.id);
+
+    // 註：GridstackComponent 會監控 items 的變化並自動呼叫 grid.removeWidget()
+  }
 
   // called whenever items change size/position/etc..
   public onChange(data: nodesCB) {
@@ -156,12 +173,5 @@ export class PortalGridstack {
 
     // 3. (選邊) 關閉選單
     this.showAddMenu.set(false);
-  }
-
-  removeItem(n: CustomGridstackItem) {
-    // 過濾掉被點擊的 item id
-    this.items = this.items.filter((item) => item.id !== n.id);
-
-    // 註：GridstackComponent 會監控 items 的變化並自動呼叫 grid.removeWidget()
   }
 }

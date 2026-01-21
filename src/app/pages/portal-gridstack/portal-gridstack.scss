@@ -19,6 +19,111 @@
   //background-color: #18bc9c;
 }
 
+///////////////////////////////////////   for 垃圾桶  /////////////////////////////////////// 
+/// 💡 垃圾桶在下方
+.trash-zone {
+  position: fixed;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 280px;
+  height: 80px;
+  background: rgba(239, 68, 68, 0.1);
+  border: 2px dashed rgba(239, 68, 68, 0.5);
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #ef4444;
+  z-index: 3000;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+  
+  opacity: 0;
+  pointer-events: none; // 隱藏時不干擾點擊
+  transform: translateX(-50%) translateY(20px);
+  transition: all 0.3s ease;
+
+  &.show {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  i {
+    font-size: 1.5rem;
+    margin-bottom: 4px;
+  }
+
+  span {
+    font-size: 0.8rem;
+    font-weight: 500;
+  }
+
+  // 當物件拖到垃圾桶上方時，GridStack 會自動幫 trash-zone 加上 'grid-stack-item-hovering'
+  &.grid-stack-item-hovering {
+    background: rgba(239, 68, 68, 0.3);
+    border-style: solid;
+    transform: translateX(-50%) scale(1.1);
+    box-shadow: 0 0 20px rgba(239, 68, 68, 0.4);
+  }
+}
+
+/// 💡 垃圾桶在上方
+.trash-zone {
+  position: fixed;
+  top: 30px;          // 💡 從 bottom 改為 top
+  left: 50%;
+  transform: translateX(-50%);
+  width: 280px;
+  height: 80px;
+  background: rgba(239, 68, 68, 0.1);
+  border: 2px dashed rgba(239, 68, 68, 0.5);
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #ef4444;
+  z-index: 3000;
+  backdrop-filter: blur(10px);
+  
+  opacity: 0;
+  pointer-events: none; 
+  // 💡 隱藏時稍微往上位移，顯示時往下掉入畫面
+  transform: translateX(-50%) translateY(-20px); 
+  transition: all 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+
+  &.show {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  i {
+    font-size: 1.5rem;
+    margin-bottom: 4px;
+  }
+
+  span {
+    font-size: 0.8rem;
+    font-weight: 500;
+  }
+
+  // 當物件拖到垃圾桶上方時
+  &.grid-stack-item-hovering {
+    background: rgba(239, 68, 68, 0.3);
+    border-style: solid;
+    // 💡 保持水平置中並放大
+    transform: translateX(-50%) scale(1.1); 
+    box-shadow: 0 0 30px rgba(239, 68, 68, 0.4);
+    color: #ffffff;
+  }
+}
+///////////////////////////////////////////////////////////////////////////////////////////
+
+
 .portal-layout {
   position: relative;
   //height: 100vh; // 💡 強制鎖定在一屏 for gridType: 'fit'
@@ -498,3 +603,6 @@
     font-size: 0.8rem;
   }
 }
+
+
+
