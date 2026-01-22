@@ -130,8 +130,8 @@ export class PortalGridsterDeleteBtn {
   // 新增項目 (範例：預設新增一個飛航模組)
   addItem(type: CustomGridsterItem['type']) {
     const newItem: CustomGridsterItem = {
-      cols: 1,
-      rows: 1,
+      cols: 3,
+      rows: 3,
       x: 0,
       y: 0, // Gridster 會自動尋找空位
       type: type,
