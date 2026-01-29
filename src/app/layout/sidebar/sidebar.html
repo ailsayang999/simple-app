@@ -144,20 +144,20 @@
   </div>
 
   <nav class="sidebar-nav">
-    <div class="sidebar-section-title">Dashboard</div>
+    <!-- <div class="sidebar-section-title">Dashboard</div>
     <a routerLink="/dashboard" routerLinkActive="active" class="sidebar-item">
       <span class="sidebar-item-icon theme-icon pi pi-gauge"></span>
       <span class="sidebar-item-text">Default</span>
-    </a>
+    </a> -->
 
-    <div class="sidebar-section-title">Account</div>
+    <!-- <div class="sidebar-section-title">Account</div>
     <a routerLink="/account/setting" routerLinkActive="active" class="sidebar-item">
       <span class="sidebar-item-icon theme-icon pi pi-user"></span>
       <span class="sidebar-item-text">Account Setting</span>
-    </a>
+    </a> -->
 
     <!-- 只有Manager可以看 -->
-    <div class="sidebar-section-title" *appHasRole="Role.Manager">E-Commerce</div>
+    <!-- <div class="sidebar-section-title" *appHasRole="Role.Manager">E-Commerce</div>
     <a
       routerLink="/products"
       routerLinkActive="active"
@@ -166,10 +166,10 @@
     >
       <span class="sidebar-item-icon theme-icon pi pi-cart-minus"></span>
       <span class="sidebar-item-text">Products</span>
-    </a>
+    </a> -->
 
     <!-- Permission.ReportView 可以看 -->
-    <div class="sidebar-section-title" *appHasPermission="Permission.ReportView">Other</div>
+    <!-- <div class="sidebar-section-title" *appHasPermission="Permission.ReportView">Other</div>
     <a
       routerLink="/samples"
       routerLinkActive="active"
@@ -178,13 +178,13 @@
     >
       <span class="sidebar-item-icon theme-icon pi pi-list"></span>
       <span class="sidebar-item-text">Sample Page</span>
-    </a>
+    </a> -->
 
-    <div class="sidebar-section-title">Portal</div>
+    <!-- <div class="sidebar-section-title">Portal</div>
     <a routerLink="/portal" routerLinkActive="active" class="sidebar-item">
       <span class="sidebar-item-icon theme-icon pi pi-table"></span>
       <span class="sidebar-item-text">Portal Page</span>
-    </a>
+    </a> -->
 
     <div class="sidebar-section-title">Portal Gridster</div>
     <a routerLink="/portal-gridster" routerLinkActive="active" class="sidebar-item">
@@ -204,14 +204,14 @@
       <span class="sidebar-item-text">Portal Page Gridstack</span>
     </a>
 
-    <div class="sidebar-section-title">Accounts</div>
+    <!-- <div class="sidebar-section-title">Accounts</div>
     <a routerLink="/accounts" routerLinkActive="active" class="sidebar-item">
       <span class="sidebar-item-icon theme-icon pi pi-wallet"></span>
       <span class="sidebar-item-text">Account List Page</span>
-    </a>
+    </a> -->
 
     <!-- Admin和Manager可以看 -->
-    <div class="sidebar-section-title" *appHasRole="[Role.Admin, Role.Manager]">Authorization</div>
+    <!-- <div class="sidebar-section-title" *appHasRole="[Role.Admin, Role.Manager]">Authorization</div>
     <a
       routerLink="/admin/user-roles"
       routerLinkActive="active"
@@ -220,7 +220,7 @@
     >
       <span class="sidebar-item-icon theme-icon pi pi-id-card"></span>
       <span class="sidebar-item-text">Admin Page</span>
-    </a>
+    </a> -->
 
   </nav>
 </div>
